@@ -1,0 +1,30 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1080 1920" width="1080" height="1920">
+  <defs>
+    <linearGradient id="sky" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0%" stop-color="#87CEEB"/>
+      <stop offset="60%" stop-color="#B3E5FC"/>
+      <stop offset="100%" stop-color="#E0F7FA"/>
+    </linearGradient>
+    <linearGradient id="sun" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0%" stop-color="#FFE082"/>
+      <stop offset="100%" stop-color="#FFCA28"/>
+    </linearGradient>
+    <linearGradient id="hill1" x1="0" y1="0" x2="1" y2="0">
+      <stop offset="0%" stop-color="#7CB342"/>
+      <stop offset="100%" stop-color="#8BC34A"/>
+    </linearGradient>
+    <linearGradient id="hill2" x1="0" y1="0" x2="1" y2="0">
+      <stop offset="0%" stop-color="#43A047"/>
+      <stop offset="100%" stop-color="#66BB6A"/>
+    </linearGradient>
+    <linearGradient id="hill3" x1="0" y1="0" x2="1" y2="0">
+      <stop offset="0%" stop-color="#2E7D32"/>
+      <stop offset="100%" stop-color="#43A047"/>
+    </linearGradient>
+  </defs>
+  <rect width="100%" height="100%" fill="url(#sky)"/>
+  <circle cx="830" cy="380" r="120" fill="url(#sun)" opacity="0.9"/>
+  <path d="M0 1320 C 200 1180, 400 1220, 600 1320 C 800 1420, 1000 1380, 1080 1320 L 1080 1920 L 0 1920 Z" fill="url(#hill1)"/>
+  <path d="M0 1460 C 220 1340, 500 1420, 760 1520 C 940 1590, 1080 1560, 1080 1560 L 1080 1920 L 0 1920 Z" fill="url(#hill2)"/>
+  <path d="M0 1600 C 260 1540, 520 1660, 820 1700 C 980 1725, 1080 1720, 1080 1720 L 1080 1920 L 0 1920 Z" fill="url(#hill3)"/>
+</svg>
