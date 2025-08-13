@@ -9,16 +9,18 @@ on:
 jobs:
   trigger-vercel:
     runs-on: ubuntu-latest
+    env:
+      HOOK: ${{ secrets.VERCEL_DEPLOY_HOOK_URL_PREVIEW }}
     steps:
       - name: Ensure deploy hook secret is configured
-        if: ${{ !secrets.VERCEL_DEPLOY_HOOK_URL_PREVIEW }}
+        if: ${{ env.HOOK == '' }}
         run: |
           echo "::error::GitHub secret VERCEL_DEPLOY_HOOK_URL_PREVIEW is not set.\nCreate a Vercel Deploy Hook for the 'preview' branch and add its URL to repo settings: Settings > Secrets and variables > Actions." && exit 1
 
       - name: Trigger Vercel preview deployment
-        if: ${{ secrets.VERCEL_DEPLOY_HOOK_URL_PREVIEW }}
+        if: ${{ env.HOOK != '' }}
         env:
-          HOOK: ${{ secrets.VERCEL_DEPLOY_HOOK_URL_PREVIEW }}
+          HOOK: ${{ env.HOOK }}
         run: |
           echo "Triggering Vercel deploy hook for $GITHUB_REF ($GITHUB_SHA)"
           STATUS=$(curl -sS -o /dev/null -w "%{http_code}" -X POST "$HOOK" \
