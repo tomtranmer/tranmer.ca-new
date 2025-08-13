@@ -4,7 +4,7 @@ export function AppGrid() {
   return (
     <div className="flex-1 grid grid-cols-2 grid-rows-2 gap-6 place-items-center">
       <AppIcon
-        href="/hosting"
+        href="https://app.tranmer.ca"
         label="Hosting"
         emoji="🖥️"
         gradient="bg-gradient-to-br from-blue-500 to-indigo-600"

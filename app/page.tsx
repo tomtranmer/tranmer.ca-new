@@ -1,6 +1,7 @@
 import Image from "next/image";
 import landscape from "@/public/landscape.jpg";
 import { PhoneFrame } from "@/components/PhoneFrame";
+import { ThemeToggle } from "@/components/ThemeToggle";
 
 export default function Home() {
   const usePhotoWallpaper =
@@ -32,6 +33,7 @@ export default function Home() {
       {/* Soft overlay for readability */}
       <div aria-hidden className="absolute inset-0 -z-10 bg-black/20" />
 
+      <ThemeToggle />
       <PhoneFrame usePhotoWallpaper={usePhotoWallpaper} wallpaper={landscape} />
     </div>
   );
