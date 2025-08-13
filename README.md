@@ -5,7 +5,8 @@ A modern Next.js portfolio website featuring an iPhone-style interface with opti
 [![CI](https://github.com/tomtranmer/tranmer.ca-new/actions/workflows/ci.yml/badge.svg)](https://github.com/tomtranmer/tranmer.ca-new/actions/workflows/ci.yml)
 
 **Repository:** https://github.com/tomtranmer/tranmer.ca-new  
-**Preview:** https://tranmer-ca-new.vercel.app
+**Preview:** https://tranmer-ca-new-git-preview-tomtranmers-projects.vercel.app  
+**Production:** https://tranmer-ca-new.vercel.app
 
 ## Features
 

@@ -41,6 +41,8 @@ This is a modern Next.js portfolio website featuring an iPhone-style interface w
 2. Test with `npm test` or `npm run test:watch`
 3. Push to `preview` branch for Vercel deployment
 4. CI automatically runs on all pushes/PRs
+5. Preview: https://tranmer-ca-new-git-preview-tomtranmers-projects.vercel.app
+6. Production: https://tranmer-ca-new.vercel.app
 
 ### Recent Improvements (Aug 2025)
 - ✅ SEO metadata optimization
