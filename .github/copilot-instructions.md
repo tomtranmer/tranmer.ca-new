@@ -1,30 +1,52 @@
-Setup checklist (final)
+# Copilot Instructions - tranmer.ca
 
-- [x] Verify .github/copilot-instructions.md exists
-	- File present at .github/copilot-instructions.md
+## Project Overview
 
-- [x] Clarify Project Requirements
-	- Next.js + TypeScript + App Router + Tailwind CSS + ESLint + npm
+This is a modern Next.js portfolio website featuring an iPhone-style interface with optimized performance, proper SEO, and accessibility features.
 
-- [x] Scaffold the Project
-	- Completed at repo root (created via create-next-app)
+### Tech Stack
+- **Framework:** Next.js 15.4.6 with App Router
+- **Styling:** Tailwind CSS v4 with custom utilities
+- **Language:** TypeScript
+- **Testing:** Vitest with coverage
+- **Deployment:** Vercel (automatic on push)
+- **Theme:** Dark/light mode with next-themes
 
-- [x] Customize the Project
-	- Skipped (Hello World baseline)
+### Key Features
+- iPhone-style mock interface with app icons
+- Configurable backgrounds (photo/SVG via env vars)
+- Image optimization with next/image
+- Component-based architecture
+- Theme management with persistence
+- CI/CD with GitHub Actions (lint/test/build)
 
-- [x] Install Required Extensions
-	- None required for this template
+### Environment Variables
+- `NEXT_PUBLIC_PHONE_WALLPAPER=photo` - Use photorealistic phone wallpaper
+- `NEXT_PUBLIC_SITE_WALLPAPER=photo` - Use photorealistic site background
 
-- [x] Compile the Project
-	- Lint PASS (next lint)
-	- Build PASS (next build)
+### Code Organization
+- `app/` - Next.js App Router pages
+- `components/` - Reusable UI components (AppIcon, AppGrid, Dock, PhoneFrame, ThemeProvider)
+- `public/` - Static assets (wallpapers, images)
+- `docs/` - Project documentation (style guide, progress log)
 
-- [x] Create and Run Task
-	- VS Code tasks added: Dev (bg), Build, Lint
-	- Verified Lint and Build tasks run successfully
+### Style Guidelines
+- Use Tailwind utilities first
+- Custom utilities in `app/globals.css` for repeated patterns
+- Inline styles only for dynamic values (backgroundImage URLs)
+- Component extraction for reusability
 
-- [x] Launch the Project
-	- Dev server started (Turbopack): http://localhost:3000
+### Development Workflow
+1. Use VS Code tasks for dev/build/lint
+2. Test with `npm test` or `npm run test:watch`
+3. Push to `preview` branch for Vercel deployment
+4. CI automatically runs on all pushes/PRs
+5. Preview: https://tranmer-ca-new-git-preview-tomtranmers-projects.vercel.app
+6. Production: https://tranmer-ca-new.vercel.app
 
-- [x] Ensure Documentation is Complete
-	- README includes run instructions and VS Code tasks
+### Recent Improvements (Aug 2025)
+- ✅ SEO metadata optimization
+- ✅ Image performance with next/image
+- ✅ Component extraction and modularization
+- ✅ Theme management implementation
+- ✅ Workflow cleanup (removed redundant deploy hooks)
