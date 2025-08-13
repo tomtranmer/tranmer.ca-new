@@ -1,103 +1,114 @@
-import Image from "next/image";
+import Link from "next/link";
+
+type AppIconProps = {
+  href: string;
+  label: string;
+  emoji: string;
+  gradient: string;
+};
+
+function AppIcon({ href, label, emoji, gradient }: AppIconProps) {
+  return (
+    <Link
+      href={href}
+      className="group flex flex-col items-center gap-2"
+      aria-label={label}
+    >
+      <div
+        className={`w-20 h-20 sm:w-24 sm:h-24 rounded-2xl shadow-md shadow-black/10 dark:shadow-white/10 grid place-items-center text-3xl sm:text-4xl text-white ${gradient} transition-transform group-active:scale-95`}
+      >
+        <span aria-hidden>{emoji}</span>
+      </div>
+      <span className="text-xs sm:text-sm font-medium text-foreground/90">
+        {label}
+      </span>
+    </Link>
+  );
+}
 
 export default function Home() {
-  return (
-    <div className="font-sans grid grid-rows-[20px_1fr_20px] items-center justify-items-center min-h-screen p-8 pb-20 gap-16 sm:p-20">
-      <main className="flex flex-col gap-[32px] row-start-2 items-center sm:items-start">
-        <Image
-          className="dark:invert"
-          src="/next.svg"
-          alt="Next.js logo"
-          width={180}
-          height={38}
-          priority
-        />
-        <ol className="font-mono list-inside list-decimal text-sm/6 text-center sm:text-left">
-          <li className="mb-2 tracking-[-.01em]">
-            Get started by editing{" "}
-            <code className="bg-black/[.05] dark:bg-white/[.06] font-mono font-semibold px-1 py-0.5 rounded">
-              app/page.tsx
-            </code>
-            .
-          </li>
-          <li className="tracking-[-.01em]">
-            Save and see your changes instantly.
-          </li>
-        </ol>
+  const phoneWallpaper =
+    process.env.NEXT_PUBLIC_PHONE_WALLPAPER === "photo"
+      ? "/landscape.jpg" // Place a photorealistic image here
+      : "/landscape.svg"; // Fallback to generated SVG
 
-        <div className="flex gap-4 items-center flex-col sm:flex-row">
-          <a
-            className="rounded-full border border-solid border-transparent transition-colors flex items-center justify-center bg-foreground text-background gap-2 hover:bg-[#383838] dark:hover:bg-[#ccc] font-medium text-sm sm:text-base h-10 sm:h-12 px-4 sm:px-5 sm:w-auto"
-            href="https://vercel.com/new?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-            target="_blank"
-            rel="noopener noreferrer"
-          >
-            <Image
-              className="dark:invert"
-              src="/vercel.svg"
-              alt="Vercel logomark"
-              width={20}
-              height={20}
+  const pageBackground =
+    process.env.NEXT_PUBLIC_SITE_WALLPAPER === "photo"
+      ? "/landscape.jpg"
+      : "/wallpaper.svg";
+
+  return (
+    <div className="relative min-h-screen grid place-items-center p-6 sm:p-10 overflow-hidden">
+      {/* Background image (covers full layout) */}
+      <div
+        aria-hidden
+        className="pointer-events-none absolute inset-0 -z-10 bg-cover bg-center"
+        style={{
+          backgroundImage: `url(${pageBackground})`,
+        }}
+      />
+      {/* Soft overlay for readability */}
+      <div aria-hidden className="absolute inset-0 -z-10 bg-black/20" />
+
+      
+      {/* Phone frame */}
+  <div className="relative w-80 sm:w-96 h-[560px] sm:h-[700px] rounded-[2.2rem] border border-black/10 dark:border-white/10 bg-gradient-to-b from-zinc-50 to-zinc-200 dark:from-zinc-900 dark:to-black shadow-2xl overflow-hidden backdrop-blur">
+        {/* Notch */}
+        <div className="absolute top-2 left-1/2 -translate-x-1/2 w-28 h-6 bg-black/80 dark:bg-black rounded-b-2xl"></div>
+
+        {/* Phone wallpaper */}
+  <div
+          aria-hidden
+      className="absolute inset-0 -z-10 bg-cover bg-center"
+          style={{
+    backgroundImage: `url(${phoneWallpaper})`,
+            // filter: "saturate(1.1)",
+          }}
+        />
+        {/* Wallpaper overlay: subtle blur + dim for readability */}
+        <div
+          aria-hidden
+          className="absolute inset-0 pointer-events-none backdrop-blur-2 bg-black/10"
+        />
+        {/* Title */}
+  <h1 className="absolute top-6 sm:top-8 text-center text-lg sm:text-2xl font-semibold tracking-tight text-white title-drop-shadow">
+          Welcome to tranmer.ca
+        </h1>
+        {/* Home screen grid */}
+        <div className="relative h-full flex flex-col px-6 pt-16 pb-8">
+          <div className="flex-1 grid grid-cols-2 grid-rows-2 gap-6 place-items-center">
+            <AppIcon
+              href="/hosting"
+              label="Hosting"
+              emoji="🖥️"
+              gradient="bg-gradient-to-br from-blue-500 to-indigo-600"
             />
-            Deploy now
-          </a>
-          <a
-            className="rounded-full border border-solid border-black/[.08] dark:border-white/[.145] transition-colors flex items-center justify-center hover:bg-[#f2f2f2] dark:hover:bg-[#1a1a1a] hover:border-transparent font-medium text-sm sm:text-base h-10 sm:h-12 px-4 sm:px-5 w-full sm:w-auto md:w-[158px]"
-            href="https://nextjs.org/docs?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-            target="_blank"
-            rel="noopener noreferrer"
-          >
-            Read our docs
-          </a>
+            <AppIcon
+              href="/finance"
+              label="Finance"
+              emoji="💸"
+              gradient="bg-gradient-to-br from-emerald-500 to-teal-600"
+            />
+            <AppIcon
+              href="/opm"
+              label="OPM"
+              emoji="🧩"
+              gradient="bg-gradient-to-br from-fuchsia-500 to-pink-600"
+            />
+            <AppIcon
+              href="/blog"
+              label="Blog"
+              emoji="✍️"
+              gradient="bg-gradient-to-br from-amber-500 to-orange-600"
+            />
+          </div>
+
+          {/* Dock */}
+          <div className="mt-6 h-16 rounded-3xl bg-white/60 dark:bg-white/10 backdrop-blur border border-black/5 dark:border-white/10 flex items-center justify-center text-xs text-foreground/60">
+            Swipe up • Or tap an app
+          </div>
         </div>
-      </main>
-      <footer className="row-start-3 flex gap-[24px] flex-wrap items-center justify-center">
-        <a
-          className="flex items-center gap-2 hover:underline hover:underline-offset-4"
-          href="https://nextjs.org/learn?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          <Image
-            aria-hidden
-            src="/file.svg"
-            alt="File icon"
-            width={16}
-            height={16}
-          />
-          Learn
-        </a>
-        <a
-          className="flex items-center gap-2 hover:underline hover:underline-offset-4"
-          href="https://vercel.com/templates?framework=next.js&utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          <Image
-            aria-hidden
-            src="/window.svg"
-            alt="Window icon"
-            width={16}
-            height={16}
-          />
-          Examples
-        </a>
-        <a
-          className="flex items-center gap-2 hover:underline hover:underline-offset-4"
-          href="https://nextjs.org?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          <Image
-            aria-hidden
-            src="/globe.svg"
-            alt="Globe icon"
-            width={16}
-            height={16}
-          />
-          Go to nextjs.org →
-        </a>
-      </footer>
+      </div>
     </div>
   );
 }

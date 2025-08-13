@@ -4,6 +4,8 @@ This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-
 
 Repository: https://github.com/tomtranmer/tranmer.ca-new
 
+Preview: https://tranmer-ca-new.vercel.app
+
 ## Getting Started
 
 First, run the development server:
