@@ -10,19 +10,19 @@ export function AppGrid() {
         gradient="bg-gradient-to-br from-blue-500 to-indigo-600"
       />
       <AppIcon
-        href="/finance"
+        href="https://sb-tracker.tranmer.ca"
         label="Finance"
         emoji="💸"
         gradient="bg-gradient-to-br from-emerald-500 to-teal-600"
       />
       <AppIcon
-        href="/opm"
+        href="https://opm.tranmer.ca"
         label="OPM"
         emoji="🧩"
         gradient="bg-gradient-to-br from-fuchsia-500 to-pink-600"
       />
       <AppIcon
-        href="/blog"
+        href="https://tranmerwebservices.ca"
         label="Blog"
         emoji="✍️"
         gradient="bg-gradient-to-br from-amber-500 to-orange-600"
