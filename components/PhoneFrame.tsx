@@ -1,7 +1,7 @@
 "use client";
 
 import Image, { type StaticImageData } from "next/image";
-import { useState, useRef } from "react";
+import { useState, useRef, useEffect } from "react";
 import { AppGrid } from "./AppGrid";
 import { Dock } from "./Dock";
 
@@ -17,7 +17,18 @@ export function PhoneFrame({
 }: PhoneFrameProps) {
   const [position, setPosition] = useState({ x: 0, y: 0 });
   const [isDragging, setIsDragging] = useState(false);
+  const [showApps, setShowApps] = useState(true);
+  const [isPWA, setIsPWA] = useState(false);
   const dragStartRef = useRef({ x: 0, y: 0 });
+
+  // Detect PWA mode
+  useEffect(() => {
+    const isStandalone = window.matchMedia('(display-mode: standalone)').matches;
+    const isIOS = /iPad|iPhone|iPod/.test(navigator.userAgent);
+    const isInStandaloneMode = Boolean((window.navigator as {standalone?: boolean}).standalone);
+    
+    setIsPWA(isStandalone || (isIOS && isInStandaloneMode));
+  }, []);
 
   const handleDragStart = (clientX: number, clientY: number) => {
     setIsDragging(true);
@@ -60,28 +71,32 @@ export function PhoneFrame({
     handleDragMove(touch.clientX, touch.clientY);
   };
 
+  const toggleApps = () => {
+    setShowApps(!showApps);
+  };
+
   return (
     <div 
-      className="relative w-80 sm:w-96 h-[560px] sm:h-[700px] rounded-[2.2rem] border-4 border-zinc-300/40 dark:border-zinc-700/60 bg-gradient-to-b from-zinc-50 to-zinc-200 dark:from-zinc-900 dark:to-black shadow-[0_25px_50px_-12px_rgba(0,0,0,0.4)] dark:shadow-[0_25px_50px_-12px_rgba(0,0,0,0.8)] overflow-hidden backdrop-blur-sm phone-frame-shine transition-transform duration-75"
+      className={`relative w-80 sm:w-96 h-[560px] sm:h-[700px] rounded-[2.2rem] border-4 border-zinc-300/40 dark:border-zinc-700/60 bg-gradient-to-b from-zinc-50 to-zinc-200 dark:from-zinc-900 dark:to-black shadow-[0_25px_50px_-12px_rgba(0,0,0,0.4)] dark:shadow-[0_25px_50px_-12px_rgba(0,0,0,0.8)] overflow-hidden backdrop-blur-sm phone-frame-shine transition-transform duration-75 max-[640px]:w-full max-[640px]:h-full max-[640px]:rounded-none max-[640px]:border-0 max-[640px]:shadow-none ${isPWA ? 'pwa-standalone' : ''}`}
       style={{
-        transform: `translate(${position.x}px, ${position.y}px)`,
+        transform: isPWA ? 'none' : `translate(${position.x}px, ${position.y}px)`,
         cursor: isDragging ? 'grabbing' : 'default',
       }}
-      onMouseMove={handleMouseMove}
-      onMouseUp={handleDragEnd}
-      onMouseLeave={handleDragEnd}
-      onTouchMove={handleTouchMove}
-      onTouchEnd={handleDragEnd}
+      onMouseMove={!isPWA ? handleMouseMove : undefined}
+      onMouseUp={!isPWA ? handleDragEnd : undefined}
+      onMouseLeave={!isPWA ? handleDragEnd : undefined}
+      onTouchMove={!isPWA ? handleTouchMove : undefined}
+      onTouchEnd={!isPWA ? handleDragEnd : undefined}
     >
       {/* Enhanced outer glow */}
-      <div className="absolute -inset-1 bg-gradient-to-r from-blue-500/20 via-purple-500/20 to-pink-500/20 rounded-[2.4rem] blur-sm -z-10 opacity-75"></div>
+      <div className="absolute -inset-1 bg-gradient-to-r from-blue-500/20 via-purple-500/20 to-pink-500/20 rounded-[2.4rem] blur-sm -z-10 opacity-75 max-[640px]:hidden"></div>
       
       {/* Inner highlight border for shine effect */}
-      <div className="absolute inset-1 rounded-[2rem] border border-white/20 dark:border-white/10 pointer-events-none"></div>
+      <div className="absolute inset-1 rounded-[2rem] border border-white/20 dark:border-white/10 pointer-events-none max-[640px]:hidden"></div>
       
       {/* Notch with enhanced styling - draggable handle */}
       <div 
-        className="absolute top-2 left-1/2 -translate-x-1/2 w-28 h-6 bg-black/90 dark:bg-black rounded-b-2xl shadow-md border-t-2 border-zinc-800 cursor-grab active:cursor-grabbing hover:bg-black/80 transition-colors select-none"
+        className="absolute top-2 left-1/2 -translate-x-1/2 w-28 h-6 bg-black/90 dark:bg-black rounded-b-2xl shadow-md border-t-2 border-zinc-800 cursor-grab active:cursor-grabbing hover:bg-black/80 transition-colors select-none max-[640px]:hidden"
         onMouseDown={handleMouseDown}
         onTouchStart={handleTouchStart}
         title="Drag to move phone"
@@ -120,9 +135,11 @@ export function PhoneFrame({
       </div>
       
       {/* Home screen grid */}
-      <div className="relative h-full flex flex-col px-6 pt-16 pb-8">
-        <AppGrid />
-        <Dock />
+      <div className="relative h-full flex flex-col px-6 pt-16 pb-8 max-[640px]:px-4 max-[640px]:pt-8 max-[640px]:pb-4">
+        <div className={`flex-1 transition-all duration-300 ${showApps ? 'opacity-100 scale-100' : 'opacity-0 scale-95 pointer-events-none'}`}>
+          <AppGrid />
+        </div>
+        <Dock onSwipeUp={toggleApps} />
       </div>
     </div>
   );
