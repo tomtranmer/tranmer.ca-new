@@ -5,6 +5,12 @@ export function AppGrid() {
   // Example folder with multiple apps
   const utilityApps = [
     {
+      href: "https://bradshawdesign.ca",
+      label: "Bradshaw Design",
+      emoji: "🎨",
+      gradient: "bg-gradient-to-br from-blue-500 to-indigo-600",
+      iconSrc: "/bd_icon.png"
+    },{
       href: "/calculator",
       label: "Calculator",
       emoji: "🧮",

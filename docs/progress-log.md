@@ -52,3 +52,11 @@ A project-wide audit was conducted, focusing on performance, SEO, code organizat
     -   `.github/workflows/preview-deploy.yml` (deleted)
 
 ---
+
+TODO:
+
+- add slideable button to the dock slider for enhanced user UI feedback
+- add app icons and links for BCard, HIVClinic apps
+- add utility icon for Bradshaw Design
+- add contaact "app"
+- add swipe left page nav for icons 9,10,+ (and desktop click target at frame right)

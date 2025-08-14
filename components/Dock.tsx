@@ -3,11 +3,11 @@
 import { useState } from "react";
 
 type DockProps = {
-  onSwipeUp: () => void;
+  onSwipeRight: () => void;
   showApps: boolean;
 };
 
-export function Dock({ onSwipeUp, showApps }: DockProps) {
+export function Dock({ onSwipeRight, showApps }: DockProps) {
   const [touchStart, setTouchStart] = useState<{ x: number; y: number } | null>(null);
 
   const handleTouchStart = (e: React.TouchEvent) => {
@@ -20,18 +20,18 @@ export function Dock({ onSwipeUp, showApps }: DockProps) {
 
     const touch = e.changedTouches[0];
     const deltaX = touch.clientX - touchStart.x;
-    const deltaY = touchStart.y - touch.clientY; // Reversed because up is negative Y
+    const deltaY = touch.clientY - touchStart.y;
 
-    // Check for swipe up gesture (vertical movement more than horizontal, and upward)
-    if (Math.abs(deltaY) > Math.abs(deltaX) && deltaY > 50) {
-      onSwipeUp();
+    // Check for horizontal swipe (left to right) gesture
+    if (Math.abs(deltaX) > Math.abs(deltaY) && deltaX > 50) {
+      onSwipeRight();
     }
 
     setTouchStart(null);
   };
 
   const handleClick = () => {
-    onSwipeUp();
+    onSwipeRight();
   };
 
   return (
@@ -42,9 +42,9 @@ export function Dock({ onSwipeUp, showApps }: DockProps) {
       onClick={handleClick}
       role="button"
       tabIndex={0}
-      aria-label={showApps ? "Tap to lock apps" : "Tap to unlock apps"}
+      aria-label={showApps ? "Swipe right or tap to lock apps" : "Swipe right or tap to unlock apps"}
     >
-      {showApps ? "Tap to lock" : "Tap to unlock"}
+      {showApps ? "Swipe right or tap to lock" : "Swipe right or tap to unlock"}
     </div>
   );
 }

@@ -1,6 +1,7 @@
 "use client";
 
 import { useState } from "react";
+import Image from "next/image";
 import { AppIcon, type AppIconProps } from "./AppIcon";
 
 export type AppFolderProps = {
@@ -45,11 +46,21 @@ export function AppFolder({ label, gradient, apps }: AppFolderProps) {
           {previewApps.map((app, index) => (
             <div
               key={index}
-              className="bg-white/30 rounded-lg flex items-center justify-center text-xs"
+              className="bg-white/30 rounded-lg flex items-center justify-center text-xs overflow-hidden"
             >
-              <span className="drop-shadow-[0_1px_2px_rgba(0,0,0,0.8)]">
-                {app.emoji}
-              </span>
+              {app.iconSrc ? (
+                <Image
+                  src={app.iconSrc}
+                  alt={app.label}
+                  width={20}
+                  height={20}
+                  className="w-full h-full object-cover"
+                />
+              ) : (
+                <span className="drop-shadow-[0_1px_2px_rgba(0,0,0,0.8)]">
+                  {app.emoji}
+                </span>
+              )}
             </div>
           ))}
           {/* Fill remaining slots with empty squares if needed */}
