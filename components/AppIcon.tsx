@@ -8,10 +8,16 @@ export type AppIconProps = {
   gradient: string;
   openInNewWindow?: boolean;
   iconSrc?: string;
+  iconBorder?: string;
 };
 
-export function AppIcon({ href, label, emoji, gradient, openInNewWindow = false, iconSrc }: AppIconProps) {
+export function AppIcon({ href, label, emoji, gradient, openInNewWindow = false, iconSrc, iconBorder }: AppIconProps) {
   const isExternal = href.startsWith('http');
+  
+  // Use custom styling for image icons or fallback to gradient
+  const iconClasses = iconSrc 
+    ? `border-2 ${iconBorder || 'border-white/20'}`
+    : `${gradient} border border-white/20`;
   
   if (isExternal && openInNewWindow) {
     return (
@@ -23,7 +29,7 @@ export function AppIcon({ href, label, emoji, gradient, openInNewWindow = false,
         aria-label={label}
       >
         <div
-          className={`w-20 h-20 sm:w-24 sm:h-24 rounded-2xl shadow-lg shadow-black/20 dark:shadow-black/40 grid place-items-center text-3xl sm:text-4xl text-white ${gradient} transition-transform group-active:scale-95 border border-white/20 overflow-hidden`}
+          className={`w-20 h-20 sm:w-24 sm:h-24 rounded-2xl shadow-lg shadow-black/20 dark:shadow-black/40 grid place-items-center text-3xl sm:text-4xl text-white ${iconClasses} transition-transform group-active:scale-95 overflow-hidden`}
         >
           {iconSrc ? (
             <Image
@@ -51,7 +57,7 @@ export function AppIcon({ href, label, emoji, gradient, openInNewWindow = false,
       aria-label={label}
     >
       <div
-        className={`w-20 h-20 sm:w-24 sm:h-24 rounded-2xl shadow-lg shadow-black/20 dark:shadow-black/40 grid place-items-center text-3xl sm:text-4xl text-white ${gradient} transition-transform group-active:scale-95 border border-white/20 overflow-hidden`}
+        className={`w-20 h-20 sm:w-24 sm:h-24 rounded-2xl shadow-lg shadow-black/20 dark:shadow-black/40 grid place-items-center text-3xl sm:text-4xl text-white ${iconClasses} transition-transform group-active:scale-95 overflow-hidden`}
       >
         {iconSrc ? (
           <Image

@@ -1,5 +1,6 @@
 import { AppIcon } from "./AppIcon";
 import { AppFolder } from "./AppFolder";
+import { ContactModal } from "./ContactModal";
 
 export function AppGrid() {
   // Example folder with multiple apps
@@ -9,7 +10,8 @@ export function AppGrid() {
       label: "Bradshaw Design",
       emoji: "🎨",
       gradient: "bg-gradient-to-br from-blue-500 to-indigo-600",
-      iconSrc: "/bd_icon.png"
+      iconSrc: "/bd_icon.png",
+      iconBorder: "border-indigo-300/60"
     },{
       href: "/calculator",
       label: "Calculator",
@@ -70,15 +72,34 @@ export function AppGrid() {
         emoji="✍️"
         gradient="bg-gradient-to-br from-amber-500 to-orange-600"
       />
-      {/* Empty positions 5, 7, 8 */}
-      <div></div>
+      <AppIcon
+        href="https://app.getbcard.io"
+        label="BCard"
+        emoji="💳"
+        gradient="bg-gradient-to-br from-cyan-500 to-blue-600"
+        openInNewWindow={true}
+        iconSrc="/bcard_icon.png"
+        iconBorder="border-blue-300/60"
+      />
       <AppFolder
         label="Utilities"
         gradient="bg-gradient-to-br from-purple-500 to-indigo-600"
         apps={utilityApps}
       />
-      <div></div>
-      <div></div>
+      <AppIcon
+        href="https://hivclinic.ca/app"
+        label="HIV Clinic"
+        emoji="🏥"
+        gradient="bg-gradient-to-br from-red-500 to-pink-600"
+        openInNewWindow={true}
+        iconSrc="/hivclinic_icon.png"
+        iconBorder="border-blue-400/60"
+      />
+      <ContactModal
+        label="Contact"
+        emoji="📞"
+        gradient="bg-gradient-to-br from-teal-500 to-cyan-600"
+      />
       
     </div>
   );
