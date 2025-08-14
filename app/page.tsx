@@ -10,7 +10,7 @@ export default function Home() {
     process.env.NEXT_PUBLIC_SITE_WALLPAPER === "photo";
 
   return (
-    <div className="relative min-h-screen grid place-items-center p-6 sm:p-10 overflow-hidden">
+    <div className="relative min-h-screen grid place-items-center p-6 sm:p-10 overflow-hidden max-[640px]:p-0 max-[640px]:min-h-dvh">
       {/* Background image (covers full layout) */}
       {usePhotoBackground ? (
         <Image
