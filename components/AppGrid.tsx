@@ -14,7 +14,7 @@ export function AppGrid({ onModalChange }: AppGridProps) {
       label: "Bradshaw Design",
       emoji: "🎨",
       gradient: "bg-gradient-to-br from-blue-500 to-indigo-600",
-      iconSrc: "/bd_icon.png",
+      iconSrc: "/icons/bd_icon.png",
       iconBorder: "border-indigo-300/60"
     },{
       href: "/calculator",
@@ -54,6 +54,8 @@ export function AppGrid({ onModalChange }: AppGridProps) {
         href="https://app.tranmer.ca"
         label="SB Hosting"
         emoji="🖥️"
+        iconSrc="/icons/tws_icon.png"
+        iconBorder="border-indigo-300/60"
         gradient="bg-gradient-to-br from-blue-500 to-indigo-600"
       />
       <AppIcon
@@ -82,7 +84,7 @@ export function AppGrid({ onModalChange }: AppGridProps) {
         emoji="💳"
         gradient="bg-gradient-to-br from-cyan-500 to-blue-600"
         openInNewWindow={true}
-        iconSrc="/bcard_icon.png"
+        iconSrc="/icons/bcard_icon.png"
         iconBorder="border-blue-300/60"
       />
       <AppFolder
@@ -96,7 +98,7 @@ export function AppGrid({ onModalChange }: AppGridProps) {
         emoji="🏥"
         gradient="bg-gradient-to-br from-red-500 to-pink-600"
         openInNewWindow={true}
-        iconSrc="/hivclinic_icon.png"
+        iconSrc="/icons/hivclinic_icon.png"
         iconBorder="border-blue-400/60"
       />
       <ContactModal

@@ -80,9 +80,9 @@ export default function RootLayout({
     <html lang="en" suppressHydrationWarning>
       <head>
         <link rel="manifest" href="/manifest.json" />
-        <link rel="apple-touch-icon" href="/apple-touch-icon.svg" />
-        <link rel="icon" type="image/svg+xml" href="/icon-192.svg" />
-        <link rel="icon" type="image/x-icon" href="/favicon.ico" />
+        <link rel="apple-touch-icon" href="/icons/pwa/apple-touch-icon.svg" />
+        <link rel="icon" type="image/svg+xml" href="/icons/pwa/icon-192.svg" />
+        <link rel="icon" type="image/x-icon" href="/icons/pwa/favicon.ico" />
         <meta name="apple-mobile-web-app-capable" content="yes" />
         <meta name="apple-mobile-web-app-status-bar-style" content="default" />
         <meta name="apple-mobile-web-app-title" content="tranmer.ca" />

@@ -26,7 +26,7 @@ export default function Home() {
           aria-hidden
           className="pointer-events-none absolute inset-0 -z-10 bg-cover bg-center"
           style={{
-            backgroundImage: `url(/wallpaper.svg)`,
+            backgroundImage: `url(/backgrounds/wallpaper.svg)`,
           }}
         />
       )}

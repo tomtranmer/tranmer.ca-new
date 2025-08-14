@@ -141,7 +141,7 @@ export function PhoneFrame({
           aria-hidden
           className="absolute inset-0 -z-10 bg-cover bg-center"
           style={{
-            backgroundImage: `url(/landscape.svg)`,
+            backgroundImage: `url(/backgrounds/landscape.svg)`,
           }}
         />
       )}
@@ -151,7 +151,7 @@ export function PhoneFrame({
         {/* Title - moved to top */}
         <div className={`flex-shrink-0 text-center mb-6 max-[640px]:mb-4 transition-all duration-300 ${isModalOpen ? 'opacity-0 scale-95 pointer-events-none' : 'opacity-100 scale-100'}`}>
           <h1 className="text-xl sm:text-2xl font-bold tracking-wide text-white/90 title-drop-shadow">
-            Welcome to tranmer.ca
+            tranmer.ca SB Solutions
           </h1>
         </div>
         
