@@ -2,7 +2,11 @@ import { AppIcon } from "./AppIcon";
 import { AppFolder } from "./AppFolder";
 import { ContactModal } from "./ContactModal";
 
-export function AppGrid() {
+type AppGridProps = {
+  onModalChange: (isOpen: boolean) => void;
+};
+
+export function AppGrid({ onModalChange }: AppGridProps) {
   // Example folder with multiple apps
   const utilityApps = [
     {
@@ -99,6 +103,7 @@ export function AppGrid() {
         label="Contact"
         emoji="📞"
         gradient="bg-gradient-to-br from-teal-500 to-cyan-600"
+        onModalChange={onModalChange}
       />
       
     </div>

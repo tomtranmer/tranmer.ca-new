@@ -60,6 +60,7 @@ A project-wide audit was conducted, focusing on performance, SEO, code organizat
 - iPhone-style interface with interactive app icons and folders  
 - Dynamic dock with horizontal swipe gestures and contextual labels ("Tap to lock/unlock")
 - **Enhanced dock with visual slider indicator and swipe progress feedback** ✅ *Just completed*
+- **Background wallpaper randomizer that selects from 5 pre-selected wallpapers on load** ✅ *Just completed*
 - Custom image icon support (Bradshaw Design with `bd_icon.png`)
 - AppFolder component with modal preview interface
 - Theme management (dark/light mode) with next-themes
@@ -89,15 +90,37 @@ A project-wide audit was conducted, focusing on performance, SEO, code organizat
 - ✅ Added Contact "app" with modal functionality
 
 **Implementation Details:**
-- Created ContactModal component with professional contact information
+- Created **enhanced ContactModal component** with professional contact information and email request feature
 - Added BCard with **full-coverage apple-touch-icon (180x180px)** and custom blue border accent
 - Added HIV Clinic with **full-coverage apple-touch-icon (152x152px)** and custom blue border accent  
 - Added Contact with phone emoji (📞) and teal-cyan gradient
 - All external apps open in new windows for proper UX
-- Contact modal includes email, LinkedIn, GitHub, and website links
+- **Contact modal includes email, LinkedIn, GitHub, and website links PLUS interactive email request form**
 - Filled previously empty grid positions for better layout balance
 - **Enhanced AppIcon component with custom border color support for image icons**
 - **Applied subtle colored borders that complement each brand while maintaining full icon coverage**
+
+**Contact Modal Features:**
+- Professional contact information display
+- **Interactive email request form with user email input**
+- **"Request Mail" button that opens pre-filled mailto link**
+- Form validation and loading states
+- Clean, accessible design with proper focus management
+
+**Wallpaper Randomizer Features:**
+- **Randomly selects from 5 pre-selected high-quality wallpapers on page load**
+- **Seamless integration with existing photo wallpaper system**
+- **Provides visual variety and fresh experience on each visit**
+- **Maintains performance with optimized Next.js Image component**
+- **Fallback system preserves original wallpaper functionality**
+- **Removed blur effect to showcase wallpapers in full clarity and beauty**
+
+**Layout Improvements:**
+- **Moved title to top of phone window for better visual hierarchy**
+- **Adjusted AppGrid positioning to accommodate title placement**
+- **Improved spacing and proportions for more native iOS-like appearance**
+- **Responsive design maintains layout integrity across device sizes**
+- **Enhanced mobile dock positioning: increased container bottom padding to move dock up and away from browser address bar (PWA mode uses standard spacing)**
 
 #### 3. Navigation Enhancement (Medium Priority) 
 - Implement swipe left navigation for additional app pages (icons 9, 10+)
