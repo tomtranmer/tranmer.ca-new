@@ -1,4 +1,5 @@
 import Link from "next/link";
+import Image from "next/image";
 
 export type AppIconProps = {
   href: string;
@@ -6,10 +7,17 @@ export type AppIconProps = {
   emoji: string;
   gradient: string;
   openInNewWindow?: boolean;
+  iconSrc?: string;
+  iconBorder?: string;
 };
 
-export function AppIcon({ href, label, emoji, gradient, openInNewWindow = false }: AppIconProps) {
+export function AppIcon({ href, label, emoji, gradient, openInNewWindow = false, iconSrc, iconBorder }: AppIconProps) {
   const isExternal = href.startsWith('http');
+  
+  // Use custom styling for image icons or fallback to gradient
+  const iconClasses = iconSrc 
+    ? `border-2 ${iconBorder || 'border-white/20'}`
+    : `${gradient} border border-white/20`;
   
   if (isExternal && openInNewWindow) {
     return (
@@ -21,9 +29,19 @@ export function AppIcon({ href, label, emoji, gradient, openInNewWindow = false 
         aria-label={label}
       >
         <div
-          className={`w-20 h-20 sm:w-24 sm:h-24 rounded-2xl shadow-lg shadow-black/20 dark:shadow-black/40 grid place-items-center text-3xl sm:text-4xl text-white ${gradient} transition-transform group-active:scale-95 border border-white/20`}
+          className={`w-20 h-20 sm:w-24 sm:h-24 rounded-2xl shadow-lg shadow-black/20 dark:shadow-black/40 grid place-items-center text-3xl sm:text-4xl text-white ${iconClasses} transition-transform group-active:scale-95 overflow-hidden`}
         >
-          <span aria-hidden className="drop-shadow-[0_2px_4px_rgba(0,0,0,0.8)]">{emoji}</span>
+          {iconSrc ? (
+            <Image
+              src={iconSrc}
+              alt={label}
+              width={80}
+              height={80}
+              className="w-full h-full object-cover"
+            />
+          ) : (
+            <span aria-hidden className="drop-shadow-[0_2px_4px_rgba(0,0,0,0.8)]">{emoji}</span>
+          )}
         </div>
         <span className="text-xs sm:text-sm font-medium text-white dark:text-white/90 drop-shadow-[0_1px_2px_rgba(0,0,0,0.8)]">
           {label}
@@ -39,9 +57,19 @@ export function AppIcon({ href, label, emoji, gradient, openInNewWindow = false 
       aria-label={label}
     >
       <div
-        className={`w-20 h-20 sm:w-24 sm:h-24 rounded-2xl shadow-lg shadow-black/20 dark:shadow-black/40 grid place-items-center text-3xl sm:text-4xl text-white ${gradient} transition-transform group-active:scale-95 border border-white/20`}
+        className={`w-20 h-20 sm:w-24 sm:h-24 rounded-2xl shadow-lg shadow-black/20 dark:shadow-black/40 grid place-items-center text-3xl sm:text-4xl text-white ${iconClasses} transition-transform group-active:scale-95 overflow-hidden`}
       >
-        <span aria-hidden className="drop-shadow-[0_2px_4px_rgba(0,0,0,0.8)]">{emoji}</span>
+        {iconSrc ? (
+          <Image
+            src={iconSrc}
+            alt={label}
+            width={80}
+            height={80}
+            className="w-full h-full object-cover"
+          />
+        ) : (
+          <span aria-hidden className="drop-shadow-[0_2px_4px_rgba(0,0,0,0.8)]">{emoji}</span>
+        )}
       </div>
       <span className="text-xs sm:text-sm font-medium text-white dark:text-white/90 drop-shadow-[0_1px_2px_rgba(0,0,0,0.8)]">
         {label}

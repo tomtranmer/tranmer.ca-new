@@ -52,3 +52,68 @@ A project-wide audit was conducted, focusing on performance, SEO, code organizat
     -   `.github/workflows/preview-deploy.yml` (deleted)
 
 ---
+
+## Action Plan - August 14, 2025
+
+### Current State Assessment ✅
+- PWA setup with manifest, service worker, and standalone mode detection
+- iPhone-style interface with interactive app icons and folders  
+- Dynamic dock with horizontal swipe gestures and contextual labels ("Tap to lock/unlock")
+- **Enhanced dock with visual slider indicator and swipe progress feedback** ✅ *Just completed*
+- Custom image icon support (Bradshaw Design with `bd_icon.png`)
+- AppFolder component with modal preview interface
+- Theme management (dark/light mode) with next-themes
+- Responsive design: desktop phone frame, mobile full-screen
+- Draggable phone frame with touch/mouse support
+- External link handling with new window options
+- 2x5 app grid with utilities folder organization
+- Optimized development workflow (build includes linting)
+
+### Priority Development Tasks
+
+#### 1. ~~Enhanced Dock UI~~ ✅ **COMPLETED** 
+- ✅ Added slideable button/indicator to the dock for better user feedback
+- ✅ Visual confirmation of swipe interaction capability with progress bar
+- ✅ Enhanced UX with intuitive touch controls and completion indicators
+
+**Implementation Details:**
+- Added real-time swipe progress tracking with visual feedback
+- Integrated sliding indicator with gradient progress bar
+- Added scale animation on touch interaction
+- Included directional arrow and completion checkmark
+- Maintained accessibility with proper ARIA labels
+
+#### 2. ~~New App Icons~~ ✅ **COMPLETED**
+- ✅ Added BCard app icon and link (https://app.getbcard.io)
+- ✅ Added HIVClinic app icon and link (https://hivclinic.ca/app) 
+- ✅ Added Contact "app" with modal functionality
+
+**Implementation Details:**
+- Created ContactModal component with professional contact information
+- Added BCard with **full-coverage apple-touch-icon (180x180px)** and custom blue border accent
+- Added HIV Clinic with **full-coverage apple-touch-icon (152x152px)** and custom blue border accent  
+- Added Contact with phone emoji (📞) and teal-cyan gradient
+- All external apps open in new windows for proper UX
+- Contact modal includes email, LinkedIn, GitHub, and website links
+- Filled previously empty grid positions for better layout balance
+- **Enhanced AppIcon component with custom border color support for image icons**
+- **Applied subtle colored borders that complement each brand while maintaining full icon coverage**
+
+#### 3. Navigation Enhancement (Medium Priority) 
+- Implement swipe left navigation for additional app pages (icons 9, 10+)
+- Add desktop click target at frame right for pagination
+- Support scalable app grid beyond current 2x5 layout
+
+#### 4. Content Expansion (Low Priority)
+- Utilities folder enhancement (Bradshaw Design already implemented ✅)
+- Additional app integrations as needed
+
+---
+
+## Previous TODO Items (Reference)
+
+- ~~add utility icon for Bradshaw Design~~ ✅ Completed with custom `bd_icon.png`
+- add slideable button to the dock slider for enhanced user UI feedback
+- add app icons and links for BCard, HIVClinic apps
+- add contaact "app"
+- add swipe left page nav for icons 9,10,+ (and desktop click target at frame right)

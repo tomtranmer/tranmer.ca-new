@@ -140,7 +140,7 @@ export function PhoneFrame({
           <AppGrid />
         </div>
         <div className="mt-6 flex-shrink-0">
-          <Dock onSwipeUp={toggleApps} showApps={showApps} />
+          <Dock onSwipeRight={toggleApps} showApps={showApps} />
         </div>
       </div>
     </div>
