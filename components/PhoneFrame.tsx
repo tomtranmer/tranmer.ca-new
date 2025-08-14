@@ -5,7 +5,15 @@ import { useState, useRef, useEffect } from "react";
 import { AppGrid } from "./AppGrid";
 import { Dock } from "./Dock";
 
-// ...existing code...
+// Available wallpapers for randomization
+const WALLPAPERS = [
+  "/wallpaper/2799FABB-777D-4351-A908-8448D6F5218E_4_5005_c.jpeg",
+  "/wallpaper/6A87E0B1-CFB8-4BE2-9464-67571C33D2B1_4_5005_c.jpeg", 
+  "/wallpaper/6E4863DC-3703-4DC7-BDCF-942AABB16E36_4_5005_c.jpeg",
+  "/wallpaper/B7D6EBBD-0945-4707-831E-FE5CFDC5E21D_4_5005_c.jpeg",
+  "/wallpaper/EAA621CF-D889-46A0-95D1-371E907CB66F_4_5005_c.jpeg"
+];
+
 type PhoneFrameProps = {
   usePhotoWallpaper: boolean;
   wallpaper: StaticImageData;
@@ -19,7 +27,15 @@ export function PhoneFrame({
   const [isDragging, setIsDragging] = useState(false);
   const [showApps, setShowApps] = useState(true);
   const [isPWA, setIsPWA] = useState(false);
+  const [randomWallpaper, setRandomWallpaper] = useState<string>("");
+  const [isModalOpen, setIsModalOpen] = useState(false);
   const dragStartRef = useRef({ x: 0, y: 0 });
+
+  // Select random wallpaper on mount
+  useEffect(() => {
+    const randomIndex = Math.floor(Math.random() * WALLPAPERS.length);
+    setRandomWallpaper(WALLPAPERS[randomIndex]);
+  }, []);
 
   // Detect PWA mode
   useEffect(() => {
@@ -103,7 +119,15 @@ export function PhoneFrame({
       ></div>
 
       {/* Phone wallpaper */}
-      {usePhotoWallpaper ? (
+      {usePhotoWallpaper && randomWallpaper ? (
+        <Image
+          src={randomWallpaper}
+          alt="Random photorealistic landscape wallpaper"
+          fill
+          quality={80}
+          className="absolute inset-0 -z-10 object-cover"
+        />
+      ) : usePhotoWallpaper ? (
         <Image
           src={wallpaper}
           alt="Photorealistic landscape wallpaper"
@@ -117,29 +141,24 @@ export function PhoneFrame({
           aria-hidden
           className="absolute inset-0 -z-10 bg-cover bg-center"
           style={{
-            backgroundImage: `url(/landscape.svg)`,
+            backgroundImage: `url(/backgrounds/landscape.svg)`,
           }}
         />
       )}
-      {/* Wallpaper overlay: subtle blur + dim for readability */}
-      <div
-        aria-hidden
-        className="absolute inset-0 pointer-events-none backdrop-blur-2 bg-black/10"
-      />
-      
-      {/* Title - centered in background */}
-      <div className="absolute inset-0 flex items-center justify-center pointer-events-none">
-        <h1 className="text-xl sm:text-3xl font-bold tracking-wide text-white/80 title-drop-shadow text-center px-4">
-          Welcome to tranmer.ca
-        </h1>
-      </div>
       
       {/* Home screen grid */}
-      <div className="relative h-full flex flex-col px-6 pt-16 pb-12 max-[640px]:px-4 max-[640px]:pt-8 max-[640px]:pb-6">
-        <div className={`flex-1 min-h-0 transition-all duration-300 ${showApps ? 'opacity-100 scale-100' : 'opacity-0 scale-95 pointer-events-none'}`}>
-          <AppGrid />
+      <div className={`relative h-full flex flex-col px-6 pt-16 pb-12 max-[640px]:px-4 max-[640px]:pt-8 ${!isPWA ? 'max-[640px]:pb-32' : 'max-[640px]:pb-6'}`}>
+        {/* Title - moved to top */}
+        <div className={`flex-shrink-0 text-center mb-6 max-[640px]:mb-4 transition-all duration-300 ${isModalOpen ? 'opacity-0 scale-95 pointer-events-none' : 'opacity-100 scale-100'}`}>
+          <h1 className="text-xl sm:text-2xl font-bold tracking-wide text-white/90 title-drop-shadow">
+            tranmer.ca SB Solutions
+          </h1>
         </div>
-        <div className="mt-6 flex-shrink-0">
+        
+        <div className={`flex-1 min-h-0 transition-all duration-300 ${showApps ? 'opacity-100 scale-100' : 'opacity-0 scale-95 pointer-events-none'}`}>
+          <AppGrid onModalChange={setIsModalOpen} />
+        </div>
+        <div className={`mt-6 flex-shrink-0 transition-all duration-300 ${isModalOpen ? 'opacity-0 scale-95 pointer-events-none' : 'opacity-100 scale-100'}`}>
           <Dock onSwipeRight={toggleApps} showApps={showApps} />
         </div>
       </div>
