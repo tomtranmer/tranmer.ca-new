@@ -135,11 +135,13 @@ export function PhoneFrame({
       </div>
       
       {/* Home screen grid */}
-      <div className="relative h-full flex flex-col px-6 pt-16 pb-8 max-[640px]:px-4 max-[640px]:pt-8 max-[640px]:pb-4">
-        <div className={`flex-1 transition-all duration-300 ${showApps ? 'opacity-100 scale-100' : 'opacity-0 scale-95 pointer-events-none'}`}>
+      <div className="relative h-full flex flex-col px-6 pt-16 pb-12 max-[640px]:px-4 max-[640px]:pt-8 max-[640px]:pb-6">
+        <div className={`flex-1 min-h-0 transition-all duration-300 ${showApps ? 'opacity-100 scale-100' : 'opacity-0 scale-95 pointer-events-none'}`}>
           <AppGrid />
         </div>
-        <Dock onSwipeUp={toggleApps} />
+        <div className="mt-6 flex-shrink-0">
+          <Dock onSwipeUp={toggleApps} showApps={showApps} />
+        </div>
       </div>
     </div>
   );

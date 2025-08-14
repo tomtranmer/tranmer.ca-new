@@ -64,15 +64,16 @@ export function AppGrid() {
         emoji="✍️"
         gradient="bg-gradient-to-br from-amber-500 to-orange-600"
       />
-      {/* Empty positions 5, 6, 7 */}
-      <div></div>
-      <div></div>
+      {/* Empty positions 5, 7, 8 */}
       <div></div>
       <AppFolder
         label="Utilities"
         gradient="bg-gradient-to-br from-purple-500 to-indigo-600"
         apps={utilityApps}
       />
+      <div></div>
+      <div></div>
+      
     </div>
   );
 }

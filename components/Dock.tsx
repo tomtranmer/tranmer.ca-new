@@ -4,9 +4,10 @@ import { useState } from "react";
 
 type DockProps = {
   onSwipeUp: () => void;
+  showApps: boolean;
 };
 
-export function Dock({ onSwipeUp }: DockProps) {
+export function Dock({ onSwipeUp, showApps }: DockProps) {
   const [touchStart, setTouchStart] = useState<{ x: number; y: number } | null>(null);
 
   const handleTouchStart = (e: React.TouchEvent) => {
@@ -35,15 +36,15 @@ export function Dock({ onSwipeUp }: DockProps) {
 
   return (
     <div 
-      className="mt-6 h-16 rounded-3xl bg-white/60 dark:bg-white/10 backdrop-blur border border-black/5 dark:border-white/10 flex items-center justify-center text-xs text-white dark:text-white/90 drop-shadow-[0_1px_2px_rgba(0,0,0,0.8)] cursor-pointer hover:bg-white/70 dark:hover:bg-white/20 transition-colors select-none"
+      className="h-16 rounded-3xl bg-white/60 dark:bg-white/10 backdrop-blur border border-black/5 dark:border-white/10 flex items-center justify-center text-xs text-white dark:text-white/90 drop-shadow-[0_1px_2px_rgba(0,0,0,0.8)] cursor-pointer hover:bg-white/70 dark:hover:bg-white/20 transition-colors select-none flex-shrink-0"
       onTouchStart={handleTouchStart}
       onTouchEnd={handleTouchEnd}
       onClick={handleClick}
       role="button"
       tabIndex={0}
-      aria-label="Swipe up or tap to open apps"
+      aria-label={showApps ? "Tap to lock apps" : "Tap to unlock apps"}
     >
-      Swipe • Or tap to open apps
+      {showApps ? "Tap to lock" : "Tap to unlock"}
     </div>
   );
 }
