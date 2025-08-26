@@ -73,6 +73,14 @@ export function AppGrid({ onModalChange }: AppGridProps) {
         openInNewWindow={true}
       />
       <AppIcon
+        href="https://canasta.tranmer.ca"
+        label="Canasta"
+        emoji="🃏"
+        gradient="bg-gradient-to-br from-rose-500 to-pink-600"
+        openInNewWindow={true}
+        iconSrc="/icons/pwa/icon-192.svg"
+      />
+      <AppIcon
         href="https://tranmerwebservices.ca"
         label="Blog"
         emoji="✍️"
