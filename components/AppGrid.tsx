@@ -48,8 +48,51 @@ export function AppGrid({ onModalChange }: AppGridProps) {
     }
   ];
 
+  // Demo apps folder
+  const demoApps = [
+    {
+      href: "/demos/counter",
+      label: "Counter",
+      emoji: "🔢",
+      gradient: "bg-gradient-to-br from-green-400 to-teal-500"
+    },
+    {
+      href: "/demos/clock",
+      label: "Clock",
+      emoji: "⏰",
+      gradient: "bg-gradient-to-br from-amber-400 to-orange-500"
+    },
+    {
+      href: "/demos/canvas",
+      label: "Canvas",
+      emoji: "🎨",
+      gradient: "bg-gradient-to-br from-indigo-400 to-purple-500"
+    },
+    {
+      href: "https://opm.tranmer.ca",
+      label: "OfficePools",
+      emoji: "🧩",
+      gradient: "bg-gradient-to-br from-fuchsia-500 to-pink-600",
+      openInNewWindow: true
+    },
+    {
+      href: "https://canasta.tranmer.ca",
+      label: "Canasta",
+      emoji: "🃏",
+      gradient: "bg-gradient-to-br from-rose-500 to-pink-600",
+      openInNewWindow: true,
+      iconSrc: "/icons/pwa/icon-192.svg"
+    },
+    {
+      href: "/demos/drag",
+      label: "Drag",
+      emoji: "🖱️",
+      gradient: "bg-gradient-to-br from-sky-400 to-blue-500"
+    }
+  ];
+
   return (
-    <div className="flex-1 grid grid-cols-2 grid-rows-5 gap-6 place-items-center">
+  <div className="flex-1 grid grid-cols-2 grid-rows-5 lg:grid-cols-3 lg:grid-rows-3 gap-x-6 gap-y-4 place-items-center">
       <AppIcon
         href="https://app.tranmer.ca"
         label="SB Hosting"
@@ -65,13 +108,12 @@ export function AppGrid({ onModalChange }: AppGridProps) {
         gradient="bg-gradient-to-br from-emerald-500 to-teal-600"
         openInNewWindow={true}
       />
-      <AppIcon
-        href="https://opm.tranmer.ca"
-        label="OfficePools"
-        emoji="🧩"
-        gradient="bg-gradient-to-br from-fuchsia-500 to-pink-600"
-        openInNewWindow={true}
+      <AppFolder
+        label="App Demos"
+        gradient="bg-gradient-to-br from-indigo-500 to-violet-600"
+        apps={demoApps}
       />
+  {/* OfficePools and Canasta moved into App Demos folder */}
       <AppIcon
         href="https://tranmerwebservices.ca"
         label="Blog"
@@ -87,11 +129,6 @@ export function AppGrid({ onModalChange }: AppGridProps) {
         iconSrc="/icons/bcard_icon.png"
         iconBorder="border-blue-300/60"
       />
-      <AppFolder
-        label="Utilities"
-        gradient="bg-gradient-to-br from-purple-500 to-indigo-600"
-        apps={utilityApps}
-      />
       <AppIcon
         href="https://hivclinic.ca/app"
         label="HIV Clinic"
@@ -101,12 +138,18 @@ export function AppGrid({ onModalChange }: AppGridProps) {
         iconSrc="/icons/hivclinic_icon.png"
         iconBorder="border-blue-400/60"
       />
+      <AppFolder
+        label="Utilities"
+        gradient="bg-gradient-to-br from-purple-500 to-indigo-600"
+        apps={utilityApps}
+      />
       <ContactModal
         label="Contact"
         emoji="📞"
         gradient="bg-gradient-to-br from-teal-500 to-cyan-600"
         onModalChange={onModalChange}
       />
+      
       
     </div>
   );
