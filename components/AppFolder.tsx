@@ -41,7 +41,7 @@ export function AppFolder({ label, gradient, apps }: AppFolderProps) {
         }}
       >
         <div
-          className={`w-20 h-20 sm:w-24 sm:h-24 rounded-2xl shadow-lg shadow-black/20 dark:shadow-black/40 grid grid-cols-2 grid-rows-2 gap-1 p-2 ${gradient} transition-transform group-active:scale-95 border border-white/20`}
+          className={`w-20 h-20 sm:w-24 sm:h-24 md:w-[77px] md:h-[77px] lg:w-[77px] lg:h-[77px] rounded-2xl shadow-lg shadow-black/20 dark:shadow-black/40 grid grid-cols-2 grid-rows-2 gap-1 p-2 ${gradient} transition-transform group-active:scale-95 border border-white/20`}
         >
           {previewApps.map((app, index) => (
             <div

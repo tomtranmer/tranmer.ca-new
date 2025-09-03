@@ -72,7 +72,7 @@ Best regards`);
         }}
       >
         <div
-          className={`w-20 h-20 sm:w-24 sm:h-24 rounded-2xl shadow-lg shadow-black/20 dark:shadow-black/40 grid place-items-center text-3xl sm:text-4xl text-white ${gradient} transition-transform group-active:scale-95 border border-white/20`}
+          className={`w-20 h-20 sm:w-24 sm:h-24 md:w-[77px] md:h-[77px] lg:w-[77px] lg:h-[77px] rounded-2xl shadow-lg shadow-black/20 dark:shadow-black/40 grid place-items-center text-3xl sm:text-4xl lg:text-3xl text-white ${gradient} transition-transform group-active:scale-95 border border-white/20`}
         >
           <span aria-hidden className="drop-shadow-[0_2px_4px_rgba(0,0,0,0.8)]">{emoji}</span>
         </div>
