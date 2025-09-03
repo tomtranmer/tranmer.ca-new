@@ -94,7 +94,7 @@ export function AppGrid({ onModalChange }: AppGridProps) {
   return (
   <div className="flex-1 grid grid-cols-2 grid-rows-5 lg:grid-cols-3 lg:grid-rows-3 gap-x-6 gap-y-4 place-items-center">
       <AppIcon
-        href="https://app.tranmer.ca"
+        href="https://web.tranmer.ca"
         label="SB Hosting"
         emoji="🖥️"
         iconSrc="/icons/tws_icon.png"
