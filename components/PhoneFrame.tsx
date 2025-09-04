@@ -128,6 +128,43 @@ export function PhoneFrame({
         title="Drag to move phone"
       ></div>
 
+      {/* Top status: Wi‑Fi badge on the left, icons on the right */}
+      <div className="absolute top-3 left-3 z-20">
+        <div className="px-2 py-0.5 rounded-full text-xs font-medium bg-white/20 dark:bg-black/30 text-zinc-700 dark:text-white backdrop-blur-sm">
+          Wi‑Fi
+        </div>
+      </div>
+
+      <div className="absolute top-3 right-3 flex items-center gap-3 z-20 text-zinc-700 dark:text-white">
+        <div className="px-2 py-0.5 rounded-full bg-white/20 dark:bg-black/30 backdrop-blur-sm flex items-center gap-2">
+          {/* Signal strength icon */}
+          <svg className="w-4 h-4" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg" aria-hidden>
+            <rect x="3" y="16" width="2" height="5" rx="1" fill="currentColor" />
+            <rect x="7" y="13" width="2" height="8" rx="1" fill="currentColor" />
+            <rect x="11" y="10" width="2" height="11" rx="1" fill="currentColor" />
+            <rect x="15" y="7" width="2" height="14" rx="1" fill="currentColor" />
+          </svg>
+
+          {/* WiFi icon */}
+          <svg className="w-4 h-4" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg" aria-hidden>
+            <path d="M2 8.5C6 5 11 3 16 3c5 0 10 2 14 5.5" stroke="currentColor" strokeWidth="1.6" strokeLinecap="round" strokeLinejoin="round" />
+            <path d="M6 12.5c3-2 7-3 10-3s7 1 10 3" stroke="currentColor" strokeWidth="1.6" strokeLinecap="round" strokeLinejoin="round" />
+            <path d="M10 16.5c1.8-1.2 4-1.8 6-1.8s4.2.6 6 1.8" stroke="currentColor" strokeWidth="1.6" strokeLinecap="round" strokeLinejoin="round" />
+            <circle cx="18" cy="20" r="1.6" fill="currentColor" />
+          </svg>
+
+          {/* Battery icon + percentage */}
+          <div className="flex items-center gap-1">
+            <svg className="w-5 h-4" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg" aria-hidden>
+              <rect x="2" y="6" width="18" height="12" rx="2" stroke="currentColor" strokeWidth="1.4" fill="none" />
+              <rect x="20" y="9" width="2" height="6" rx="0.5" fill="currentColor" />
+              <rect x="4" y="8" width="12.5" height="8" rx="1" fill="currentColor" />
+            </svg>
+            <span className="text-xs font-medium">88%</span>
+          </div>
+        </div>
+      </div>
+
       {/* Phone wallpaper */}
       {usePhotoWallpaper && randomWallpaper ? (
         <Image
