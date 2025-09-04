@@ -79,12 +79,12 @@ export function AppFolder({ label, gradient, apps }: AppFolderProps) {
       {/* Modal Overlay */}
       {isOpen && (
         <div
-          className="fixed inset-0 bg-black/60 backdrop-blur-sm z-50 flex items-center justify-center p-6"
+          className="fixed inset-0 bg-black/60 backdrop-blur-md z-50 flex items-center justify-center p-6 rounded-3xl overflow-hidden border border-white/20 dark:border-white/10"
           onClick={closeFolder}
         >
           {/* Modal Content */}
           <div
-            className="bg-white/10 dark:bg-black/20 backdrop-blur-md rounded-3xl p-6 max-w-sm w-full border border-white/20 dark:border-white/10"
+            className="bg-white/10 dark:bg-black/20 backdrop-blur-md rounded-3xl p-6 max-w-3xl w-full "
             onClick={(e) => e.stopPropagation()}
           >
             {/* Folder Header */}

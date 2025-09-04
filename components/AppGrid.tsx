@@ -41,6 +41,12 @@ export function AppGrid({ onModalChange }: AppGridProps) {
       gradient: "bg-gradient-to-br from-fuchsia-500 to-pink-600"
     },
     {
+      href: "https://tranmerwebservices.ca",
+      label: "Blog",
+      emoji: "✍️",
+      gradient: "bg-gradient-to-br from-amber-500 to-orange-600"
+    },
+    {
       href: "/settings",
       label: "Settings",
       emoji: "⚙️",
@@ -50,44 +56,42 @@ export function AppGrid({ onModalChange }: AppGridProps) {
 
   // Demo apps folder
   const demoApps = [
-    {
-      href: "/demos/counter",
-      label: "Counter",
-      emoji: "🔢",
-      gradient: "bg-gradient-to-br from-green-400 to-teal-500"
-    },
-    {
-      href: "/demos/clock",
-      label: "Clock",
-      emoji: "⏰",
-      gradient: "bg-gradient-to-br from-amber-400 to-orange-500"
-    },
-    {
-      href: "/demos/canvas",
-      label: "Canvas",
-      emoji: "🎨",
-      gradient: "bg-gradient-to-br from-indigo-400 to-purple-500"
-    },
-    {
-      href: "https://opm.tranmer.ca",
-      label: "OfficePools",
-      emoji: "🧩",
-      gradient: "bg-gradient-to-br from-fuchsia-500 to-pink-600",
-      openInNewWindow: true
-    },
+    
     {
       href: "https://canasta.tranmer.ca",
       label: "Canasta",
       emoji: "🃏",
-      gradient: "bg-gradient-to-br from-rose-500 to-pink-600",
+      gradient: "bg-gradient-to-br from-rose-500 to-red-500",
       openInNewWindow: true,
-      iconSrc: "/icons/pwa/icon-192.svg"
+      // iconSrc: "/icons/pwa/icon-192.svg"
     },
     {
-      href: "/demos/drag",
-      label: "Drag",
-      emoji: "🖱️",
-      gradient: "bg-gradient-to-br from-sky-400 to-blue-500"
+      href: "https://booking.tranmer.ca",
+      label: "Booking",
+      emoji: "📅",
+      gradient: "bg-gradient-to-br from-sky-500 to-indigo-500",
+      openInNewWindow: true
+    },
+    {
+      href: "https://sb-tracker.tranmer.ca",
+      label: "SB_Tracker",
+      emoji: "📈",
+      gradient: "bg-gradient-to-br from-emerald-400 to-teal-600",
+      openInNewWindow: true
+    },
+    {
+      href: "https://opm.tranmer.ca",
+      label: "OfficePools",
+      emoji: "🏆",
+      gradient: "bg-gradient-to-br from-purple-500 to-pink-500",
+      openInNewWindow: true
+    },
+    {
+      href: "https://mybank.tranmer.ca",
+      label: "MyBank",
+      emoji: "🏦",
+      gradient: "bg-gradient-to-br from-indigo-600 to-emerald-500",
+      openInNewWindow: true
     }
   ];
 
@@ -115,10 +119,11 @@ export function AppGrid({ onModalChange }: AppGridProps) {
       />
   {/* OfficePools and Canasta moved into App Demos folder */}
       <AppIcon
-        href="https://tranmerwebservices.ca"
-        label="Blog"
-        emoji="✍️"
-        gradient="bg-gradient-to-br from-amber-500 to-orange-600"
+        href="https://tranmer.ca/app"
+        label="Appstravaganza"
+        emoji="⭐"
+        gradient="bg-gradient-to-br from-yellow-400 via-pink-500 to-purple-600"
+        openInNewWindow={true}
       />
       <AppIcon
         href="https://app.getbcard.io"
@@ -128,6 +133,13 @@ export function AppGrid({ onModalChange }: AppGridProps) {
         openInNewWindow={true}
         iconSrc="/icons/bcard_icon.png"
         iconBorder="border-blue-300/60"
+      />
+      <AppIcon
+        href="https://mybank.tranmer.ca"
+        label="MyBank"
+        emoji="🏦"
+        gradient="bg-gradient-to-br from-yellow-400 to-orange-500"
+        openInNewWindow={true}
       />
       <AppIcon
         href="https://hivclinic.ca/app"

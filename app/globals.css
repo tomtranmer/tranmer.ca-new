@@ -103,3 +103,25 @@ body {
     opacity: 0;
   }
 }
+
+/* Animated rainbow gradient for text (used on lock time) */
+@keyframes rainbow {
+  0% { background-position: 0% 50%; }
+  50% { background-position: 100% 50%; }
+  100% { background-position: 0% 50%; }
+}
+
+.rainbow-text {
+  background: linear-gradient(90deg, #ff3d81, #ffb86b, #ffd54a, #73e6ff, #a78bfa, #ff3d81);
+  background-size: 200% 200%;
+  -webkit-background-clip: text;
+  background-clip: text;
+  color: transparent;
+  animation: rainbow 6s linear infinite;
+}
+
+/* Fancy display font for lock screen time */
+.fancy-display {
+  font-family: Georgia, 'Times New Roman', serif;
+  text-shadow: 0 6px 18px rgba(0,0,0,0.45);
+}

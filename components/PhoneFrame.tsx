@@ -25,10 +25,12 @@ export function PhoneFrame({
 }: PhoneFrameProps) {
   const [position, setPosition] = useState({ x: 0, y: 0 });
   const [isDragging, setIsDragging] = useState(false);
-  const [showApps, setShowApps] = useState(true);
+  const [showApps] = useState(true);
   const [isPWA, setIsPWA] = useState(false);
   const [randomWallpaper, setRandomWallpaper] = useState<string>("");
   const [isModalOpen, setIsModalOpen] = useState(false);
+  const [isLocked, setIsLocked] = useState(false);
+  const [now, setNow] = useState<Date>(new Date());
   const dragStartRef = useRef({ x: 0, y: 0 });
 
   // Select random wallpaper on mount
@@ -36,6 +38,27 @@ export function PhoneFrame({
     const randomIndex = Math.floor(Math.random() * WALLPAPERS.length);
     setRandomWallpaper(WALLPAPERS[randomIndex]);
   }, []);
+
+  // Cycle wallpaper when theme toggles (custom event from ThemeToggle)
+  useEffect(() => {
+    const handler = () => {
+      setRandomWallpaper((current) => {
+        const currentIndex = WALLPAPERS.indexOf(current || "");
+        const nextIndex = (currentIndex + 1) % WALLPAPERS.length;
+        return WALLPAPERS[nextIndex];
+      });
+    };
+
+    window.addEventListener('cycleWallpaper', handler);
+    return () => window.removeEventListener('cycleWallpaper', handler);
+  }, []);
+
+  // Update clock when locked
+  useEffect(() => {
+    if (!isLocked) return;
+    const id = setInterval(() => setNow(new Date()), 1000);
+    return () => clearInterval(id);
+  }, [isLocked]);
 
   // Detect PWA mode
   useEffect(() => {
@@ -87,8 +110,9 @@ export function PhoneFrame({
     handleDragMove(touch.clientX, touch.clientY);
   };
 
-  const toggleApps = () => {
-    setShowApps(!showApps);
+  // Toggle lock state (used by Dock interactions)
+  const toggleLock = () => {
+    setIsLocked((s) => !s);
   };
 
   return (
@@ -118,6 +142,43 @@ export function PhoneFrame({
         title="Drag to move phone"
       ></div>
 
+      {/* Top status: Wi‑Fi badge on the left, icons on the right */}
+      <div className="absolute top-3 left-3 z-20">
+        <div className="px-2 py-0.5 rounded-full text-xs font-medium bg-white/20 dark:bg-black/30 text-zinc-700 dark:text-white backdrop-blur-sm">
+          Wi‑Fi
+        </div>
+      </div>
+
+      <div className="absolute top-3 right-3 flex items-center gap-3 z-20 text-zinc-700 dark:text-white">
+        <div className="px-2 py-0.5 rounded-full bg-white/20 dark:bg-black/30 backdrop-blur-sm flex items-center gap-2">
+          {/* Signal strength icon */}
+          <svg className="w-4 h-4" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg" aria-hidden>
+            <rect x="3" y="16" width="2" height="5" rx="1" fill="currentColor" />
+            <rect x="7" y="13" width="2" height="8" rx="1" fill="currentColor" />
+            <rect x="11" y="10" width="2" height="11" rx="1" fill="currentColor" />
+            <rect x="15" y="7" width="2" height="14" rx="1" fill="currentColor" />
+          </svg>
+
+          {/* WiFi icon */}
+          <svg className="w-4 h-4" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg" aria-hidden>
+            <path d="M2 8.5C6 5 11 3 16 3c5 0 10 2 14 5.5" stroke="currentColor" strokeWidth="1.6" strokeLinecap="round" strokeLinejoin="round" />
+            <path d="M6 12.5c3-2 7-3 10-3s7 1 10 3" stroke="currentColor" strokeWidth="1.6" strokeLinecap="round" strokeLinejoin="round" />
+            <path d="M10 16.5c1.8-1.2 4-1.8 6-1.8s4.2.6 6 1.8" stroke="currentColor" strokeWidth="1.6" strokeLinecap="round" strokeLinejoin="round" />
+            <circle cx="18" cy="20" r="1.6" fill="currentColor" />
+          </svg>
+
+          {/* Battery icon + percentage */}
+          <div className="flex items-center gap-1">
+            <svg className="w-5 h-4" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg" aria-hidden>
+              <rect x="2" y="6" width="18" height="12" rx="2" stroke="currentColor" strokeWidth="1.4" fill="none" />
+              <rect x="20" y="9" width="2" height="6" rx="0.5" fill="currentColor" />
+              <rect x="4" y="8" width="12.5" height="8" rx="1" fill="currentColor" />
+            </svg>
+            <span className="text-xs font-medium">88%</span>
+          </div>
+        </div>
+      </div>
+
       {/* Phone wallpaper */}
       {usePhotoWallpaper && randomWallpaper ? (
         <Image
@@ -125,6 +186,7 @@ export function PhoneFrame({
           alt="Random photorealistic landscape wallpaper"
           fill
           quality={80}
+          sizes="(max-width: 640px) 100vw, 384px"
           className="absolute inset-0 -z-10 object-cover"
         />
       ) : usePhotoWallpaper ? (
@@ -134,6 +196,7 @@ export function PhoneFrame({
           placeholder="blur"
           quality={80}
           fill
+          sizes="(max-width: 640px) 100vw, 384px"
           className="absolute inset-0 -z-10 object-cover"
         />
       ) : (
@@ -150,16 +213,40 @@ export function PhoneFrame({
       <div className={`relative h-full flex flex-col px-6 pt-16 pb-12 max-[640px]:px-4 max-[640px]:pt-8 ${!isPWA ? 'max-[640px]:pb-32' : 'max-[640px]:pb-6'}`}>
         {/* Title - moved to top */}
         <div className={`flex-shrink-0 text-center mb-6 max-[640px]:mb-4 transition-all duration-300 ${isModalOpen ? 'opacity-0 scale-95 pointer-events-none' : 'opacity-100 scale-100'}`}>
-          <h1 className="text-xl sm:text-2xl font-bold tracking-wide text-white/90 title-drop-shadow">
-            tranmer.ca SB Solutions
-          </h1>
+          <div onDoubleClick={() => setIsLocked((s) => !s)} title="Double-click to toggle lock">
+            <div className="mx-auto w-48 sm:w-56 inline-flex items-center justify-center rounded-md px-3 py-1 bg-white/20 dark:bg-black/30 backdrop-blur-sm shadow-sm">
+              <Image
+                src="/tws-logo.png"
+                alt="tranmer.ca WEB & TECH Small Business Solutions"
+                width={240}
+                height={48}
+                className="w-full h-auto object-contain"
+                priority
+              />
+            </div>
+          </div>
+
+          {/* When locked, show date/time below the logo in a fancier style */}
+          {isLocked && (
+            <div className="mt-3">
+              <div className="text-sm text-white/70 uppercase tracking-wider">
+                {now.toLocaleDateString(undefined, { weekday: 'long', month: 'long', day: 'numeric' })}
+              </div>
+              <div className="w-full px-5 text-center text-4xl sm:text-5xl font-black tracking-tighter leading-tight rainbow-text fancy-display truncate">
+                {now.toLocaleTimeString(undefined, { hour: '2-digit', minute: '2-digit' })}
+              </div>
+            </div>
+          )}
         </div>
-        
         <div className={`flex-1 min-h-0 transition-all duration-300 ${showApps ? 'opacity-100 scale-100' : 'opacity-0 scale-95 pointer-events-none'}`}>
-          <AppGrid onModalChange={setIsModalOpen} />
+          {isLocked ? (
+            <div className="h-full" />
+          ) : (
+            <AppGrid onModalChange={setIsModalOpen} />
+          )}
         </div>
         <div className={`mt-6 flex-shrink-0 transition-all duration-300 ${isModalOpen ? 'opacity-0 scale-95 pointer-events-none' : 'opacity-100 scale-100'}`}>
-          <Dock onSwipeRight={toggleApps} showApps={showApps} />
+          <Dock onSwipeRight={toggleLock} showApps={!isLocked} />
         </div>
       </div>
     </div>
