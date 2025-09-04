@@ -25,10 +25,12 @@ export function PhoneFrame({
 }: PhoneFrameProps) {
   const [position, setPosition] = useState({ x: 0, y: 0 });
   const [isDragging, setIsDragging] = useState(false);
-  const [showApps, setShowApps] = useState(true);
+  const [showApps] = useState(true);
   const [isPWA, setIsPWA] = useState(false);
   const [randomWallpaper, setRandomWallpaper] = useState<string>("");
   const [isModalOpen, setIsModalOpen] = useState(false);
+  const [isLocked, setIsLocked] = useState(false);
+  const [now, setNow] = useState<Date>(new Date());
   const dragStartRef = useRef({ x: 0, y: 0 });
 
   // Select random wallpaper on mount
@@ -36,6 +38,13 @@ export function PhoneFrame({
     const randomIndex = Math.floor(Math.random() * WALLPAPERS.length);
     setRandomWallpaper(WALLPAPERS[randomIndex]);
   }, []);
+
+  // Update clock when locked
+  useEffect(() => {
+    if (!isLocked) return;
+    const id = setInterval(() => setNow(new Date()), 1000);
+    return () => clearInterval(id);
+  }, [isLocked]);
 
   // Detect PWA mode
   useEffect(() => {
@@ -87,8 +96,9 @@ export function PhoneFrame({
     handleDragMove(touch.clientX, touch.clientY);
   };
 
-  const toggleApps = () => {
-    setShowApps(!showApps);
+  // Toggle lock state (used by Dock interactions)
+  const toggleLock = () => {
+    setIsLocked((s) => !s);
   };
 
   return (
@@ -125,6 +135,7 @@ export function PhoneFrame({
           alt="Random photorealistic landscape wallpaper"
           fill
           quality={80}
+          sizes="(max-width: 640px) 100vw, 384px"
           className="absolute inset-0 -z-10 object-cover"
         />
       ) : usePhotoWallpaper ? (
@@ -134,6 +145,7 @@ export function PhoneFrame({
           placeholder="blur"
           quality={80}
           fill
+          sizes="(max-width: 640px) 100vw, 384px"
           className="absolute inset-0 -z-10 object-cover"
         />
       ) : (
@@ -150,16 +162,37 @@ export function PhoneFrame({
       <div className={`relative h-full flex flex-col px-6 pt-16 pb-12 max-[640px]:px-4 max-[640px]:pt-8 ${!isPWA ? 'max-[640px]:pb-32' : 'max-[640px]:pb-6'}`}>
         {/* Title - moved to top */}
         <div className={`flex-shrink-0 text-center mb-6 max-[640px]:mb-4 transition-all duration-300 ${isModalOpen ? 'opacity-0 scale-95 pointer-events-none' : 'opacity-100 scale-100'}`}>
-          <h1 className="text-xl sm:text-2xl font-bold tracking-wide text-white/90 title-drop-shadow">
-            tranmer.ca SB Solutions
-          </h1>
+          <div onDoubleClick={() => setIsLocked((s) => !s)} title="Double-click to toggle lock">
+            <div className="mx-auto w-48 sm:w-56 inline-flex items-center justify-center rounded-md px-3 py-1 bg-white/20 dark:bg-black/30 backdrop-blur-sm shadow-sm">
+              <Image
+                src="/tws-logo.png"
+                alt="tranmer.ca WEB & TECH Small Business Solutions"
+                width={240}
+                height={48}
+                className="w-full h-auto object-contain"
+                priority
+              />
+            </div>
+          </div>
         </div>
         
         <div className={`flex-1 min-h-0 transition-all duration-300 ${showApps ? 'opacity-100 scale-100' : 'opacity-0 scale-95 pointer-events-none'}`}>
-          <AppGrid onModalChange={setIsModalOpen} />
+          {isLocked ? (
+            <div className="h-full flex flex-col items-center justify-center gap-4">
+              <div className="text-sm text-white/70 uppercase tracking-wider">
+                {now.toLocaleDateString(undefined, { weekday: 'long', month: 'long', day: 'numeric' })}
+              </div>
+              <div className="text-6xl sm:text-7xl font-extrabold tracking-tight rainbow-text">
+                {now.toLocaleTimeString(undefined, { hour: '2-digit', minute: '2-digit' })}
+              </div>
+              <div className="text-sm text-white/60">Double-click the logo to unlock</div>
+            </div>
+          ) : (
+            <AppGrid onModalChange={setIsModalOpen} />
+          )}
         </div>
         <div className={`mt-6 flex-shrink-0 transition-all duration-300 ${isModalOpen ? 'opacity-0 scale-95 pointer-events-none' : 'opacity-100 scale-100'}`}>
-          <Dock onSwipeRight={toggleApps} showApps={showApps} />
+          <Dock onSwipeRight={toggleLock} showApps={showApps} />
         </div>
       </div>
     </div>
