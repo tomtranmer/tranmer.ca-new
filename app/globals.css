@@ -119,3 +119,9 @@ body {
   color: transparent;
   animation: rainbow 6s linear infinite;
 }
+
+/* Fancy display font for lock screen time */
+.fancy-display {
+  font-family: Georgia, 'Times New Roman', serif;
+  text-shadow: 0 6px 18px rgba(0,0,0,0.45);
+}

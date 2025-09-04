@@ -22,6 +22,12 @@ export function ThemeToggle() {
 
   const toggleTheme = () => {
     setTheme(theme === "dark" ? "light" : "dark");
+    // Also notify other UI to cycle wallpapers when theme changes
+    try {
+      window.dispatchEvent(new CustomEvent('cycleWallpaper'));
+    } catch (e) {
+      // ignore in non-browser environments
+    }
   };
 
   return (

@@ -39,6 +39,20 @@ export function PhoneFrame({
     setRandomWallpaper(WALLPAPERS[randomIndex]);
   }, []);
 
+  // Cycle wallpaper when theme toggles (custom event from ThemeToggle)
+  useEffect(() => {
+    const handler = () => {
+      setRandomWallpaper((current) => {
+        const currentIndex = WALLPAPERS.indexOf(current || "");
+        const nextIndex = (currentIndex + 1) % WALLPAPERS.length;
+        return WALLPAPERS[nextIndex];
+      });
+    };
+
+    window.addEventListener('cycleWallpaper', handler);
+    return () => window.removeEventListener('cycleWallpaper', handler);
+  }, []);
+
   // Update clock when locked
   useEffect(() => {
     if (!isLocked) return;
@@ -211,25 +225,28 @@ export function PhoneFrame({
               />
             </div>
           </div>
-        </div>
-        
-        <div className={`flex-1 min-h-0 transition-all duration-300 ${showApps ? 'opacity-100 scale-100' : 'opacity-0 scale-95 pointer-events-none'}`}>
-          {isLocked ? (
-            <div className="h-full flex flex-col items-center justify-center gap-4">
+
+          {/* When locked, show date/time below the logo in a fancier style */}
+          {isLocked && (
+            <div className="mt-3">
               <div className="text-sm text-white/70 uppercase tracking-wider">
                 {now.toLocaleDateString(undefined, { weekday: 'long', month: 'long', day: 'numeric' })}
               </div>
-              <div className="text-6xl sm:text-7xl font-extrabold tracking-tight rainbow-text">
+              <div className="w-full px-5 text-center text-4xl sm:text-5xl font-black tracking-tighter leading-tight rainbow-text fancy-display truncate">
                 {now.toLocaleTimeString(undefined, { hour: '2-digit', minute: '2-digit' })}
               </div>
-              <div className="text-sm text-white/60">Double-click the logo to unlock</div>
             </div>
+          )}
+        </div>
+        <div className={`flex-1 min-h-0 transition-all duration-300 ${showApps ? 'opacity-100 scale-100' : 'opacity-0 scale-95 pointer-events-none'}`}>
+          {isLocked ? (
+            <div className="h-full" />
           ) : (
             <AppGrid onModalChange={setIsModalOpen} />
           )}
         </div>
         <div className={`mt-6 flex-shrink-0 transition-all duration-300 ${isModalOpen ? 'opacity-0 scale-95 pointer-events-none' : 'opacity-100 scale-100'}`}>
-          <Dock onSwipeRight={toggleLock} showApps={showApps} />
+          <Dock onSwipeRight={toggleLock} showApps={!isLocked} />
         </div>
       </div>
     </div>
