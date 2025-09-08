@@ -65,6 +65,13 @@ export default function AppstravaganzaPage() {
               <span className="text-4xl">🏦</span>
               <span className="text-sm font-medium">MyBank</span>
             </a>
+            <div
+              className="flex flex-col items-center gap-2 p-4 rounded-xl shadow-lg border-2 border-dashed border-white/20 bg-white/5 dark:bg-black/5 hover:scale-105 transition-transform"
+              aria-hidden
+            >
+              <span className="text-4xl">✨</span>
+              <span className="text-sm font-medium">Your App Here</span>
+            </div>
             <a
               href="https://booking.tranmer.ca"
               target="_blank"
@@ -74,6 +81,7 @@ export default function AppstravaganzaPage() {
               <span className="text-4xl">📅</span>
               <span className="text-sm font-medium">Booking</span>
             </a>
+            
           </div>
         </section>
 
