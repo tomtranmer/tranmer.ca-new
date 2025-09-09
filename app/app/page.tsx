@@ -93,10 +93,52 @@ export default function AppstravaganzaPage() {
           </Link>
         </section>
 
-        <section>
-          <h2 className="text-2xl font-semibold">FAQ</h2>
-          <p className="mt-4">Have questions? Contact us at <a href="mailto:help@tranmer.ca" className="text-blue-400 hover:underline">help@tranmer.ca</a>.</p>
+        <section className="mb-12">
+          <h2 className="text-2xl font-semibold mt-4">FAQ</h2>
+
+          <div className="mt-4 space-y-3">
+            <details className="group bg-white/5 dark:bg-black/5 p-4 rounded-lg" aria-expanded="false">
+              <summary className="cursor-pointer font-medium list-none">What does the 1-week sprint include?</summary>
+              <div className="mt-2 text-sm text-zinc-300">
+                The sprint includes 20 hours of engineering time, three one-hour meetings (planning, progress, polish), basic hosting for 1 week plus 1 month, and delivery of production-ready code via GitHub.
+              </div>
+            </details>
+
+            <details className="group bg-white/5 dark:bg-black/5 p-4 rounded-lg">
+              <summary className="cursor-pointer font-medium list-none">Do you provide hosting and deployment?</summary>
+              <div className="mt-2 text-sm text-zinc-300">
+                Yes — optional public deployment is available. The package includes short-term hosting; we can also set up ongoing hosting or hand the project over to your preferred provider.
+              </div>
+            </details>
+
+            <details className="group bg-white/5 dark:bg-black/5 p-4 rounded-lg">
+              <summary className="cursor-pointer font-medium list-none">Does the project build need to be an app?</summary>
+              <div className="mt-2 text-sm text-zinc-300">
+                Not necessarily — the project build should be a web based, which could be a promotional site, a contact capture form, or another specific app for your business. If you would prefer to use the dev time for improvements to existing properties or for database engineering, this can be discussed.
+              </div>
+            </details>
+
+            <details className="group bg-white/5 dark:bg-black/5 p-4 rounded-lg">
+              <summary className="cursor-pointer font-medium list-none">How does payment work?</summary>
+              <div className="mt-2 text-sm text-zinc-300">
+                For existing TWS clients we ask for a $500 deposit, with the remainder due after delivery. You can use the <a href="https://booking.tranmer.ca">NEW Booking App</a> to pay the deposit and schedule your sprint. We also accept bank transfers and invoiced payments — email help@tranmer.ca for invoice details.
+              </div>
+            </details>
+
+            <details className="group bg-white/5 dark:bg-black/5 p-4 rounded-lg">
+              <summary className="cursor-pointer font-medium list-none">What if I need changes after delivery?</summary>
+              <div className="mt-2 text-sm text-zinc-300">
+                Small follow-up tweaks are included in the initial hosting window; larger feature work can be scoped separately. We offer ongoing development contracts or per-hour support as needed.
+              </div>
+            </details>
+          </div>
+
         </section>
+
+        <h2 className="text-2xl font-semibold mt-4">More Questions?</h2>
+        <h3 className="mt-4">Contact us at <a href="mailto:help@tranmer.ca" className="text-blue-400 hover:underline">help@tranmer.ca</a>.</h3>
+
+
       </main>
 
       <footer className="py-12 text-center">
