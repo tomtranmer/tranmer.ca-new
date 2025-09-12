@@ -20,6 +20,8 @@ export default function AppstravaganzaPage() {
           </ul>
         </section>
 
+        <p>Maybe you need a customer booking app, an internal tool for managing your team finances, a revenue collection portal to accept stablecoins alongside credit cards for invoice payment, or something else, specific to your small business and needs that only you can imagine.</p>
+
         <section className="mb-12">
           <h2 className="text-2xl font-semibold">Pricing</h2>
           <p className="mt-4">Regular Price: <span className="font-bold">$2500</span></p>
