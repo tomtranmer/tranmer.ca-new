@@ -20,6 +20,8 @@ export default function AppstravaganzaPage() {
           </ul>
         </section>
 
+        <p>Maybe you need a customer booking app, an internal tool for managing your team finances, a revenue collection portal to accept stablecoins alongside credit cards for invoice payment, or something else, specific to your small business and needs that only you can imagine.</p>
+
         <section className="mb-12">
           <h2 className="text-2xl font-semibold">Pricing</h2>
           <p className="mt-4">Regular Price: <span className="font-bold">$2500</span></p>
@@ -90,6 +92,14 @@ export default function AppstravaganzaPage() {
           <p className="mt-4">Ready to get started? Book your week now!</p>
           <Link href="https://booking.tranmer.ca/calendar">
             <span className="inline-block mt-4 px-6 py-3 bg-blue-500 text-white font-medium rounded-lg hover:bg-blue-600">Book Now</span>
+          </Link>
+        </section>
+
+        <section className="mb-12 bg-gradient-to-r from-blue-600/20 to-purple-600/20 p-6 rounded-lg border border-blue-500/30">
+          <h2 className="text-2xl font-semibold mb-4">Already Booked Your Slot?</h2>
+          <p className="mb-4">Help us pre-seed your build week by completing our app onboarding survey.</p>
+          <Link href="/poll">
+            <span className="inline-block px-6 py-3 bg-green-500 text-white font-medium rounded-lg hover:bg-green-600 transition-colors">Complete Onboarding Survey</span>
           </Link>
         </section>
 
