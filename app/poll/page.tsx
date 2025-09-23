@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useEffect } from "react";
+import { useState, useEffect, Suspense } from "react";
 import { useSearchParams } from "next/navigation";
 
 type SurveyResponses = {
@@ -12,7 +12,7 @@ type SurveyResponses = {
   email: string;
 };
 
-export default function PollPage() {
+function PollForm() {
   const searchParams = useSearchParams();
   const [responses, setResponses] = useState<SurveyResponses>({
     satisfaction: "",
@@ -213,5 +213,13 @@ export default function PollPage() {
         <p>&copy; 2025 Tranmer Web Services. All rights reserved.</p>
       </footer>
     </div>
+  );
+}
+
+export default function PollPage() {
+  return (
+    <Suspense fallback={<div className="min-h-screen bg-gradient-to-br from-gray-900 to-black text-white flex items-center justify-center">Loading...</div>}>
+      <PollForm />
+    </Suspense>
   );
 }
