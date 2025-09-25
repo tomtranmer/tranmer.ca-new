@@ -91,6 +91,11 @@ function PollForm() {
       <header className="py-12 text-center">
         <h1 className="text-4xl font-bold">Appstravaganza Onboarding</h1>
         <p className="mt-4 text-lg">Help us pre-seed our build week.</p>
+        <div className="mt-6 p-4 bg-gradient-to-r from-green-600/20 to-emerald-600/20 border border-green-500/30 rounded-lg max-w-2xl mx-auto">
+          <p className="text-green-200">
+            <strong>Not yet booked?</strong> Fill out the survey to be entered into a raffle to win a <strong>FREE BUILD</strong> on an open week in 2025!
+          </p>
+        </div>
       </header>
 
       <main className="max-w-2xl mx-auto px-6">
