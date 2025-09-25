@@ -25,7 +25,7 @@ export default function AppstravaganzaPage() {
         <section className="mb-12">
           <h2 className="text-2xl font-semibold">Pricing</h2>
           <p className="mt-4">Regular Price: <span className="font-bold">$2500</span></p>
-          <p>Special for Existing TWS Clients: <span className="font-bold">$500 deposit + $500 post-delivery</span></p>
+          <p>Special for Existing TWS Clients: <span className="font-bold">$500deposit + $500 post-delivery</span></p>
         </section>
 
         <section className="mb-12">
@@ -152,7 +152,7 @@ export default function AppstravaganzaPage() {
       </main>
 
       <footer className="py-12 text-center">
-        <p>&copy; 2025 Tranmer Web Services. All rights reserved.</p>
+        <p>&copy; 2025 Tranmer Web Services. All rights reserved. All pricing in USD to match expenses.</p>
       </footer>
     </div>
   );
