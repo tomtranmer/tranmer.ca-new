@@ -240,7 +240,22 @@ export function PhoneFrame({
         </div>
         <div className={`flex-1 min-h-0 transition-all duration-300 ${showApps ? 'opacity-100 scale-100' : 'opacity-0 scale-95 pointer-events-none'}`}>
           {isLocked ? (
-            <div className="h-full" />
+            <div className="h-full flex flex-col justify-end">
+              {/* Attribution link at bottom when locked */}
+              <div className="pb-6 text-center">
+                <a
+                  href="https://grok.com"
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="inline-flex items-center gap-2 px-3 py-2 bg-white/10 dark:bg-black/20 backdrop-blur-sm rounded-full text-xs text-white/70 hover:text-white/90 hover:bg-white/20 dark:hover:bg-black/30 transition-all duration-200"
+                >
+                  <svg className="w-3 h-3" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+                    <path d="M12 2L2 22h20L12 2z" fill="currentColor"/>
+                  </svg>
+                  App icons by Grok
+                </a>
+              </div>
+            </div>
           ) : (
             <AppGrid onModalChange={setIsModalOpen} />
           )}

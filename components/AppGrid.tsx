@@ -109,6 +109,7 @@ export function AppGrid({ onModalChange }: AppGridProps) {
         href="https://sb-tracker.tranmer.ca"
         label="SB Finance"
         emoji="💸"
+        iconSrc="/icons/sb_finance_icon.png"
         gradient="bg-gradient-to-br from-emerald-500 to-teal-600"
         openInNewWindow={true}
       />
@@ -122,6 +123,7 @@ export function AppGrid({ onModalChange }: AppGridProps) {
         href="https://tranmer.ca/app"
         label="Appstravaganza"
         emoji="⭐"
+        iconSrc="/icons/app_icon.png"
         gradient="bg-gradient-to-br from-yellow-400 via-pink-500 to-purple-600"
         openInNewWindow={true}
       />
@@ -138,8 +140,18 @@ export function AppGrid({ onModalChange }: AppGridProps) {
         href="https://mybank.tranmer.ca"
         label="MyBank"
         emoji="🏦"
+        iconSrc="/icons/mybank_icon.png"
         gradient="bg-gradient-to-br from-yellow-400 to-orange-500"
         openInNewWindow={true}
+      />
+      <AppIcon
+        href="https://mycar.tranmer.ca"
+        label="MyCarC"
+        emoji="🚗"
+        gradient="bg-gradient-to-br from-blue-400 to-indigo-500"
+        openInNewWindow={true}
+        iconSrc="/icons/mycar-icon-real.png"
+        iconBorder="border-blue-300/60"
       />
       <AppIcon
         href="https://hivclinic.ca/app"
