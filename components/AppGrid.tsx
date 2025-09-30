@@ -140,7 +140,7 @@ export function AppGrid({ onModalChange }: AppGridProps) {
         href="https://mybank.tranmer.ca"
         label="MyBank"
         emoji="🏦"
-        iconSrc="/icons/mybank_icon.png"
+        iconSrc="/icons/myBank_icon.png"
         gradient="bg-gradient-to-br from-yellow-400 to-orange-500"
         openInNewWindow={true}
       />
