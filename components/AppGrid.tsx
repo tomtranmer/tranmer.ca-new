@@ -123,6 +123,7 @@ export function AppGrid({ onModalChange }: AppGridProps) {
         href="https://tranmer.ca/app"
         label="Appstravaganza"
         emoji="⭐"
+        iconSrc="/icons/app_icon.png"
         gradient="bg-gradient-to-br from-yellow-400 via-pink-500 to-purple-600"
         openInNewWindow={true}
       />
@@ -139,12 +140,13 @@ export function AppGrid({ onModalChange }: AppGridProps) {
         href="https://mybank.tranmer.ca"
         label="MyBank"
         emoji="🏦"
+        iconSrc="/icons/mybank_icon.png"
         gradient="bg-gradient-to-br from-yellow-400 to-orange-500"
         openInNewWindow={true}
       />
       <AppIcon
         href="https://mycar.tranmer.ca"
-        label="MyCar"
+        label="MyCarC"
         emoji="🚗"
         gradient="bg-gradient-to-br from-blue-400 to-indigo-500"
         openInNewWindow={true}
