@@ -101,7 +101,7 @@ export function AppGrid({ onModalChange }: AppGridProps) {
         href="https://web.tranmer.ca"
         label="SB Hosting"
         emoji="🖥️"
-        iconSrc="/icons/tws_icon.png"
+        iconSrc="/icons/tws_app_logo.png"
         iconBorder="border-indigo-300/60"
         gradient="bg-gradient-to-br from-blue-500 to-indigo-600"
       />
