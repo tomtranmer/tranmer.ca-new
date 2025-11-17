@@ -1,16 +1,26 @@
+"use client";
 import Image from "next/image";
+import { useState, useEffect } from "react";
 import landscape from "@/public/landscape.jpg";
+
 import { PhoneFrame } from "@/components/PhoneFrame";
 import { ThemeToggle } from "@/components/ThemeToggle";
+import SplashScreen from "@/components/SplashScreen";
 
 export default function Home() {
-  const usePhotoWallpaper =
-    process.env.NEXT_PUBLIC_PHONE_WALLPAPER === "photo";
-  const usePhotoBackground =
-    process.env.NEXT_PUBLIC_SITE_WALLPAPER === "photo";
+  const usePhotoWallpaper = process.env.NEXT_PUBLIC_PHONE_WALLPAPER === "photo";
+  const usePhotoBackground = process.env.NEXT_PUBLIC_SITE_WALLPAPER === "photo";
+  const [showSplash, setShowSplash] = useState(true);
+
+  useEffect(() => {
+    if (!showSplash) return;
+    const t = setTimeout(() => setShowSplash(false), 3000);
+    return () => clearTimeout(t);
+  }, [showSplash]);
 
   return (
     <div className="relative min-h-screen grid place-items-center p-6 sm:p-10 overflow-hidden max-[640px]:p-0 max-[640px]:min-h-dvh">
+      {showSplash && <SplashScreen />}
       {/* Background image (covers full layout) */}
       {usePhotoBackground ? (
         <Image
@@ -34,7 +44,9 @@ export default function Home() {
       <div aria-hidden className="absolute inset-0 -z-10 bg-black/20" />
 
       <ThemeToggle />
-      <PhoneFrame usePhotoWallpaper={usePhotoWallpaper} wallpaper={landscape} />
+      {!showSplash && (
+        <PhoneFrame usePhotoWallpaper={usePhotoWallpaper} wallpaper={landscape} />
+      )}
     </div>
   );
 }
