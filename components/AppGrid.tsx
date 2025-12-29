@@ -47,6 +47,14 @@ export function AppGrid({ onModalChange }: AppGridProps) {
       gradient: "bg-gradient-to-br from-amber-500 to-orange-600"
     },
     {
+      href: "https://tranmer.ca/app",
+      label: "Appstravaganza",
+      emoji: "⭐",
+      iconSrc: "/icons/app_icon.png",
+      gradient: "bg-gradient-to-br from-yellow-400 via-pink-500 to-purple-600",
+      openInNewWindow: true
+    },
+    {
       href: "/settings",
       label: "Settings",
       emoji: "⚙️",
@@ -92,6 +100,15 @@ export function AppGrid({ onModalChange }: AppGridProps) {
       emoji: "🏦",
       gradient: "bg-gradient-to-br from-indigo-600 to-emerald-500",
       openInNewWindow: true
+    },
+    {
+      href: "https://mycar.tranmer.ca",
+      label: "MyCarC",
+      emoji: "🚗",
+      gradient: "bg-gradient-to-br from-blue-400 to-indigo-500",
+      openInNewWindow: true,
+      iconSrc: "/icons/mycar-icon-real.png",
+      iconBorder: "border-blue-300/60"
     }
   ];
 
@@ -113,19 +130,16 @@ export function AppGrid({ onModalChange }: AppGridProps) {
         gradient="bg-gradient-to-br from-emerald-500 to-teal-600"
         openInNewWindow={true}
       />
+      <AppIcon
+        href="/lock-in"
+        label="Lock-In"
+        emoji="🔒"
+        gradient="bg-gradient-to-br from-red-500 to-orange-600"
+      />
       <AppFolder
         label="App Demos"
         gradient="bg-gradient-to-br from-indigo-500 to-violet-600"
         apps={demoApps}
-      />
-  {/* OfficePools and Canasta moved into App Demos folder */}
-      <AppIcon
-        href="https://tranmer.ca/app"
-        label="Appstravaganza"
-        emoji="⭐"
-        iconSrc="/icons/app_icon.png"
-        gradient="bg-gradient-to-br from-yellow-400 via-pink-500 to-purple-600"
-        openInNewWindow={true}
       />
       <AppIcon
         href="https://app.getbcard.io"
@@ -134,23 +148,6 @@ export function AppGrid({ onModalChange }: AppGridProps) {
         gradient="bg-gradient-to-br from-cyan-500 to-blue-600"
         openInNewWindow={true}
         iconSrc="/icons/bcard_icon.png"
-        iconBorder="border-blue-300/60"
-      />
-      <AppIcon
-        href="https://mybank.tranmer.ca"
-        label="MyBank"
-        emoji="🏦"
-        iconSrc="/icons/myBank_icon.png"
-        gradient="bg-gradient-to-br from-yellow-400 to-orange-500"
-        openInNewWindow={true}
-      />
-      <AppIcon
-        href="https://mycar.tranmer.ca"
-        label="MyCarC"
-        emoji="🚗"
-        gradient="bg-gradient-to-br from-blue-400 to-indigo-500"
-        openInNewWindow={true}
-        iconSrc="/icons/mycar-icon-real.png"
         iconBorder="border-blue-300/60"
       />
       <AppIcon

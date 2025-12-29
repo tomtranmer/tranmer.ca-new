@@ -112,7 +112,7 @@ export default function AppstravaganzaPage() {
           <h2 className="text-2xl font-semibold mt-4">FAQ</h2>
 
           <div className="mt-4 space-y-3">
-            <details className="group bg-white/5 dark:bg-black/5 p-4 rounded-lg" aria-expanded="false">
+            <details className="group bg-white/5 dark:bg-black/5 p-4 rounded-lg">
               <summary className="cursor-pointer font-medium list-none">What does the 1-week sprint include?</summary>
               <div className="mt-2 text-sm text-zinc-300">
                 The sprint includes 20 hours of engineering time, three one-hour meetings (planning, progress, polish), basic hosting for 1 week plus 1 month, and delivery of production-ready code via GitHub.
