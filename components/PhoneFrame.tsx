@@ -27,17 +27,11 @@ export function PhoneFrame({
   const [isDragging, setIsDragging] = useState(false);
   const [showApps] = useState(true);
   const [isPWA, setIsPWA] = useState(false);
-  const [randomWallpaper, setRandomWallpaper] = useState<string>("");
+  const [randomWallpaper, setRandomWallpaper] = useState<string>(() => WALLPAPERS[Math.floor(Math.random() * WALLPAPERS.length)]);
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [isLocked, setIsLocked] = useState(false);
   const [now, setNow] = useState<Date>(new Date());
   const dragStartRef = useRef({ x: 0, y: 0 });
-
-  // Select random wallpaper on mount
-  useEffect(() => {
-    const randomIndex = Math.floor(Math.random() * WALLPAPERS.length);
-    setRandomWallpaper(WALLPAPERS[randomIndex]);
-  }, []);
 
   // Cycle wallpaper when theme toggles (custom event from ThemeToggle)
   useEffect(() => {
@@ -66,6 +60,7 @@ export function PhoneFrame({
     const isIOS = /iPad|iPhone|iPod/.test(navigator.userAgent);
     const isInStandaloneMode = Boolean((window.navigator as {standalone?: boolean}).standalone);
     
+    // eslint-disable-next-line react-hooks/set-state-in-effect
     setIsPWA(isStandalone || (isIOS && isInStandaloneMode));
   }, []);
 

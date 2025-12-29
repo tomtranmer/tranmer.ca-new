@@ -9,6 +9,7 @@ export function ThemeToggle() {
 
   // Only render after mounting to avoid hydration mismatch
   useEffect(() => {
+    // eslint-disable-next-line react-hooks/set-state-in-effect
     setMounted(true);
   }, []);
 
@@ -25,7 +26,7 @@ export function ThemeToggle() {
     // Also notify other UI to cycle wallpapers when theme changes
     try {
       window.dispatchEvent(new CustomEvent('cycleWallpaper'));
-    } catch (e) {
+    } catch {
       // ignore in non-browser environments
     }
   };
