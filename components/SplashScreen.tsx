@@ -4,7 +4,7 @@ import { useEffect, useState } from "react";
 const slides = [
   { text: "Hi I'm Tom..." },
   { text: "I build things, mostly digital." },
-  { text: "How can we help?" },
+  { text: "How can I help?" },
 ];
 
 export default function SplashScreen({ onFinish }: { onFinish?: () => void }) {
