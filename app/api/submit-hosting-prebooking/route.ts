@@ -1,9 +1,125 @@
 import { NextRequest, NextResponse } from 'next/server';
 import nodemailer from 'nodemailer';
 
+// Rate limiting store (in production, use Redis or similar)
+const rateLimitStore = new Map<string, { count: number; resetTime: number }>();
+const RATE_LIMIT_WINDOW = 15 * 60 * 1000; // 15 minutes
+const RATE_LIMIT_MAX_REQUESTS = 5; // Max 5 submissions per IP per 15 minutes
+
+// Input validation functions
+function validateEmail(email: string): boolean {
+  const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+  return emailRegex.test(email);
+}
+
+function sanitizeInput(input: string): string {
+  if (!input || typeof input !== 'string') return '';
+  // Remove potentially dangerous characters and trim
+  return input.replace(/[<>\"'&]/g, '').trim().substring(0, 1000);
+}
+
+function validateAdditionalServices(services: unknown): string[] {
+  if (!Array.isArray(services)) return [];
+  return services
+    .filter((service): service is string => typeof service === 'string')
+    .map(service => sanitizeInput(service))
+    .filter(service => service.length > 0 && service.length <= 100)
+    .slice(0, 10); // Max 10 services
+}
+
+// Rate limiting function
+function checkRateLimit(ip: string): boolean {
+  const now = Date.now();
+  const userLimit = rateLimitStore.get(ip);
+
+  if (!userLimit || now > userLimit.resetTime) {
+    rateLimitStore.set(ip, { count: 1, resetTime: now + RATE_LIMIT_WINDOW });
+    return true;
+  }
+
+  if (userLimit.count >= RATE_LIMIT_MAX_REQUESTS) {
+    return false;
+  }
+
+  userLimit.count++;
+  return true;
+}
+
 export async function POST(request: NextRequest) {
   try {
-    const { lockInInterest, currentHostingPlan, yearsInterested, estimatedMonthlyCost, additionalServices, comments, email } = await request.json();
+    // Get client IP for rate limiting
+    const ip = request.headers.get('x-forwarded-for') ||
+               request.headers.get('x-real-ip') ||
+               'unknown';
+
+    // Check rate limit
+    if (!checkRateLimit(ip)) {
+      console.warn(`Rate limit exceeded for IP: ${ip}`);
+      return NextResponse.json(
+        { error: 'Too many requests. Please try again later.' },
+        { status: 429 }
+      );
+    }
+
+    // Parse and validate request body
+    let body;
+    try {
+      body = await request.json();
+    } catch {
+      return NextResponse.json(
+        { error: 'Invalid JSON payload' },
+        { status: 400 }
+      );
+    }
+
+    const {
+      lockInInterest,
+      currentHostingPlan,
+      yearsInterested,
+      estimatedMonthlyCost,
+      additionalServices,
+      comments,
+      email
+    } = body;
+
+    // Validate required fields
+    if (!email || typeof email !== 'string') {
+      return NextResponse.json(
+        { error: 'Email is required' },
+        { status: 400 }
+      );
+    }
+
+    if (!validateEmail(email)) {
+      return NextResponse.json(
+        { error: 'Invalid email format' },
+        { status: 400 }
+      );
+    }
+
+    // Sanitize inputs
+    const sanitizedEmail = sanitizeInput(email);
+    const sanitizedLockInInterest = lockInInterest ? sanitizeInput(lockInInterest) : '';
+    const sanitizedCurrentHostingPlan = currentHostingPlan ? sanitizeInput(currentHostingPlan) : '';
+    const sanitizedYearsInterested = yearsInterested ? sanitizeInput(yearsInterested) : '';
+    const sanitizedEstimatedMonthlyCost = estimatedMonthlyCost ? sanitizeInput(estimatedMonthlyCost) : '';
+    const sanitizedComments = comments ? sanitizeInput(comments) : '';
+    const sanitizedAdditionalServices = validateAdditionalServices(additionalServices);
+
+    // Validate field lengths
+    if (sanitizedEmail.length > 254) {
+      return NextResponse.json(
+        { error: 'Email too long' },
+        { status: 400 }
+      );
+    }
+
+    if (sanitizedComments.length > 1000) {
+      return NextResponse.json(
+        { error: 'Comments too long (max 1000 characters)' },
+        { status: 400 }
+      );
+    }
 
     const currentDate = new Date().toLocaleDateString('en-US', {
       weekday: 'long',
@@ -14,20 +130,40 @@ export async function POST(request: NextRequest) {
       minute: '2-digit'
     });
 
+    // Check SMTP configuration
+    if (!process.env.SMTP_HOST || !process.env.SMTP_USER || !process.env.SMTP_PASS) {
+      console.error('SMTP configuration missing');
+      return NextResponse.json(
+        { error: 'Email service temporarily unavailable' },
+        { status: 503 }
+      );
+    }
+
     const transporter = nodemailer.createTransport({
-      host: process.env.SMTP_HOST || 'smtp.gmail.com',
-      port: parseInt(process.env.SMTP_PORT || '587'),
-      secure: true,
+      host: process.env.SMTP_HOST,
+      port: parseInt(process.env.SMTP_PORT || '465'),
+      secure: process.env.SMTP_SECURE === 'true' || true, // Default to secure
       auth: {
         user: process.env.SMTP_USER,
         pass: process.env.SMTP_PASS,
       },
     });
 
+    // Verify transporter configuration
+    try {
+      await transporter.verify();
+    } catch (error) {
+      console.error('SMTP verification failed:', error);
+      return NextResponse.json(
+        { error: 'Email service configuration error' },
+        { status: 503 }
+      );
+    }
+
     const mailOptions = {
       from: process.env.SMTP_USER,
       to: 'help@tranmer.ca',
-      subject: `🔒 New Hosting Pre-Booking Interest - ${email || 'Anonymous'}`,
+      subject: `🔒 New Hosting Pre-Booking Interest - ${sanitizedEmail || 'Anonymous'}`,
       html: `
         <!DOCTYPE html>
         <html>
@@ -153,62 +289,62 @@ export async function POST(request: NextRequest) {
           </div>
           
           <div class="content">
-            ${lockInInterest ? `
+            ${sanitizedLockInInterest ? `
             <div class="priority">
               <div class="priority-label">Interest Level</div>
               <div class="field-value" style="margin-top: 8px; font-size: 18px; font-weight: 600;">
-                ${lockInInterest}
+                ${sanitizedLockInInterest}
               </div>
             </div>
             ` : ''}
 
-            ${currentHostingPlan ? `
+            ${sanitizedCurrentHostingPlan ? `
             <div class="field">
               <div class="field-label">Current Hosting Plan</div>
-              <div class="field-value">${currentHostingPlan}</div>
+              <div class="field-value">${sanitizedCurrentHostingPlan}</div>
             </div>
             ` : ''}
 
-            ${yearsInterested ? `
+            ${sanitizedYearsInterested ? `
             <div class="field">
               <div class="field-label">Lock-In Period Requested</div>
               <div class="field-value">
-                <span class="badge">${yearsInterested}</span>
+                <span class="badge">${sanitizedYearsInterested}</span>
               </div>
             </div>
             ` : ''}
 
-            ${estimatedMonthlyCost ? `
+            ${sanitizedEstimatedMonthlyCost ? `
             <div class="field">
               <div class="field-label">Estimated Current Monthly Cost</div>
-              <div class="field-value">${estimatedMonthlyCost}</div>
+              <div class="field-value">${sanitizedEstimatedMonthlyCost}</div>
             </div>
             ` : ''}
 
-            ${additionalServices && additionalServices.length > 0 ? `
+            ${sanitizedAdditionalServices && sanitizedAdditionalServices.length > 0 ? `
             <div class="field">
               <div class="field-label">Additional Services Interested In</div>
               <div class="field-value">
                 <div class="tags">
-                  ${additionalServices.map((service: string) => `<span class="tag">${service}</span>`).join('')}
+                  ${sanitizedAdditionalServices.map((service: string) => `<span class="tag">${service}</span>`).join('')}
                 </div>
               </div>
             </div>
             ` : ''}
 
-            ${comments ? `
+            ${sanitizedComments ? `
             <div class="field">
               <div class="field-label">📝 Comments/Questions</div>
               <div class="field-value" style="margin-top: 15px; font-style: italic; line-height: 1.7;">
-                "${comments}"
+                "${sanitizedComments}"
               </div>
             </div>
             ` : ''}
 
-            ${email ? `
+            ${sanitizedEmail ? `
             <div class="contact-info">
               <div class="contact-label">📧 Contact Email</div>
-              <div class="contact-value">${email}</div>
+              <div class="contact-value">${sanitizedEmail}</div>
             </div>
             ` : ''}
             
@@ -224,23 +360,59 @@ export async function POST(request: NextRequest) {
 🔒 NEW HOSTING PRE-BOOKING INTEREST
 Received: ${currentDate}
 
-INTEREST LEVEL: ${lockInInterest}
-CURRENT PLAN: ${currentHostingPlan}
-LOCK-IN PERIOD: ${yearsInterested}
-${estimatedMonthlyCost ? `ESTIMATED MONTHLY COST: ${estimatedMonthlyCost}` : ''}
-${additionalServices && additionalServices.length > 0 ? `ADDITIONAL SERVICES: ${additionalServices.join(', ')}` : ''}
-${comments ? `COMMENTS: ${comments}` : ''}
-CONTACT: ${email}
+INTEREST LEVEL: ${sanitizedLockInInterest}
+CURRENT PLAN: ${sanitizedCurrentHostingPlan}
+LOCK-IN PERIOD: ${sanitizedYearsInterested}
+${sanitizedEstimatedMonthlyCost ? `ESTIMATED MONTHLY COST: ${sanitizedEstimatedMonthlyCost}` : ''}
+${sanitizedAdditionalServices && sanitizedAdditionalServices.length > 0 ? `ADDITIONAL SERVICES: ${sanitizedAdditionalServices.join(', ')}` : ''}
+${sanitizedComments ? `COMMENTS: ${sanitizedComments}` : ''}
+CONTACT: ${sanitizedEmail}
 
 ---
 Tranmer Web Services - Hosting Pre-Booking System
       `.trim(),
     };
 
-    await transporter.sendMail(mailOptions);
+    // Send email with timeout
+    const emailPromise = transporter.sendMail(mailOptions);
+    const timeoutPromise = new Promise((_, reject) => {
+      setTimeout(() => reject(new Error('Email sending timeout')), 30000); // 30 second timeout
+    });
+
+    await Promise.race([emailPromise, timeoutPromise]);
+
+    // Log successful submission (without sensitive data)
+    console.log(`Hosting pre-booking form submitted from IP: ${ip}, Email: ${sanitizedEmail.substring(0, 3)}***`);
+
     return NextResponse.json({ message: 'Email sent successfully' });
   } catch (error) {
-    console.error('Error sending email:', error);
-    return NextResponse.json({ error: 'Failed to send email' }, { status: 500 });
+    console.error('Error processing hosting pre-booking submission:', error);
+
+    // Provide more specific error messages based on error type
+    if (error instanceof Error) {
+      if (error.message.includes('timeout')) {
+        return NextResponse.json(
+          { error: 'Request timed out. Please try again.' },
+          { status: 408 }
+        );
+      }
+      if (error.message.includes('ECONNREFUSED') || error.message.includes('ENOTFOUND')) {
+        return NextResponse.json(
+          { error: 'Email service temporarily unavailable. Please try again later.' },
+          { status: 503 }
+        );
+      }
+      if (error.message.includes('Authentication failed')) {
+        return NextResponse.json(
+          { error: 'Email service configuration error' },
+          { status: 503 }
+        );
+      }
+    }
+
+    return NextResponse.json(
+      { error: 'An error occurred while processing your request. Please try again.' },
+      { status: 500 }
+    );
   }
 }
