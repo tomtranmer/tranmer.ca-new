@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useEffect, Suspense } from "react";
+import { useState, useEffect, useRef, Suspense } from "react";
 import { useSearchParams } from "next/navigation";
 
 type PreBookingResponses = {
@@ -19,7 +19,7 @@ export type LockInModalProps = {
   onModalChange?: (isOpen: boolean) => void;
 };
 
-function PreBookingForm({ onClose }: { onClose: () => void }) {
+function PreBookingForm({ onClose, scrollRef }: { onClose: () => void; scrollRef: React.RefObject<HTMLDivElement | null> }) {
   const searchParams = useSearchParams();
   const [responses, setResponses] = useState<PreBookingResponses>({
     lockInInterest: "",
@@ -96,7 +96,7 @@ function PreBookingForm({ onClose }: { onClose: () => void }) {
   };
 
   return (
-    <div className="flex-1 overflow-y-auto min-h-0">
+    <div ref={scrollRef} className="flex-1 overflow-y-auto min-h-0">
       {/* <div className="mb-6 p-4 bg-gradient-to-r from-blue-600/20 to-purple-600/20 border border-blue-500/30 rounded-lg">
         <h3 className="text-lg font-semibold mb-2">Why Lock In Your Rates?</h3>
         <p className="text-sm mb-2">
@@ -274,6 +274,9 @@ function PreBookingForm({ onClose }: { onClose: () => void }) {
 
 export function LockInModal({ emoji, gradient, onModalChange }: LockInModalProps) {
   const [isOpen, setIsOpen] = useState(false);
+  const scrollRef = useRef<HTMLDivElement>(null);
+  const [isScrolledToTop, setIsScrolledToTop] = useState(true);
+  const [canScroll, setCanScroll] = useState(false);
 
   const openModal = () => {
     setIsOpen(true);
@@ -283,6 +286,32 @@ export function LockInModal({ emoji, gradient, onModalChange }: LockInModalProps
   const closeModal = () => {
     setIsOpen(false);
     onModalChange?.(false);
+  };
+
+  // Handle scroll position tracking
+  useEffect(() => {
+    const scrollElement = scrollRef.current;
+    if (!scrollElement) return;
+
+    const handleScroll = () => {
+      const { scrollTop, scrollHeight, clientHeight } = scrollElement;
+      setIsScrolledToTop(scrollTop === 0);
+      setCanScroll(scrollHeight > clientHeight);
+    };
+
+    // Check initial scroll state
+    handleScroll();
+
+    scrollElement.addEventListener('scroll', handleScroll);
+    return () => scrollElement.removeEventListener('scroll', handleScroll);
+  }, [isOpen]);
+
+  const scrollToTop = () => {
+    scrollRef.current?.scrollTo({ top: 0, behavior: 'smooth' });
+  };
+
+  const scrollToBottom = () => {
+    scrollRef.current?.scrollTo({ top: scrollRef.current.scrollHeight, behavior: 'smooth' });
   };
 
   return (
@@ -332,8 +361,19 @@ export function LockInModal({ emoji, gradient, onModalChange }: LockInModalProps
 
             {/* Form */}
             <Suspense fallback={<div className="text-center text-white">Loading...</div>}>
-              <PreBookingForm onClose={closeModal} />
+              <PreBookingForm onClose={closeModal} scrollRef={scrollRef} />
             </Suspense>
+
+            {/* Scroll Indicator Button */}
+            {canScroll && (
+              <button
+                onClick={isScrolledToTop ? scrollToBottom : scrollToTop}
+                className="absolute bottom-4 right-4 z-10 w-12 h-12 bg-blue-600/90 hover:bg-blue-600 text-white rounded-full shadow-lg flex items-center justify-center transition-all duration-200 touch-manipulation"
+                aria-label={isScrolledToTop ? "Scroll to bottom" : "Scroll to top"}
+              >
+                <span className="text-lg">{isScrolledToTop ? "↓" : "↑"}</span>
+              </button>
+            )}
           </div>
         </div>
       )}
