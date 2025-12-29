@@ -96,7 +96,7 @@ function PreBookingForm({ onClose }: { onClose: () => void }) {
   };
 
   return (
-    <div className="max-h-[80vh] overflow-y-auto">
+    <div className="flex-1 overflow-y-auto min-h-0">
       {/* <div className="mb-6 p-4 bg-gradient-to-r from-blue-600/20 to-purple-600/20 border border-blue-500/30 rounded-lg">
         <h3 className="text-lg font-semibold mb-2">Why Lock In Your Rates?</h3>
         <p className="text-sm mb-2">
@@ -109,9 +109,9 @@ function PreBookingForm({ onClose }: { onClose: () => void }) {
         </p>
       </div> */}
 
-      <form onSubmit={handleSubmit} className="space-y-4">
+      <form onSubmit={handleSubmit} className="space-y-4 sm:space-y-4">
         <div>
-          <label className="block text-sm font-medium mb-2" htmlFor="currentHostingPlan">
+          <label className="block text-sm sm:text-sm font-medium mb-2" htmlFor="currentHostingPlan">
             What is your current hosting plan with TWS?
           </label>
           <select
@@ -119,7 +119,7 @@ function PreBookingForm({ onClose }: { onClose: () => void }) {
             name="currentHostingPlan"
             value={responses.currentHostingPlan}
             onChange={handleChange}
-            className="w-full p-2 bg-white/10 rounded-lg text-white placeholder-zinc-400 text-sm"
+            className="w-full p-3 sm:p-2 bg-white/10 rounded-lg text-white placeholder-zinc-400 text-sm touch-manipulation"
             required
           >
             <option value="" className="bg-gray-900">Select your plan</option>
@@ -132,7 +132,7 @@ function PreBookingForm({ onClose }: { onClose: () => void }) {
         </div>
 
         <div>
-          <label className="block text-sm font-medium mb-2" htmlFor="email">
+          <label className="block text-sm sm:text-sm font-medium mb-2" htmlFor="email">
             Email (for follow-up)
           </label>
           <input
@@ -141,28 +141,28 @@ function PreBookingForm({ onClose }: { onClose: () => void }) {
             name="email"
             value={responses.email}
             onChange={handleChange}
-            className="w-full p-2 bg-white/10 rounded-lg text-white placeholder-zinc-400 text-sm"
+            className="w-full p-3 sm:p-2 bg-white/10 rounded-lg text-white placeholder-zinc-400 text-sm touch-manipulation"
             placeholder="your@email.com"
             required
           />
         </div>
 
         <div>
-          <label className="block text-sm font-medium mb-2">
+          <label className="block text-sm sm:text-sm font-medium mb-2">
             How many years would you like to lock in your rate?
           </label>
-          <div className="flex flex-wrap gap-2">
+          <div className="grid grid-cols-3 sm:flex sm:flex-wrap gap-2 sm:gap-2">
             {["1 year", "2 years", "3 years", "4 years", "5 years"].map((option) => (
-              <label key={option} className="flex items-center text-sm">
+              <label key={option} className="flex items-center justify-center p-2 sm:p-1 bg-white/5 hover:bg-white/10 rounded-lg cursor-pointer touch-manipulation transition-colors">
                 <input
                   type="radio"
                   name="yearsInterested"
                   value={option}
                   checked={responses.yearsInterested === option}
                   onChange={handleChange}
-                  className="mr-1"
+                  className="mr-2 w-4 h-4 sm:w-3 sm:h-3"
                 />
-                {option}
+                <span className="text-sm">{option}</span>
               </label>
             ))}
           </div>
@@ -184,10 +184,10 @@ function PreBookingForm({ onClose }: { onClose: () => void }) {
         </div> */}
 
         <div>
-          <label className="block text-sm font-medium mb-3">
+          <label className="block text-sm sm:text-sm font-medium mb-3">
             What additional services do you have with us or are you interested in adding? (select all that apply)
           </label>
-          <div className="grid grid-cols-2 gap-2">
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 sm:gap-2">
             {[
               "Website maintenance assurance (hack protection)",
               "SEO report audit and optimization",
@@ -207,10 +207,10 @@ function PreBookingForm({ onClose }: { onClose: () => void }) {
                       : [...responses.additionalServices, service];
                     setResponses((prev) => ({ ...prev, additionalServices: newServices }));
                   }}
-                  className={`p-3 rounded-lg text-xs font-medium transition-colors text-left ${
+                  className={`p-4 sm:p-3 rounded-lg text-sm sm:text-xs font-medium transition-colors text-left touch-manipulation ${
                     isSelected
                       ? 'bg-blue-600/80 text-white border-2 border-blue-400'
-                      : 'bg-white/10 text-white/80 border-2 border-white/20 hover:bg-white/20'
+                      : 'bg-white/10 text-white/80 border-2 border-white/20 hover:bg-white/20 active:bg-white/30'
                   }`}
                 >
                   {service}
@@ -221,7 +221,7 @@ function PreBookingForm({ onClose }: { onClose: () => void }) {
         </div>
 
         <div>
-          <label className="block text-sm font-medium mb-2" htmlFor="comments">
+          <label className="block text-sm sm:text-sm font-medium mb-2" htmlFor="comments">
             Additional comments or questions
           </label>
           <textarea
@@ -229,7 +229,7 @@ function PreBookingForm({ onClose }: { onClose: () => void }) {
             name="comments"
             value={responses.comments}
             onChange={handleChange}
-            className="w-full p-2 bg-white/10 rounded-lg text-white placeholder-zinc-400 text-sm"
+            className="w-full p-3 sm:p-2 bg-white/10 rounded-lg text-white placeholder-zinc-400 text-sm touch-manipulation"
             rows={3}
             placeholder="Let us know if you have any specific needs or questions..."
           />
@@ -237,18 +237,18 @@ function PreBookingForm({ onClose }: { onClose: () => void }) {
 
         
 
-        <div className="flex gap-3 pt-4">
+        <div className="flex flex-col sm:flex-row gap-3 sm:gap-3 pt-4">
           <button
             type="submit"
             disabled={isSubmitting}
-            className="flex-1 py-2 bg-blue-500 text-white font-medium rounded-lg hover:bg-blue-600 transition-colors disabled:opacity-50 disabled:cursor-not-allowed text-sm"
+            className="flex-1 py-3 sm:py-2 bg-blue-500 text-white font-medium rounded-lg hover:bg-blue-600 transition-colors disabled:opacity-50 disabled:cursor-not-allowed text-base sm:text-sm touch-manipulation"
           >
             {isSubmitting ? 'Submitting...' : 'Register Your Interest'}
           </button>
           <button
             type="button"
             onClick={onClose}
-            className="px-4 py-2 bg-white/20 hover:bg-white/30 rounded-lg text-white font-medium transition-colors border border-white/20 text-sm"
+            className="px-6 py-3 sm:px-4 sm:py-2 bg-white/20 hover:bg-white/30 rounded-lg text-white font-medium transition-colors border border-white/20 text-base sm:text-sm touch-manipulation"
           >
             Cancel
           </button>
@@ -266,7 +266,7 @@ function PreBookingForm({ onClose }: { onClose: () => void }) {
           </div>
         )}
 
-        <p className="text-xs text-white/60 mt-2"><sup>*</sup> Rates are locked in for Hosting, Domain Management, and internal Email Services only. Additional 3rd party services and software may be subject to separate annual agreements and pricing...</p>
+        <p className="text-xs text-white/60 mt-2 pb-4"><sup>*</sup> Rates are locked in for Hosting, Domain Management, and internal Email Services only. Additional 3rd party services and software may be subject to separate annual agreements and pricing...</p>
       </form>
     </div>
   );
@@ -291,7 +291,7 @@ export function LockInModal({ emoji, gradient, onModalChange }: LockInModalProps
       <div className="flex justify-center">
         <button
           onClick={openModal}
-          className="px-8 py-4 bg-green-600 hover:bg-green-700 text-white font-bold text-lg rounded-xl shadow-lg transition-colors border-2 border-green-500"
+          className="px-6 py-4 sm:px-8 sm:py-4 bg-green-600 hover:bg-green-700 active:bg-green-800 text-white font-bold text-base sm:text-lg rounded-xl shadow-lg transition-colors border-2 border-green-500 touch-manipulation"
         >
           🔒 Lock in Request Now
         </button>
@@ -305,24 +305,24 @@ export function LockInModal({ emoji, gradient, onModalChange }: LockInModalProps
         >
           {/* Modal Content */}
           <div
-            className="bg-white/10 dark:bg-black/20 backdrop-blur-md rounded-3xl p-6 max-w-2xl w-full border-2 border-white/30 dark:border-white/20 max-h-[90vh] overflow-hidden relative"
+            className="bg-white/10 dark:bg-black/20 backdrop-blur-md rounded-3xl p-4 sm:p-6 max-w-sm sm:max-w-2xl w-full border-2 border-white/30 dark:border-white/20 max-h-[90vh] relative flex flex-col"
             onClick={(e) => e.stopPropagation()}
           >
             {/* Close Button */}
             <button
               onClick={closeModal}
-              className="absolute top-4 right-4 w-8 h-8 rounded-full bg-white/20 hover:bg-white/30 flex items-center justify-center text-white transition-colors z-10"
+              className="absolute top-3 right-3 sm:top-4 sm:right-4 w-10 h-10 sm:w-8 sm:h-8 rounded-full bg-white/20 hover:bg-white/30 flex items-center justify-center text-white transition-colors z-10 touch-manipulation"
               aria-label="Close modal"
             >
-              <span className="text-lg font-bold">×</span>
+              <span className="text-xl sm:text-lg font-bold">×</span>
             </button>
 
             {/* Header */}
-            <div className="text-center mb-6">
-              <div className={`w-16 h-16 rounded-2xl ${gradient} grid place-items-center text-2xl text-white mb-4 mx-auto shadow-lg border border-white/20`}>
+            <div className="text-center mb-4 sm:mb-6">
+              <div className={`w-14 h-14 sm:w-16 sm:h-16 rounded-2xl ${gradient} grid place-items-center text-xl sm:text-2xl text-white mb-3 sm:mb-4 mx-auto shadow-lg border border-white/20`}>
                 <span>{emoji}</span>
               </div>
-              <h2 className="text-2xl font-bold text-white drop-shadow-[0_1px_2px_rgba(0,0,0,0.8)]">
+              <h2 className="text-xl sm:text-2xl font-bold text-white drop-shadow-[0_1px_2px_rgba(0,0,0,0.8)] px-2">
                 Request your Lock In for 2026
               </h2>
               {/* <p className="text-sm text-white/70 mt-2">
