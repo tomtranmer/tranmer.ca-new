@@ -35,13 +35,13 @@ export function ContactModal({ label, emoji, gradient, onModalChange }: ContactM
     const subject = encodeURIComponent("Contact Request from Portfolio");
     const body = encodeURIComponent(`Hi Tom,
 
-I visited your portfolio website and would like to get in touch.
+      I visited your portfolio website and would like to get in touch.
 
-My email: ${email}
+      My email: ${email}
 
-Looking forward to hearing from you!
+      Looking forward to hearing from you!
 
-Best regards`);
+      Best regards`);
     
     const mailtoLink = `mailto:tom@tranmer.ca?subject=${subject}&body=${body}`;
     
@@ -84,17 +84,17 @@ Best regards`);
       {/* Contact Modal */}
       {isOpen && (
         <div
-          className="fixed inset-0 bg-black/60 backdrop-blur-sm z-50 flex items-center justify-center p-6"
+          className="fixed inset-0 bg-black/60 backdrop-blur-sm z-50 flex items-center justify-center p-6 transition-opacity duration-300"
           onClick={closeModal}
         >
-          {/* Modal Content */}
+        {/* Modal Content */}
           <div
-            className="bg-white/10 dark:bg-black/20 backdrop-blur-md rounded-3xl p-8 max-w-md w-full border border-white/20 dark:border-white/10"
-            onClick={(e) => e.stopPropagation()}
+            className="bg-white/10 backdrop-blur-md rounded-3xl p-8 max-w-md w-full border border-white/20 shadow-2xl max-h-[90vh] overflow-y-auto transition-all duration-300 scale-100 opacity-100"
+            onClick={(e) => { e.stopPropagation(); }}
           >
             {/* Header */}
             <div className="text-center mb-8">
-              <div className={`w-16 h-16 rounded-2xl ${gradient} grid place-items-center text-2xl text-white mb-4 mx-auto shadow-lg border border-white/20`}>
+              <div className={`w-16 h-16 rounded-2xl ${gradient} grid place-items-center text-2xl text-white mb-4 mx-auto shadow-lg border border-white/20 hover:scale-110 transition-transform duration-300`}>
                 <span>{emoji}</span>
               </div>
               <h2 className="text-2xl font-bold text-white drop-shadow-[0_1px_2px_rgba(0,0,0,0.8)]">
@@ -104,7 +104,7 @@ Best regards`);
 
             {/* Contact Details */}
             <div className="space-y-6 mb-8">
-              <div className="flex items-center gap-4">
+              <div className="flex items-center gap-4 hover:scale-105 transition-transform duration-200 cursor-pointer">
                 <div className="w-10 h-10 bg-blue-500/30 rounded-xl flex items-center justify-center">
                   <span className="text-lg">📧</span>
                 </div>
@@ -119,7 +119,7 @@ Best regards`);
                 </div>
               </div>
 
-              <div className="flex items-center gap-4">
+              <div className="flex items-center gap-4 hover:scale-105 transition-transform duration-200 cursor-pointer">
                 <div className="w-10 h-10 bg-green-500/30 rounded-xl flex items-center justify-center">
                   <span className="text-lg">💼</span>
                 </div>
@@ -136,7 +136,7 @@ Best regards`);
                 </div>
               </div>
 
-              <div className="flex items-center gap-4">
+              <div className="flex items-center gap-4 hover:scale-105 transition-transform duration-200 cursor-pointer">
                 <div className="w-10 h-10 bg-gray-500/30 rounded-xl flex items-center justify-center">
                   <span className="text-lg">💻</span>
                 </div>
@@ -153,7 +153,7 @@ Best regards`);
                 </div>
               </div>
 
-              <div className="flex items-center gap-4">
+              <div className="flex items-center gap-4 hover:scale-105 transition-transform duration-200 cursor-pointer">
                 <div className="w-10 h-10 bg-purple-500/30 rounded-xl flex items-center justify-center">
                   <span className="text-lg">🌐</span>
                 </div>
@@ -198,14 +198,15 @@ Best regards`);
             </div>
 
             {/* Close Button */}
-            <div className="text-center">
+            <div className="text-center mt-6">
               <button
                 onClick={closeModal}
-                className="px-8 py-3 bg-white/20 hover:bg-white/30 rounded-full text-white font-medium transition-colors border border-white/20"
+                className="px-8 py-3 bg-white/30 hover:bg-white/40 rounded-full text-white font-medium transition-all duration-200 border border-white/30 hover:border-white/50 hover:scale-105"
               >
                 Close
               </button>
             </div>
+          
           </div>
         </div>
       )}
