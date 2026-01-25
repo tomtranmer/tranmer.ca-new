@@ -59,6 +59,12 @@ export function AppGrid({ onModalChange }: AppGridProps) {
       label: "Settings",
       emoji: "⚙️",
       gradient: "bg-gradient-to-br from-gray-600 to-gray-700"
+    },
+    {
+      href: "/lock-in",
+      label: "Lock-In",
+      emoji: "🔒",
+      gradient: "bg-gradient-to-br from-red-500 to-orange-600"
     }
   ];
 
@@ -131,10 +137,13 @@ export function AppGrid({ onModalChange }: AppGridProps) {
         openInNewWindow={true}
       />
       <AppIcon
-        href="/lock-in"
-        label="Lock-In"
-        emoji="🔒"
-        gradient="bg-gradient-to-br from-red-500 to-orange-600"
+        href="https://mymint.tranmer.ca"
+        label="MyMint"
+        emoji="💰"
+        iconSrc="/icons/mymint-icon.png"
+        gradient="bg-gradient-to-br from-green-500 to-teal-600"
+        openInNewWindow={true}
+        iconBorder="border-green-300/60"
       />
       <AppFolder
         label="App Demos"
