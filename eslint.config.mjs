@@ -12,6 +12,13 @@ const eslintConfig = defineConfig([
     'build/**',
     'next-env.d.ts',
   ]),
+  {
+    rules: {
+      // Allow unescaped apostrophes in JSX text content
+      // They display correctly and don't need HTML entity escaping
+      'react/no-unescaped-entities': ['error', { forbid: ['>', '}'] }],
+    },
+  },
 ])
 
 export default eslintConfig

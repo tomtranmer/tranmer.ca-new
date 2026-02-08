@@ -145,6 +145,12 @@ export function AppGrid({ onModalChange }: AppGridProps) {
         openInNewWindow={true}
         iconBorder="border-green-300/60"
       />
+      <AppIcon
+        href="/referral"
+        label="Refer & Earn"
+        emoji="🎁"
+        gradient="bg-gradient-to-br from-amber-500 to-orange-600"
+      />
       <AppFolder
         label="App Demos"
         gradient="bg-gradient-to-br from-indigo-500 to-violet-600"
