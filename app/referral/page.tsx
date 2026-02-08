@@ -181,7 +181,7 @@ export default function ReferralPage() {
             icon="🎨"
             name="Bradshaw Design"
             subtitle="Premium Web Design & Branding"
-            description="Premium web design and branding services to complement your hosting. Build a beautiful online presence that matches your hosting excellence."
+            description="Neil Bradshaw is one of TWS's first partners offering Premium design and branding services to complement your hosting. Contact Neil today to get expert advice."
             ctaText="Visit Bradshaw Design"
             ctaUrl="https://bradshawdesign.ca"
             badge="Featured Partner"
@@ -196,6 +196,16 @@ export default function ReferralPage() {
             }}
           />
         </section>
+
+        {/* Featured Partner CTA */}
+        <div className="text-center mb-16">
+          <a
+            href="mailto:help@tranmer.ca?subject=TWS%20Partner%20Showcase&body=Hi%21%20I%27d%20like%20to%20be%20featured%20as%20a%20partner%20on%20the%20TWS%20referral%20page.%20Here%20are%20the%20details%3A%0A%0A-%20Partner%2FCompany%20Name%3A%0A-%20Brief%20Description%20%28one%20sentence%29%3A%0A-%20Website%20URL%3A%0A-%20Icon%2FLogo%20%28emoji%20or%20URL%29%3A%0A-%20Call-to-Action%20Button%20Text%3A%0A-%20Background%20Image%20URL%20%28optional%29%3A%0A-%20Subtitle%20%28optional%29%3A%0A-%20Badge%2FLabel%20%28optional%29%3A%0A%0AThank%20you%21"
+            className="inline-flex items-center justify-center px-6 py-3 rounded-lg border border-slate-300 dark:border-slate-600 text-slate-700 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-slate-800 transition-colors duration-200"
+          >
+            💼 Want to be featured here? Reach out
+          </a>
+        </div>
 
         {/* FAQ Section */}
         <section className="mb-16">
