@@ -54,7 +54,7 @@ export function ReferralForm({ onSubmit, isLoading }: ReferralFormProps) {
         {/* Referred Email Field */}
         <div>
           <label htmlFor="referred-email" className="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-2">
-            Friend's Email Address *
+            Friend&apos;s Email Address *
           </label>
           <div className="relative">
             <Mail className="absolute left-4 top-3.5 w-5 h-5 text-slate-400 dark:text-slate-600 pointer-events-none" />
@@ -84,7 +84,7 @@ export function ReferralForm({ onSubmit, isLoading }: ReferralFormProps) {
               Your Email Address (Optional)
             </label>
             <p className="text-xs text-slate-500 dark:text-slate-500 mb-2">
-              We'll CC you on the introduction email so you can see what we send
+              We&apos;ll CC you on the introduction email so you can see what we send
             </p>
             <div className="relative">
               <Mail className="absolute left-4 top-3.5 w-5 h-5 text-slate-400 dark:text-slate-600 pointer-events-none" />
