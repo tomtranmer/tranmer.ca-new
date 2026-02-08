@@ -26,6 +26,9 @@ Hi there,
 
 We launched something exciting that we think you'll love—a **referral program** that rewards you for helping your friends migrate to TWS.
 
+**Why this matters:**  
+TWS is here to support small business. We help those who need limited IT and support for their website and app properties, but don't have the time to DIY or money to hire more staff. This program will save you money while helping your network find solutions that can save *them* money too.
+
 **Here's how it works:**
 
 1. **Refer a friend** → Share their email on our referral page
@@ -33,16 +36,18 @@ We launched something exciting that we think you'll love—a **referral program*
 3. **They migrate** → Once they complete their first billing cycle
 4. **You earn $100** → Get $100 account credit applied to your account
 
-**Best part?** There's no limit. Refer as many friends as you want, and earn $100 for each successful migration.
+**The offer:**  
+Earn $100 in hosting credit for each friend you refer. Maximum of $500 per calendar year.
 
 ---
 
 ### Why Refer?
 
 ✓ **Help your network** - Your friends get expert hosting migration support  
-✓ **Earn rewards** - $100 credit per referral (unlimited!)  
+✓ **Save everyone money** - Your referrals help small businesses find affordable solutions  
+✓ **Earn rewards** - $100 credit per successful referral (up to $500/year)  
 ✓ **Zero hassle** - We handle the entire migration process  
-✓ **Build community** - Be part of the TWS network
+✓ **Build community** - Be part of growing network of small business owners
 
 ---
 

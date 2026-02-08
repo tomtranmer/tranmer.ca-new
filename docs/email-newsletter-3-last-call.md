@@ -32,13 +32,13 @@ If you've been thinking about referring a friend, now is the moment. It takes ju
 
 ### Urgency + Value Section
 
-**Here's what you could be earning:**
+**Here's what you could be earning (up to $500/year):**
 
-| Referrals | Total Credits | What You Can Use It For |
-|-----------|---------------|------------------------|
-| 1 referral | $100 | Hosting for 2 months |
-| 3 referrals | $300 | Annual domain renewal + support plan |
-| 5 referrals | $500 | Free upgrade to premium support |
+| Referrals | Total Credits | Notes |
+|-----------|---------------|-------|
+| 1 referral | $100 | Hosting for 2+ months |
+| 3 referrals | $300 | Domain + support plan |
+| 5 referrals | $500 | **Yearly maximum reached** |
 
 ---
 

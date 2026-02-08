@@ -313,9 +313,21 @@ PGHOST, PGUSER, PGPASSWORD, etc. # Connection parameters
     - Dark mode support
     - Responsive design with hover animations
     - TypeScript support
-  - Current use: Bradshaw Design partner banner (purple gradient theme)
+    - **NEW:** Background image support with gradient overlay for rich visuals
+  - Current use: Bradshaw Design partner banner (purple gradient theme with background image from bradshawdesign.ca)
   - Future use: Easy to deploy for other partners/sponsors
   - Easy integration with any partner in 1-2 lines of code
+
+- **Featured Partner CTA Creation:**
+  - Added below partner banner: "💼 Want to be featured here? Reach out"
+  - Mailto link to help@tranmer.ca with TWS Partner Showcase subject
+  - Pre-filled email template requesting partner details (name, description, URL, icon, CTA text, background image, etc.)
+  - Easy for new partners to provide all required PartnerSpotlight prop data
+
+- **Image Quality Configuration:**
+  - Fixed Next.js image optimization config
+  - Added `images.qualities: [75, 80]` to next.config.ts
+  - Resolves warning about unconfigured image quality levels
 
 ### Test Results (Feb 8, 2026)
 ```
@@ -329,42 +341,49 @@ Submission 6: ✅ Rejected with limit message (429 status)
 Database verification: ✅ All 5 referrals stored with correct status
 ```
 
-### 🔲 TO DO (Next Steps)
-- **Mailchimp Setup:**
-  - [ ] Import email templates from markdown drafts
-  - [ ] Set up customer segments/audiences
-  - [ ] Schedule Email #1 delivery (Feb 3-7)
+### 🔲 TO DO (Next Steps - PRIORITY ORDER)
+
+#### PRIORITY 1: Mailchimp Email Campaign (START IMMEDIATELY)
+**Status:** Email templates ready in markdown; deployment window affected (Feb 3-7 has passed)
+- [ ] **Mailchimp Setup:**
+  - [ ] Import email templates from `/docs/email-newsletter-*.md` files into Mailchimp
+  - [ ] Set up customer segments/audiences (existing hosting customers)
+  - [ ] **Email #1 - Announcement (OVERDUE - Feb 3-7):**
+    - [ ] Deploy immediately to existing customer list
+    - [ ] Add UTM parameters: `?utm_source=email&utm_medium=newsletter&utm_campaign=feb_referral_announce`
   - [ ] Schedule Email #2 delivery (Feb 10-14)
   - [ ] Schedule Email #3 delivery (Feb 24-28)
   - [ ] Set up click/open tracking
 
-- **Manual Credit Award Workflow:**
-  - [ ] Create internal spreadsheet/dashboard to track when referrals become "bill_paid"
-  - [ ] Set up process to update referral status in DB to "bill_paid"
-  - [ ] Create follow-up email template for awarding credits
-  - [ ] Build credit issuance process (manual or automated)
+#### PRIORITY 2: Manual Credit Award Workflow
+- [ ] Create internal spreadsheet/dashboard template:
+  - Columns: Referred Email | Referrer Email | Referral Date | Status | Date Bill Paid | Credit Awarded | Notes
+  - Link to `/psql` queries for real-time referral count
+  - Set up process for daily/weekly status checks
+- [ ] When referred customer's first bill is paid:
+  - [ ] Update `referrals.status` to 'bill_paid' in database
+  - [ ] Create follow-up email template for referrer with $100 credit details
+  - [ ] Send congratulations email from help@tranmer.ca
 
-- **Referral Dashboard (Optional):**
-  - [ ] Create `/dashboard/referrals` page for tracking referrals (authenticated users)
-  - [ ] Display referral count, earnings, and status
-  - [ ] Show individual referral details and intro email sent date
+#### PRIORITY 3: Analytics & Monitoring
+- [ ] Track landing page views and form submissions
+- [ ] Monitor email open/click rates in Mailchimp
+- [ ] Track referral-to-migration conversion rate
+- [ ] Monitor database growth of referrals table
 
-- **Additional Marketing:**
-  - [ ] Create social media posts for Twitter/LinkedIn
-  - [ ] Write blog post on referral program benefits
-  - [ ] Finalize Bradshaw Design ad copy/creative
-  - [ ] Set up UTM parameters for tracking
+#### PRIORITY 4: Referral Dashboard (Optional)
+- [ ] Create `/dashboard/referrals` page for tracking referrals (authenticated users)
+- [ ] Display referral count, earnings, and status
 
-- **Analytics & Monitoring:**
-  - [ ] Track landing page views and form submissions
-  - [ ] Monitor email open/click rates in Mailchimp
-  - [ ] Track referral-to-migration conversion rate
-  - [ ] Monitor database growth of referrals table
+#### PRIORITY 5: Additional Marketing
+- [ ] Create social media posts for Twitter/LinkedIn
+- [ ] Write blog post on referral program benefits
+- [ ] Reach out to Bradshaw Design for reciprocal promotion
 
-- **Bradshaw Design Partnership:**
-  - [ ] Finalize ad banner design and copy
-  - [ ] Confirm placement and terms
-  - [ ] Set up reciprocal promotion (if applicable)
+#### PRIORITY 6: Post-Campaign (After Feb 28)
+- [ ] Generate final campaign report with metrics
+- [ ] Analyze which email template performed best
+- [ ] Plan next referral campaign with learnings
 
 ---
 
@@ -378,11 +397,39 @@ Database verification: ✅ All 5 referrals stored with correct status
 
 ---
 
+## Campaign Status Summary (As of Feb 8, 2026)
+
+### 🟢 READY TO DEPLOY
+- Landing page fully functional with form and validation
+- Email templates (3 drafts) ready for Mailchimp import
+- Database schema and API endpoint tested and stable
+- PartnerSpotlight component with background image support live
+- Featured partner CTA link implemented
+
+### 🟡 IN PROGRESS  
+- Mailchimp email deployment (overdue for Email #1)
+- Manual credit award workflow setup
+
+### 🔴 NOT STARTED
+- Analytics dashboard
+- Referral dashboard (optional)
+- Social media promotion
+
+---
+
 ## Bradshaw Design Partnership (Feb 2026)
 
-### Ad Banner Requirements
-Small promotional ad banner for Bradshaw Design to be placed on:
-- **Landing Page:** Hero section or above footer
-- **Email Campaign:** Header or sidebar mention
+### ✅ Completed
+- **Landing Page Integration:** ✅ COMPLETED
+  - PartnerSpotlight component with Bradshaw Design branding
+  - Background image from bradshawdesign.ca integrated
+  - Purple gradient color scheme with hover animations
+- **Email Campaign Integration:** ✅ READY
+  - Bradshaw Design banner included in all 3 email templates
+- **Featured Partner CTA:** ✅ COMPLETED
+  - "Want to be featured here?" link implemented
+  - Pre-filled partner intake form via mailto
 
-**Banner Content:** [TBD - awaiting design/copy from Bradshaw Design team]
+### Next Actions
+- [ ] Schedule call with Bradshaw Design to confirm partnership terms
+- [ ] Discuss reciprocal promotion opportunities

@@ -34,7 +34,7 @@ Great news! Our referral program is off to an amazing start. We're already seein
 
 **"Within a week of referring my colleague, we both got everything set up. Communication was great and the process felt effortless." - Sarah M.**
 
-**"I recommended TWS to 3 people at my company. It's nice knowing I'm getting $100 credits toward future services while helping my team." - James T.**
+**"I recommended TWS to 3 people at my company. It's nice knowing I'm getting $300 toward future services (max $500/year) while helping my team reduce costs." - James T.**
 
 **"No hassle, no complications. We sent a friend's email, and TWS handled everything professionally." - Rachel L.**
 

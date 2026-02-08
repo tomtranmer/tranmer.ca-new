@@ -60,14 +60,17 @@ export default function ReferralPage() {
       <main className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 py-12">
         {/* Hero Section */}
         <section className="mb-16 text-center">
-          <h1 className="text-4xl sm:text-5xl font-bold text-slate-900 dark:text-white mb-4">
+          <h1 className="text-4xl sm:text-5xl font-bold text-slate-900 dark:text-white mb-6">
             Refer a Hosting Migration
           </h1>
-          <p className="text-xl text-slate-600 dark:text-slate-300 mb-8">
-            Earn $100 in account credits for each friend you refer
-          </p>
-
-          
+          <div className="max-w-2xl mx-auto mb-8">
+            <p className="text-lg text-slate-700 dark:text-slate-200 mb-6 leading-relaxed">
+              TWS is here to support small business. Our north star is helping those businesses that need limited IT and support services for their website and app properties, but don't have the time to DIY or money to hire more staff. This promotion will save current clients money and connect new clients with a service that can help them also save money.
+            </p>
+            <p className="text-xl font-semibold text-blue-600 dark:text-blue-400">
+              Earn $100 in hosting credit for each new client you refer ($500 max/year)
+            </p>
+          </div>
         </section>
 
         {/* How It Works Section */}
@@ -200,10 +203,10 @@ export default function ReferralPage() {
         {/* Featured Partner CTA */}
         <div className="text-center mb-16">
           <a
-            href="mailto:help@tranmer.ca?subject=TWS%20Partner%20Showcase&body=Hi%21%20I%27d%20like%20to%20be%20featured%20as%20a%20partner%20on%20the%20TWS%20referral%20page.%20Here%20are%20the%20details%3A%0A%0A-%20Partner%2FCompany%20Name%3A%0A-%20Brief%20Description%20%28one%20sentence%29%3A%0A-%20Website%20URL%3A%0A-%20Icon%2FLogo%20%28emoji%20or%20URL%29%3A%0A-%20Call-to-Action%20Button%20Text%3A%0A-%20Background%20Image%20URL%20%28optional%29%3A%0A-%20Subtitle%20%28optional%29%3A%0A-%20Badge%2FLabel%20%28optional%29%3A%0A%0AThank%20you%21"
+            href="mailto:help@tranmer.ca?subject=TWS%20Partner%20Showcase&body=Hi%21%20I%27d%20like%20to%20be%20featured%20as%20a%20partner%20on%20a%20future%20TWS%20promotion%20or%20page.%20Here%20are%20the%20details%3A%0A%0A-%20Partner%2FCompany%20Name%3A%0A-%20Brief%20Description%20%28one%20sentence%29%3A%0A-%20Website%20URL%3A%0A-%20Icon%2FLogo%20%28emoji%20or%20URL%29%3A%0A-%20Call-to-Action%20Button%20Text%3A%0A-%20Background%20Image%20URL%20%28optional%29%3A%0A-%20Subtitle%20%28optional%29%3A%0A-%20Badge%2FLabel%20%28optional%29%3A%0A%0AThank%20you%21"
             className="inline-flex items-center justify-center px-6 py-3 rounded-lg border border-slate-300 dark:border-slate-600 text-slate-700 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-slate-800 transition-colors duration-200"
           >
-            💼 Want to be featured here? Reach out
+            💼 Want to be a featured partner? Reach out here
           </a>
         </div>
 
@@ -232,7 +235,7 @@ export default function ReferralPage() {
               },
               {
                 q: "Is there a limit to how many people I can refer?",
-                a: "No! Refer as many friends as you'd like. Each successful migration earns you another $100 credit.",
+                a: "You can refer unlimited friends, but the referral credits are capped at $500 per calendar year. Each successful migration earns you $100 credit until you reach the yearly maximum.",
               },
               {
                 q: "Who should I contact with questions?",
