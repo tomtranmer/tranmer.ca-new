@@ -153,7 +153,9 @@ export async function POST(request: NextRequest) {
     try {
       await transporter.verify();
     } catch (error) {
-      console.error('SMTP verification failed:', error);
+      // Only log safe error message, not the full error object which may contain sensitive data
+      const safeError = error instanceof Error ? error.message : 'Unknown error';
+      console.error('SMTP verification failed:', safeError);
       return NextResponse.json(
         { error: 'Email service configuration error' },
         { status: 503 }
@@ -386,7 +388,9 @@ Tranmer Web Services - Hosting Pre-Booking System
 
     return NextResponse.json({ message: 'Email sent successfully' });
   } catch (error) {
-    console.error('Error processing hosting pre-booking submission:', error);
+    // Only log safe error message, not the full error object which may contain sensitive data
+    const safeError = error instanceof Error ? error.message : 'Unknown error';
+    console.error('Error processing hosting pre-booking submission:', safeError);
 
     // Provide more specific error messages based on error type
     if (error instanceof Error) {

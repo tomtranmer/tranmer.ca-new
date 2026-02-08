@@ -66,7 +66,7 @@ export default function ReferralPage() {
           </h1>
           <div className="max-w-2xl mx-auto mb-8">
             <p className="text-lg text-slate-700 dark:text-slate-200 mb-6 leading-relaxed">
-              TWS is here to support small business. Our north star is helping those businesses that need limited IT and support services for their website and app properties, but don&apos;t have the time to DIY or money to hire more staff. This promotion will save current clients money and connect new clients with a service that can help them also save money.
+              TWS is here to support small business. Our north star is helping those businesses that need limited IT and support services for their website and app properties, but don't have the time to DIY or money to hire more staff. This promotion will save current clients money and connect new clients with a service that can help them also save money.
             </p>
             <p className="text-xl font-semibold text-blue-600 dark:text-blue-400">
               Earn $100 in hosting credit for each new client you refer ($500 max/year)
@@ -81,7 +81,7 @@ export default function ReferralPage() {
           </h2>
           <div className="grid md:grid-cols-4 gap-6">
             {[
-              { step: "1", title: "Enter Email", desc: "Add your friend&apos;s email address" },
+              { step: "1", title: "Enter Email", desc: "Add your friend's email address" },
               { step: "2", title: "We Send", desc: "Introduction email from our team" },
               { step: "3", title: "They Migrate", desc: "Your friend migrates to TWS" },
               { step: "4", title: "You Earn", desc: "$100 credit on your account" },
@@ -105,7 +105,7 @@ export default function ReferralPage() {
             Get Started
           </h2>
           <p className="text-center text-slate-600 dark:text-slate-400 mb-8">
-            Enter your friend&apos;s email and we&apos;ll send them an introduction.
+            Enter your friend's email and we'll send them an introduction.
           </p>
 
           <ReferralForm
@@ -122,8 +122,8 @@ export default function ReferralPage() {
                   Success!
                 </h3>
                 <p className="text-green-800 dark:text-green-300 text-sm">
-                  Introduction email sent to {successEmail}. We&apos;re tracking this
-                  referral and you&apos;ll get your $100 credit once the migration is
+                  Introduction email sent to {successEmail}. We're tracking this
+                  referral and you'll get your $100 credit once the migration is
                   complete.
                 </p>
               </div>
@@ -220,19 +220,19 @@ export default function ReferralPage() {
             {[
               {
                 q: "How do you track referrals?",
-                a: "We track each introduction email we send. When your referred friend completes their first bill payment with us, we&apos;ll add the $100 credit to your account.",
+                a: "We track each introduction email we send. When your referred friend completes their first bill payment with us, we'll add the $100 credit to your account.",
               },
               {
                 q: "When do I get my $100 credit?",
-                a: "Your $100 account credit is awarded after your referred customer&apos;s first bill is paid. We handle this manually to ensure accuracy.",
+                a: "Your $100 account credit is awarded after your referred customer's first bill is paid. We handle this manually to ensure accuracy.",
               },
               {
-                q: "Can I refer someone who&apos;s already using TWS?",
-                a: "No, we only offer credits for new customer migrations. If the email is already associated with an active account, we&apos;ll let you know.",
+                q: "Can I refer someone who's already using TWS?",
+                a: "No, we only offer credits for new customer migrations. If the email is already associated with an active account, we'll let you know.",
               },
               {
                 q: "What counts as a successful migration?",
-                a: "A successful migration is when your referred customer completes their first billing cycle with us. That&apos;s when your $100 credit is activated.",
+                a: "A successful migration is when your referred customer completes their first billing cycle with us. That's when your $100 credit is activated.",
               },
               {
                 q: "Is there a limit to how many people I can refer?",

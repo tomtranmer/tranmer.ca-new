@@ -231,7 +231,9 @@ Tranmer Web Services - Appstravaganza Survey System
     await transporter.sendMail(mailOptions);
     return NextResponse.json({ message: 'Email sent successfully' });
   } catch (error) {
-    console.error('Error sending email:', error);
+    // Only log safe error message, not the full error object which may contain sensitive data
+    const safeError = error instanceof Error ? error.message : 'Unknown error';
+    console.error('Error sending email:', safeError);
     return NextResponse.json({ error: 'Failed to send email' }, { status: 500 });
   }
 }

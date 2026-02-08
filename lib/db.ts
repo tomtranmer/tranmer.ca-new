@@ -66,7 +66,9 @@ export async function initializeDatabase(): Promise<void> {
 
     console.log('Database initialized successfully');
   } catch (error) {
-    console.error('Error initializing database:', error);
+    // Only log safe error message, not the full error object which may contain connection strings
+    const safeError = error instanceof Error ? error.message : 'Unknown error';
+    console.error('Error initializing database:', safeError);
     throw error;
   }
 }

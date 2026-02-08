@@ -224,7 +224,9 @@ export async function POST(request: NextRequest) {
       ]);
     } catch (emailError) {
       // Log email error but continue - referral is still tracked
-      console.error('Email sending failed:', emailError);
+      // Only log safe error message, not the full error object which may contain sensitive data
+      const safeError = emailError instanceof Error ? emailError.message : 'Unknown error';
+      console.error('Email sending failed:', safeError);
       // Still proceed with storing the referral
     }
 
@@ -260,9 +262,11 @@ export async function POST(request: NextRequest) {
       { status: 200 }
     );
   } catch (error) {
-    console.error('Error submitting referral:', error);
+    // Only log safe error message, not the full error object which may contain sensitive data
+    const safeError = error instanceof Error ? error.message : 'Unknown error';
+    console.error('Error submitting referral:', safeError);
 
-    const errorMessage = error instanceof Error ? error.message : 'An unknown error occurred';
+    const errorMessage = safeError;
 
     return NextResponse.json(
       { message: `Failed to send referral: ${errorMessage}` },
