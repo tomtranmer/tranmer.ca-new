@@ -1,0 +1,276 @@
+"use client";
+
+import { useState } from "react";
+import { CheckCircle, AlertCircle, HelpCircle } from "lucide-react";
+import { ReferralForm } from "@/components/ReferralForm";
+import { PartnerSpotlight } from "@/components/PartnerSpotlight";
+
+export default function ReferralPage() {
+  const [submissionState, setSubmissionState] = useState<
+    "idle" | "loading" | "success" | "error"
+  >("idle");
+  const [errorMessage, setErrorMessage] = useState("");
+  const [successEmail, setSuccessEmail] = useState("");
+
+  const handleFormSubmit = async (referredEmail: string, referrerEmail?: string) => {
+    setSubmissionState("loading");
+    setErrorMessage("");
+
+    try {
+      const response = await fetch("/api/submit-referral", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ referredEmail, referrerEmail }),
+      });
+
+      if (!response.ok) {
+        const error = await response.json();
+        throw new Error(error.message || "Failed to send referral email");
+      }
+
+      setSuccessEmail(referredEmail);
+      setSubmissionState("success");
+      setTimeout(() => {
+        setSubmissionState("idle");
+        setSuccessEmail("");
+      }, 5000);
+    } catch (error) {
+      setErrorMessage(
+        error instanceof Error ? error.message : "An error occurred"
+      );
+      setSubmissionState("error");
+    }
+  };
+
+  return (
+    <div className="min-h-screen bg-gradient-to-br from-slate-50 to-slate-100 dark:from-slate-950 dark:to-slate-900">
+      {/* Header */}
+      <header className="bg-white dark:bg-slate-900 border-b border-slate-200 dark:border-slate-800 sticky top-0 z-10">
+        <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 py-4">
+          <a
+            href="/"
+            className="text-sm font-medium text-blue-600 dark:text-blue-400 hover:text-blue-700 dark:hover:text-blue-300"
+          >
+            ← Back to Home
+          </a>
+        </div>
+      </header>
+
+      {/* Main Content */}
+      <main className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 py-12">
+        {/* Hero Section */}
+        <section className="mb-16 text-center">
+          <h1 className="text-4xl sm:text-5xl font-bold text-slate-900 dark:text-white mb-4">
+            Refer a Hosting Migration
+          </h1>
+          <p className="text-xl text-slate-600 dark:text-slate-300 mb-8">
+            Earn $100 in account credits for each friend you refer
+          </p>
+
+          
+        </section>
+
+        {/* How It Works Section */}
+        <section className="mb-16">
+          <h2 className="text-3xl font-bold text-slate-900 dark:text-white mb-12 text-center">
+            How It Works
+          </h2>
+          <div className="grid md:grid-cols-4 gap-6">
+            {[
+              { step: "1", title: "Enter Email", desc: "Add your friend's email address" },
+              { step: "2", title: "We Send", desc: "Introduction email from our team" },
+              { step: "3", title: "They Migrate", desc: "Your friend migrates to TWS" },
+              { step: "4", title: "You Earn", desc: "$100 credit on your account" },
+            ].map((item) => (
+              <div key={item.step} className="text-center">
+                <div className="w-16 h-16 bg-blue-600 dark:bg-blue-500 text-white rounded-full flex items-center justify-center text-2xl font-bold mx-auto mb-4">
+                  {item.step}
+                </div>
+                <h3 className="text-lg font-semibold text-slate-900 dark:text-white mb-2">
+                  {item.title}
+                </h3>
+                <p className="text-slate-600 dark:text-slate-400">{item.desc}</p>
+              </div>
+            ))}
+          </div>
+        </section>
+
+        {/* Main CTA Form Section */}
+        <section className="mb-16 bg-white dark:bg-slate-800 rounded-lg shadow-lg p-8 sm:p-12">
+          <h2 className="text-2xl font-bold text-slate-900 dark:text-white mb-6 text-center">
+            Get Started
+          </h2>
+          <p className="text-center text-slate-600 dark:text-slate-400 mb-8">
+            Enter your friend's email and we'll send them an introduction.
+          </p>
+
+          <ReferralForm
+            onSubmit={handleFormSubmit}
+            isLoading={submissionState === "loading"}
+          />
+
+          {/* Success Message */}
+          {submissionState === "success" && (
+            <div className="mt-8 p-6 bg-green-50 dark:bg-green-950 border border-green-200 dark:border-green-800 rounded-lg flex gap-4">
+              <CheckCircle className="w-6 h-6 text-green-600 dark:text-green-400 flex-shrink-0" />
+              <div>
+                <h3 className="font-semibold text-green-900 dark:text-green-100 mb-1">
+                  Success!
+                </h3>
+                <p className="text-green-800 dark:text-green-300 text-sm">
+                  Introduction email sent to {successEmail}. We're tracking this
+                  referral and you'll get your $100 credit once the migration is
+                  complete.
+                </p>
+              </div>
+            </div>
+          )}
+
+          {/* Error Message */}
+          {submissionState === "error" && (
+            <div className="mt-8 p-6 bg-red-50 dark:bg-red-950 border border-red-200 dark:border-red-800 rounded-lg flex gap-4">
+              <AlertCircle className="w-6 h-6 text-red-600 dark:text-red-400 flex-shrink-0" />
+              <div>
+                <h3 className="font-semibold text-red-900 dark:text-red-100 mb-1">
+                  Error
+                </h3>
+                <p className="text-red-800 dark:text-red-300 text-sm">
+                  {errorMessage}
+                </p>
+              </div>
+            </div>
+          )}
+        </section>
+
+        {/* Benefits Section */}
+        <section className="mb-16">
+          <h2 className="text-3xl font-bold text-slate-900 dark:text-white mb-8 text-center">
+            Why Refer?
+          </h2>
+          <div className="grid md:grid-cols-3 gap-6">
+            {[
+              {
+                title: "Help Your Friends",
+                desc: "Get them expert support with a seamless hosting migration",
+              },
+              {
+                title: "Unlimited Referrals",
+                desc: "There's no limit—earn $100 for each friend who migrates",
+              },
+              {
+                title: "Build Community",
+                desc: "Be part of a growing network of happy TWS customers",
+              },
+            ].map((item, idx) => (
+              <div
+                key={idx}
+                className="p-6 bg-blue-50 dark:bg-slate-800 rounded-lg border border-blue-200 dark:border-slate-700"
+              >
+                <h3 className="text-lg font-semibold text-slate-900 dark:text-white mb-3">
+                  {item.title}
+                </h3>
+                <p className="text-slate-700 dark:text-slate-300">{item.desc}</p>
+              </div>
+            ))}
+          </div>
+        </section>
+
+        {/* Bradshaw Design Partner Spotlight */}
+        <section className="mb-16">
+          <PartnerSpotlight
+            icon="🎨"
+            name="Bradshaw Design"
+            subtitle="Premium Web Design & Branding"
+            description="Premium web design and branding services to complement your hosting. Build a beautiful online presence that matches your hosting excellence."
+            ctaText="Visit Bradshaw Design"
+            ctaUrl="https://bradshawdesign.ca"
+            badge="Featured Partner"
+            bgImg="https://bradshawdesign.ca/wp-content/themes/bradshawdesign/images/bg-slides/eedda2eb.slide-1.jpg"
+            colorScheme={{
+              light: "bg-gradient-to-br from-purple-50 to-indigo-50",
+              dark: "dark:bg-gradient-to-br dark:from-purple-950 dark:to-indigo-950",
+              border: "border-purple-200",
+              darkBorder: "dark:border-purple-800",
+              accent: "text-purple-600",
+              darkAccent: "dark:text-purple-400",
+            }}
+          />
+        </section>
+
+        {/* FAQ Section */}
+        <section className="mb-16">
+          <h2 className="text-3xl font-bold text-slate-900 dark:text-white mb-8 text-center">
+            Frequently Asked Questions
+          </h2>
+          <div className="space-y-6">
+            {[
+              {
+                q: "How do you track referrals?",
+                a: "We track each introduction email we send. When your referred friend completes their first bill payment with us, we'll add the $100 credit to your account.",
+              },
+              {
+                q: "When do I get my $100 credit?",
+                a: "Your $100 account credit is awarded after your referred customer's first bill is paid. We handle this manually to ensure accuracy.",
+              },
+              {
+                q: "Can I refer someone who's already using TWS?",
+                a: "No, we only offer credits for new customer migrations. If the email is already associated with an active account, we'll let you know.",
+              },
+              {
+                q: "What counts as a successful migration?",
+                a: "A successful migration is when your referred customer completes their first billing cycle with us. That's when your $100 credit is activated.",
+              },
+              {
+                q: "Is there a limit to how many people I can refer?",
+                a: "No! Refer as many friends as you'd like. Each successful migration earns you another $100 credit.",
+              },
+              {
+                q: "Who should I contact with questions?",
+                a: "You can reply to the introduction email or reach out to our team at help@tranmer.ca",
+              },
+            ].map((item, idx) => (
+              <details
+                key={idx}
+                className="group cursor-pointer bg-slate-50 dark:bg-slate-800 p-6 rounded-lg border border-slate-200 dark:border-slate-700"
+              >
+                <summary className="flex items-start justify-between font-semibold text-slate-900 dark:text-white">
+                  <span className="flex items-center gap-3">
+                    <HelpCircle className="w-5 h-5 text-blue-600 dark:text-blue-400 flex-shrink-0" />
+                    {item.q}
+                  </span>
+                  <span className="text-slate-400 group-open:rotate-180 transition-transform">
+                    ▼
+                  </span>
+                </summary>
+                <p className="mt-4 text-slate-700 dark:text-slate-300">{item.a}</p>
+              </details>
+            ))}
+          </div>
+        </section>
+
+        {/* Contact CTA */}
+        <section className="text-center bg-gradient-to-r from-blue-600 to-blue-700 dark:from-blue-700 dark:to-blue-800 rounded-lg p-12 text-white">
+          <h2 className="text-3xl font-bold mb-4">Have Questions?</h2>
+          <p className="text-lg mb-8 text-blue-100">
+            Our team is here to help. Reach out anytime.
+          </p>
+          <a
+            href="mailto:help@tranmer.ca"
+            className="inline-block bg-white text-blue-600 font-semibold px-8 py-3 rounded-lg hover:bg-blue-50 transition-colors"
+          >
+            Contact Us
+          </a>
+        </section>
+      </main>
+
+      {/* Footer */}
+      <footer className="bg-white dark:bg-slate-900 border-t border-slate-200 dark:border-slate-800 mt-20">
+        <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+          <p className="text-center text-slate-600 dark:text-slate-400 text-sm">
+            TWS Referral Program • February 2026
+          </p>
+        </div>
+      </footer>
+    </div>
+  );
+}
