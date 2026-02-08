@@ -97,6 +97,8 @@ export default function ReferralPage() {
               </div>
             ))}
           </div>
+          <br/><br/>
+          <p className="text-center">In order to ensure you get credit for the referral, enter your TWS billing address in the second field in the form below.</p>
         </section>
 
         {/* Main CTA Form Section */}
@@ -159,7 +161,7 @@ export default function ReferralPage() {
               },
               {
                 title: "Unlimited Referrals",
-                desc: "There's no limit—earn $100 for each friend who migrates",
+                desc: "there's an annual max - earn up to $500 credit per year",
               },
               {
                 title: "Build Community",
