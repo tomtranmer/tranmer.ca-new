@@ -411,10 +411,19 @@ export async function POST(request: NextRequest) {
     const safeError = error instanceof Error ? error.message : 'Unknown error';
     console.error('Error submitting referral:', safeError);
 
-    const errorMessage = safeError;
+    // Check if this is a database connection error
+    if (safeError.includes('ECONNREFUSED') || safeError.includes('DATABASE_URL')) {
+      return NextResponse.json(
+        { 
+          message: 'Service temporarily unavailable. Please try again in a few moments.',
+          error: 'Database connection error - please check that DATABASE_URL is configured',
+        },
+        { status: 503 }
+      );
+    }
 
     return NextResponse.json(
-      { message: `Failed to send referral: ${errorMessage}` },
+      { message: `Failed to send referral: ${safeError}` },
       { status: 500 }
     );
   }

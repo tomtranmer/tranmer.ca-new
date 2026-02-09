@@ -1,19 +1,35 @@
 import { Pool, QueryResult } from 'pg';
 
+// Validate DATABASE_URL is set
+if (!process.env.DATABASE_URL) {
+  throw new Error(
+    'DATABASE_URL environment variable is not set. ' +
+    'Please configure your database connection string in your environment variables. ' +
+    'For Vercel: Add DATABASE_URL to Project Settings > Environment Variables'
+  );
+}
+
 // Create a single pool instance to be reused across the application
 let pool: Pool | null = null;
 
 function getPool(): Pool {
   if (!pool) {
+    const url = process.env.DATABASE_URL;
+    if (!url) {
+      throw new Error('DATABASE_URL is not configured');
+    }
+
     pool = new Pool({
-      connectionString: process.env.DATABASE_URL,
+      connectionString: url,
       ssl: {
         rejectUnauthorized: false,
       },
     });
 
     pool.on('error', (err) => {
-      console.error('Unexpected error on idle client', err);
+      // Only log safe error message
+      const safeError = err instanceof Error ? err.message : 'Unknown error';
+      console.error('Unexpected error on idle client:', safeError);
     });
   }
 
