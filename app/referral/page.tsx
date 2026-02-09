@@ -5,6 +5,7 @@ import Link from "next/link";
 import { CheckCircle, AlertCircle, HelpCircle } from "lucide-react";
 import { ReferralForm } from "@/components/ReferralForm";
 import { PartnerSpotlight } from "@/components/PartnerSpotlight";
+import { trackReferralSubmission, trackReferralError } from "@/lib/analytics";
 
 export default function ReferralPage() {
   const [submissionState, setSubmissionState] = useState<
@@ -26,19 +27,24 @@ export default function ReferralPage() {
 
       if (!response.ok) {
         const error = await response.json();
-        throw new Error(error.message || "Failed to send referral email");
+        const errorMsg = error.message || "Failed to send referral email";
+        trackReferralError(errorMsg);
+        throw new Error(errorMsg);
       }
 
       setSuccessEmail(referredEmail);
       setSubmissionState("success");
+      
+      // Track successful referral submission
+      trackReferralSubmission(referredEmail, !!referrerEmail);
+      
       setTimeout(() => {
         setSubmissionState("idle");
         setSuccessEmail("");
       }, 5000);
     } catch (error) {
-      setErrorMessage(
-        error instanceof Error ? error.message : "An error occurred"
-      );
+      const errorMsg = error instanceof Error ? error.message : "An error occurred";
+      setErrorMessage(errorMsg);
       setSubmissionState("error");
     }
   };

@@ -191,7 +191,7 @@ export async function POST(request: NextRequest) {
           <p>If you're interested in learning more about hosting migration or would like to discuss your current setup, we'd love to hear from you.</p>
 
           <center>
-            <a href="mailto:help@tranmer.ca" class="cta-button">Request a Free Estimate</a>
+            <a href="mailto:help@tranmer.ca?subject=Hosting%20Services%20Estimate&body=Please%20send%20estimate%20for%20basic%20hosting%20service%20so%20I%20can%20compare%20prices." class="cta-button">Request a Free Estimate</a>
           </center>
 
           <p>You can also reply directly to this email to ask any questions or start a conversation with our team.</p>
