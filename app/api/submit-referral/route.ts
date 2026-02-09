@@ -171,7 +171,7 @@ export async function POST(request: NextRequest) {
       </head>
       <body>
         <div class="header">
-          <h1>Welcome to TWS Hosting!</h1>
+          <h1>Offer to Join TWS Hosting!</h1>
         </div>
         <div class="content">
           <div class="intro">
@@ -183,14 +183,15 @@ export async function POST(request: NextRequest) {
           <div class="benefits">
             <div class="benefit-item">Zero-downtime migrations</div>
             <div class="benefit-item">Expert migration support</div>
+            <div class="benefit-item"><strong>$100 site launch cost waived</strong></div>
             <div class="benefit-item">Competitive pricing</div>
-            <div class="benefit-item">24/7 customer support</div>
+            <div class="benefit-item">Support Local Small Business</div>
           </div>
 
           <p>If you're interested in learning more about hosting migration or would like to discuss your current setup, we'd love to hear from you.</p>
 
           <center>
-            <a href="https://tranmer.ca/referral" class="cta-button">Learn More About Our Services</a>
+            <a href="mailto:help@tranmer.ca" class="cta-button">Request a Free Estimate</a>
           </center>
 
           <p>You can also reply directly to this email to ask any questions or start a conversation with our team.</p>
@@ -209,7 +210,7 @@ export async function POST(request: NextRequest) {
     const ccList = referrerEmail ? referrerEmail : undefined;
     
     try {
-      // Send email with 15 second timeout
+      // Send email to referee with 15 second timeout
       await Promise.race([
         transporter.sendMail({
           from: process.env.SMTP_USER || 'help@tranmer.ca',
@@ -226,8 +227,152 @@ export async function POST(request: NextRequest) {
       // Log email error but continue - referral is still tracked
       // Only log safe error message, not the full error object which may contain sensitive data
       const safeError = emailError instanceof Error ? emailError.message : 'Unknown error';
-      console.error('Email sending failed:', safeError);
-      // Still proceed with storing the referral
+      console.error('Email sending failed (referee):', safeError);
+      // Still proceed with sending referrer email and storing the referral
+    }
+
+    // Send thank you email to referrer if provided
+    if (referrerEmail) {
+      const referrerEmailHtml = `
+        <!DOCTYPE html>
+        <html>
+        <head>
+          <meta charset="UTF-8">
+          <meta name="viewport" content="width=device-width, initial-scale=1.0">
+          <style>
+            body {
+              font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Arial, sans-serif;
+              line-height: 1.6;
+              color: #333;
+            }
+            .container {
+              max-width: 600px;
+              margin: 0 auto;
+            }
+            .header {
+              background: linear-gradient(135deg, #2563eb 0%, #1d4ed8 100%);
+              color: white;
+              padding: 40px 20px;
+              border-radius: 12px 12px 0 0;
+              text-align: center;
+            }
+            .header h1 {
+              margin: 0;
+              font-size: 28px;
+              font-weight: 700;
+            }
+            .content {
+              background: white;
+              padding: 40px 30px;
+              border-radius: 0 0 12px 12px;
+              box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+            }
+            .greeting {
+              font-size: 16px;
+              color: #4b5563;
+              margin-bottom: 20px;
+            }
+            .highlight-box {
+              background-color: #f0f9ff;
+              border-left: 4px solid #2563eb;
+              border-radius: 4px;
+              padding: 20px;
+              margin: 20px 0;
+            }
+            .highlight-box strong {
+              color: #1e293b;
+            }
+            .step-list {
+              margin: 30px 0;
+            }
+            .step {
+              padding: 12px 0;
+              padding-left: 25px;
+              color: #475569;
+              position: relative;
+            }
+            .step:before {
+              content: attr(data-step);
+              position: absolute;
+              left: 0;
+              background-color: #2563eb;
+              color: white;
+              width: 20px;
+              height: 20px;
+              border-radius: 50%;
+              display: flex;
+              align-items: center;
+              justify-content: center;
+              font-size: 12px;
+              font-weight: bold;
+            }
+            .footer {
+              margin-top: 40px;
+              padding-top: 20px;
+              border-top: 1px solid #e2e8f0;
+              font-size: 14px;
+              color: #64748b;
+              text-align: center;
+            }
+          </style>
+        </head>
+        <body>
+          <div class="container">
+            <div class="header">
+              <h1>Thanks for the Referral!</h1>
+            </div>
+            <div class="content">
+              <p class="greeting">Hi ${referrerEmail},</p>
+              
+              <p>We've just sent an introduction email to <strong>${referredEmail}</strong> telling them about your experience with TWS Hosting.</p>
+              
+              <div class="highlight-box">
+                <strong>As one of our valued customers, we really appreciate you sharing TWS with your network.</strong>
+              </div>
+
+              <p>Here's how the referral process works:</p>
+              
+              <div class="step-list">
+                <div class="step" data-step="1">If they decide to migrate to TWS, we'll handle the entire process seamlessly</div>
+                <div class="step" data-step="2">Once they complete their first billing cycle with us, we'll add the $100 credit to your account</div>
+                <div class="step" data-step="3">You can earn up to $500 in referral credits per year</div>
+              </div>
+
+              <p>Keep an eye on your inbox — we'll follow up when the referral is complete so you know you've earned your credit.</p>
+
+              <p>Questions? Feel free to reply to this email or reach out to our team anytime.</p>
+
+              <div class="footer">
+                <p>Thanks again for being part of the TWS community!<br>
+                <strong>The TWS Hosting Team</strong><br>
+                <a href="mailto:help@tranmer.ca" style="color: #2563eb; text-decoration: none;">help@tranmer.ca</a></p>
+              </div>
+            </div>
+          </div>
+        </body>
+        </html>
+      `;
+
+      try {
+        // Send thank you email to referrer with 15 second timeout
+        await Promise.race([
+          transporter.sendMail({
+            from: process.env.SMTP_USER || 'help@tranmer.ca',
+            to: referrerEmail,
+            subject: 'Thanks for Referring a Friend to TWS!',
+            html: referrerEmailHtml,
+          }),
+          new Promise((_, reject) =>
+            setTimeout(() => reject(new Error('Email sending timeout')), 15000)
+          ),
+        ]);
+      } catch (referrerEmailError) {
+        // Log email error but continue - referral is still tracked
+        // Only log safe error message, not the full error object which may contain sensitive data
+        const safeError = referrerEmailError instanceof Error ? referrerEmailError.message : 'Unknown error';
+        console.error('Email sending failed (referrer thank you):', safeError);
+        // Still proceed with storing the referral
+      }
     }
 
     // Store referral in database
@@ -255,7 +400,7 @@ export async function POST(request: NextRequest) {
         success: true,
         message: referralStatus === 'OVER_LIMIT' 
           ? `Referral saved for ${referredEmail}. Note: You have exceeded the 5 referral promotional limit, but we're still tracking this.`
-          : `Introduction email sent to ${referredEmail}`,
+          : `Introduction email sent to ${referredEmail}${referrerEmail ? ' and thank you email sent to ' + referrerEmail : ''}`,
         referralId,
         status: referralStatus,
       },
