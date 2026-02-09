@@ -5,6 +5,7 @@ import Link from "next/link";
 import { CheckCircle, AlertCircle, HelpCircle } from "lucide-react";
 import { ReferralForm } from "@/components/ReferralForm";
 import { PartnerSpotlight } from "@/components/PartnerSpotlight";
+import { trackReferralSubmission, trackReferralError } from "@/lib/analytics";
 
 export default function ReferralPage() {
   const [submissionState, setSubmissionState] = useState<
@@ -26,19 +27,24 @@ export default function ReferralPage() {
 
       if (!response.ok) {
         const error = await response.json();
-        throw new Error(error.message || "Failed to send referral email");
+        const errorMsg = error.message || "Failed to send referral email";
+        trackReferralError(errorMsg);
+        throw new Error(errorMsg);
       }
 
       setSuccessEmail(referredEmail);
       setSubmissionState("success");
+      
+      // Track successful referral submission
+      trackReferralSubmission(referredEmail, !!referrerEmail);
+      
       setTimeout(() => {
         setSubmissionState("idle");
         setSuccessEmail("");
       }, 5000);
     } catch (error) {
-      setErrorMessage(
-        error instanceof Error ? error.message : "An error occurred"
-      );
+      const errorMsg = error instanceof Error ? error.message : "An error occurred";
+      setErrorMessage(errorMsg);
       setSubmissionState("error");
     }
   };
@@ -97,6 +103,8 @@ export default function ReferralPage() {
               </div>
             ))}
           </div>
+          <br/><br/>
+          <p className="text-center">In order to ensure you get credit for the referral, enter your TWS billing address in the second field in the form below.</p>
         </section>
 
         {/* Main CTA Form Section */}
@@ -159,7 +167,7 @@ export default function ReferralPage() {
               },
               {
                 title: "Unlimited Referrals",
-                desc: "There's no limit—earn $100 for each friend who migrates",
+                desc: "there's an annual max - earn up to $500 credit per year",
               },
               {
                 title: "Build Community",
