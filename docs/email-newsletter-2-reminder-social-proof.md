@@ -1,8 +1,9 @@
 # Email Newsletter #2: Reminder + Social Proof
 **Subject:** See Who's Already Earning Referral Credits (and How)  
-**Send Date:** Feb 10-14, 2026  
+**Send Date:** Feb 16-20, 2026  
 **Segment:** Customers who received Email #1 but didn't refer yet  
 **From:** help@tranmer.ca  
+**Offer Deadline:** March 23, 2026 (6 weeks)  
 
 ---
 
@@ -61,11 +62,9 @@ https://tranmer.ca/referral
 
 ---
 
-### Limited Time Bonus (Optional)
+### Limited Time Deadline Reminder
 
-**February Special:** Refer before the end of the month and get early notification when your referral's first billing cycles. First to $500 in referral credits wins TWS premium support for 3 months!*
-
-*See referral page for details
+**⏰ Don't Wait:** This special $100-per-referral offer is only available through **March 23, 2026**. After that date, terms may change. Lock in your credits now!
 
 ---
 

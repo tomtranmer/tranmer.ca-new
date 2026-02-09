@@ -1,8 +1,9 @@
 # Email Newsletter #1: Campaign Announcement
 **Subject:** Earn $100 for Each Hosting Migration You Refer  
-**Send Date:** Feb 3-7, 2026  
+**Send Date:** Feb 9, 2026  
 **Segment:** Existing TWS hosting customers  
 **From:** help@tranmer.ca  
+**Offer Deadline:** March 23, 2026 (6 weeks)  
 
 ---
 
@@ -37,7 +38,8 @@ TWS is here to support small business. We help those who need limited IT and sup
 4. **You earn $100** → Get $100 account credit applied to your account
 
 **The offer:**  
-Earn $100 in hosting credit for each friend you refer. Maximum of $500 per calendar year.
+Earn $100 in hosting credit for each friend you refer. Maximum of $500 per calendar year.  
+**⏰ Limited Time:** This special offer is available for 6 weeks only—through **March 23, 2026** for current hosting clients.
 
 ---
 

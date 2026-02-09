@@ -65,6 +65,16 @@ export default function ReferralPage() {
 
       {/* Main Content */}
       <main className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 py-12">
+        {/* Limited Time Offer Notice */}
+        <div className="mb-8 bg-gradient-to-r from-amber-50 to-orange-50 dark:from-amber-950 dark:to-orange-950 border-2 border-amber-300 dark:border-amber-700 rounded-lg p-4 sm:p-6">
+          <p className="text-center text-amber-900 dark:text-amber-100 font-semibold text-lg">
+            ⏰ <strong>Limited Time Offer</strong>
+          </p>
+          <p className="text-center text-amber-800 dark:text-amber-200 mt-2">
+            Act now, this offer will be available to current hosting clients for 6 weeks — through <strong>March 23, 2026</strong>
+          </p>
+        </div>
+
         {/* Hero Section */}
         <section className="mb-16 text-center">
           <h1 className="text-4xl sm:text-5xl font-bold text-slate-900 dark:text-white mb-6">
