@@ -1,8 +1,9 @@
 # Email Newsletter #3: Last Call / Urgency
-**Subject:** Last Days: Earn $100 Per Referral—February Deadline  
-**Send Date:** Feb 24-28, 2026  
+**Subject:** Last Week: Earn $100 Per Referral—Campaign Ends March 23  
+**Send Date:** March 16-20, 2026  
 **Segment:** All customers who haven't referred anyone yet  
 **From:** help@tranmer.ca  
+**Offer Deadline:** March 23, 2026 (5 days left)  
 
 ---
 
@@ -20,11 +21,11 @@ Campaign ends Feb 28. Don't miss your chance to earn referral credits. Just 3 da
 
 ### Main Content (Urgent Version)
 
-**Subject: Last Chance: February Referral Campaign Ends Soon**
+**Subject: Last Week: Earn $100 Per Referral—Campaign Ends March 23**
 
 Hi [First Name],
 
-⏰ **Time's running out!** Our February referral campaign ends in **3 days**, and we want to make sure you don't miss out.
+⏰ **Time's running out!** Our limited-time referral campaign ends in **5 days** (March 23), and we want to make sure you don't miss out.
 
 If you've been thinking about referring a friend, now is the moment. It takes just 60 seconds.
 
@@ -62,7 +63,7 @@ We've made it absurdly easy:
 **Earn Your $100 Credit Now**  
 https://tranmer.ca/referral
 
-**Campaign ends February 28, 2026**
+**Campaign ends March 23, 2026** (5 days left!)
 
 ---
 
@@ -88,16 +89,16 @@ Zero. You're just making an introduction. No upfront payment, no hidden fees.
 
 ### FOMO + Benefit Reminder
 
-**Don't Wait for March**
+**Don't Miss the Deadline**
 
-Starting March 1st, our standard referral program takes over (different terms apply). Lock in the February $100-per-referral deal while you can.
+After March 23, this limited-time offer ends. Starting March 24th, our standard referral program takes over (different terms apply). Lock in the $100-per-referral deal while you can.
 
 ---
 
 ### Call to Action (Secondary)
 
 [SECONDARY CTA BUTTON]  
-**Refer Before Midnight on Feb 28**  
+**Refer Before Midnight on March 23**  
 https://tranmer.ca/referral
 
 ---
@@ -113,7 +114,7 @@ We'd love to help you earn some credits!
 ### Footer
 
 TWS Hosting | February 2026 Referral Campaign  
-**Campaign ends February 28, 2026 at 11:59 PM EST**  
+**Campaign ends March 23, 2026 at 11:59 PM EST**  
 [SOCIAL LINKS]  
 [PREFERENCES/UNSUBSCRIBE]
 

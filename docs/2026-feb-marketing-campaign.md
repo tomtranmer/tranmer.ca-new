@@ -23,27 +23,28 @@
 
 ---
 
-## Phase 1: Email Newsletter Campaign (Weeks 1-3)
+## Phase 1: Email Newsletter Campaign (Weeks 1-6)
 
-### Email #1 - Announcement (Feb 3-7)
+### Email #1 - Announcement (Feb 9)
 - **Subject:** "Earn $100 for Each Hosting Migration You Refer"
-- **Content:** Campaign launch, benefits, referral process, CTA to landing page
+- **Content:** Campaign launch, benefits, referral process, CTA to landing page, March 23 deadline
 - **Segment:** Existing hosting customers
 
-### Email #2 - Reminder + Success Stories (Feb 10-14)
+### Email #2 - Reminder + Success Stories (Feb 16-20)
 - **Subject:** "See who's already earning referral credits (and how)"
-- **Content:** Early referral wins, testimonials, social proof
+- **Content:** Early referral wins, testimonials, social proof, reminder of March 23 deadline
 - **CTA:** Refer now link
 
-### Email #3 - Last Call (Feb 24-28)
-- **Subject:** "Last days: Earn $100 per referral—February deadline"
-- **Content:** Urgency, easy process reminder, benefits summary
+### Email #3 - Last Call (March 16-20)
+- **Subject:** "Final week: Earn $100 per referral—Campaign ends March 23"
+- **Content:** Urgency (final week), easy process reminder, benefits summary, March 23 deadline
 - **CTA:** Prominent referral link
 
 ### Newsletter Components Needed
 - HTML email templates (Mailchimp/similar)
 - Unsubscribe links (compliance)
 - Link to landing page with tracking UTM parameters
+- **Limited Time Offer messaging**: "Act now, this offer will be available to current hosting clients for 6 weeks—through March 23, 2026"
 
 ---
 
@@ -234,18 +235,17 @@ PGHOST, PGUSER, PGPASSWORD, etc. # Connection parameters
 ## Timeline
 
 - **Jan 27-Feb 1:** Planning + Design feedback
-- **Feb 1-3:** Frontend build (landing page + form)
-- **Feb 3-6:** Backend build (API + email integration)
-- **Feb 6-7:** Testing + QA
-- **Feb 7:** Launch campaign
-- **Feb 7-28:** Run campaign + monitor metrics
-- **Mar 1+:** Analyze results + iterate
+- **Feb 1-6:** Frontend + Backend build (landing page, form, API + email integration)
+- **Feb 6-8:** Testing + QA
+- **Feb 9:** Launch campaign (Email #1)
+- **Feb 9-Mar 23:** Run campaign + monitor metrics
+- **Mar 24+:** Analyze results + iterate
 
 ---
 
 ---
 
-## Implementation Status (Updated Feb 8, 2026 - TESTING COMPLETE)
+## Implementation Status (Updated Feb 9, 2026 - CAMPAIGN LAUNCHED)
 
 ### ✅ COMPLETED & TESTED
 - **Landing Page:** Created at `/referral` route with full UI
