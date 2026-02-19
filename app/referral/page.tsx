@@ -73,6 +73,9 @@ export default function ReferralPage() {
           <p className="text-center text-amber-800 dark:text-amber-200 mt-2">
             Act now, this offer will be available to current hosting clients for 6 weeks — through <strong>March 23, 2026</strong>
           </p>
+          <p className="text-center text-amber-800 dark:text-amber-200 mt-2">
+          Not yet a client? No problem! Sign up for hosting and save the $100 setup fee and you'll be eligible to refer friends and earn credits too. <Link href="https://web.tranmer.ca" className="text-amber-600 dark:text-amber-400 font-medium hover:underline">Learn about our hosting plans →</Link>
+          </p>
         </div>
 
         {/* Hero Section */}
