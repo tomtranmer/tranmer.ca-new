@@ -6,11 +6,15 @@ import landscape from "@/public/landscape.jpg";
 import { PhoneFrame } from "@/components/PhoneFrame";
 import { ThemeToggle } from "@/components/ThemeToggle";
 import SplashScreen from "@/components/SplashScreen";
+import { usePageTracking } from "@/lib/usePageTracking";
 
 export default function Home() {
   const usePhotoWallpaper = process.env.NEXT_PUBLIC_PHONE_WALLPAPER === "photo";
   const usePhotoBackground = process.env.NEXT_PUBLIC_SITE_WALLPAPER === "photo";
   const [showSplash, setShowSplash] = useState(true);
+
+  // Track page interactions
+  usePageTracking();
 
   useEffect(() => {
     if (!showSplash) return;

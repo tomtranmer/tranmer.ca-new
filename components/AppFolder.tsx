@@ -3,6 +3,7 @@
 import { useState } from "react";
 import Image from "next/image";
 import { AppIcon, type AppIconProps } from "./AppIcon";
+import { trackAppFolderOpen } from "@/lib/analytics";
 
 export type AppFolderProps = {
   label: string;
@@ -15,6 +16,7 @@ export function AppFolder({ label, gradient, apps }: AppFolderProps) {
 
   const openFolder = () => {
     setIsOpen(true);
+    trackAppFolderOpen(label, apps.length);
   };
 
   const closeFolder = () => {
