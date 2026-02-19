@@ -86,13 +86,13 @@ export function AppGrid({ onModalChange }: AppGridProps) {
       gradient: "bg-gradient-to-br from-sky-500 to-indigo-500",
       openInNewWindow: true
     },
-    {
-      href: "https://sb-tracker.tranmer.ca",
-      label: "SB_Tracker",
-      emoji: "📈",
-      gradient: "bg-gradient-to-br from-emerald-400 to-teal-600",
-      openInNewWindow: true
-    },
+    // {
+    //   href: "https://sb-tracker.tranmer.ca",
+    //   label: "SB_Tracker",
+    //   emoji: "📈",
+    //   gradient: "bg-gradient-to-br from-emerald-400 to-teal-600",
+    //   openInNewWindow: true
+    // },
     {
       href: "https://opm.tranmer.ca",
       label: "OfficePools",
@@ -115,6 +115,13 @@ export function AppGrid({ onModalChange }: AppGridProps) {
       openInNewWindow: true,
       iconSrc: "/icons/mycar-icon-real.png",
       iconBorder: "border-blue-300/60"
+    },
+    {
+      href: "https://teamup.tranmer.ca",
+      label: "Team-Up Invest",
+      emoji: "💹",
+      gradient: "bg-gradient-to-br from-teal-500 to-cyan-600",
+      openInNewWindow: true
     }
   ];
 

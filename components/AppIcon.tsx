@@ -1,5 +1,6 @@
 import Link from "next/link";
 import Image from "next/image";
+import { trackAppIconClick, trackExternalLinkClick } from "@/lib/analytics";
 
 export type AppIconProps = {
   href: string;
@@ -18,6 +19,14 @@ export function AppIcon({ href, label, emoji, gradient, openInNewWindow = false,
   const iconClasses = iconSrc 
     ? `border-2 ${iconBorder || 'border-white/20'}`
     : `${gradient} border border-white/20`;
+
+  const handleClick = () => {
+    if (isExternal) {
+      trackExternalLinkClick(label, href);
+    } else {
+      trackAppIconClick(label, href);
+    }
+  };
   
   if (isExternal && openInNewWindow) {
     return (
@@ -27,6 +36,7 @@ export function AppIcon({ href, label, emoji, gradient, openInNewWindow = false,
         rel="noopener noreferrer"
         className="group flex flex-col items-center gap-2"
         aria-label={label}
+        onClick={handleClick}
       >
         <div
           className={`w-20 h-20 sm:w-24 sm:h-24 lg:w-[77px] lg:h-[77px] rounded-2xl shadow-lg shadow-black/20 dark:shadow-black/40 grid place-items-center text-3xl sm:text-4xl lg:text-3xl text-white ${iconClasses} transition-transform group-active:scale-95 overflow-hidden`}
@@ -55,6 +65,7 @@ export function AppIcon({ href, label, emoji, gradient, openInNewWindow = false,
       href={href}
       className="group flex flex-col items-center gap-2"
       aria-label={label}
+      onClick={handleClick}
     >
       <div
         className={`w-20 h-20 sm:w-24 sm:h-24 lg:w-[77px] lg:h-[77px] rounded-2xl shadow-lg shadow-black/20 dark:shadow-black/40 grid place-items-center text-3xl sm:text-4xl lg:text-3xl text-white ${iconClasses} transition-transform group-active:scale-95 overflow-hidden`}

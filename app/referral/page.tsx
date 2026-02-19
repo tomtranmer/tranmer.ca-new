@@ -219,6 +219,48 @@ export default function ReferralPage() {
           />
         </section>
 
+        <section className="mb-16">
+          <PartnerSpotlight
+            icon="📊"
+            name="SB Tracker"
+            subtitle="Business Financial Tracking & Analytics"
+            description="SB Tracker helps you monitor your business finances in real-time. Check your 2025 taxes in 10 minutes. Get insights into your spending, revenue, and profitability to make smarter business decisions. Track every dollar and optimize your bottom line."
+            ctaText="Visit SB Tracker"
+            ctaUrl="https://sb-tracker.tranmer.ca"
+            badge="Featured Partner"
+            bgImg="/backgrounds/sb_tracker.jpg"
+            colorScheme={{
+              light: "bg-gradient-to-br from-blue-50 to-cyan-50",
+              dark: "dark:bg-gradient-to-br dark:from-blue-950 dark:to-cyan-950",
+              border: "border-blue-200",
+              darkBorder: "dark:border-blue-800",
+              accent: "text-blue-600",
+              darkAccent: "dark:text-blue-400",
+            }}
+          />
+        </section>
+
+        <section className="mb-16">
+          <PartnerSpotlight
+            icon="🥩"
+            name="Great Canadian Meat"
+            subtitle="Premium Quality Meats & Butchery"
+            description="Great Canadian Meat is your trusted source for premium quality meats and butchery services. From fresh cuts to specialty items, they provide the finest meats for your family and business. Experience quality, freshness, and exceptional service."
+            ctaText="Visit Great Canadian Meat"
+            ctaUrl="https://greatcanadianmeat.com"
+            badge="Featured Partner"
+            bgImg="https://greatcanadianmeat.com/wp-content/uploads/2020/10/new-home-9.jpg"
+            colorScheme={{
+              light: "bg-gradient-to-br from-red-50 to-orange-50",
+              dark: "dark:bg-gradient-to-br dark:from-red-950 dark:to-orange-950",
+              border: "border-red-200",
+              darkBorder: "dark:border-red-800",
+              accent: "text-red-600",
+              darkAccent: "dark:text-red-400",
+            }}
+          />
+        </section>
+
         {/* Featured Partner CTA */}
         <div className="text-center mb-16">
           <a
