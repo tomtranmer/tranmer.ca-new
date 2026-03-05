@@ -1,0 +1,105 @@
+<svg viewBox="0 0 800 300" xmlns="http://www.w3.org/2000/svg">
+  <!-- Background -->
+  <defs>
+    <linearGradient id="bgGrad" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" style="stop-color:#f3f4f6;stop-opacity:1" />
+      <stop offset="100%" style="stop-color:#e5e7eb;stop-opacity:1" />
+    </linearGradient>
+    <linearGradient id="appGrad1" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" style="stop-color:#10b981;stop-opacity:1" />
+      <stop offset="100%" style="stop-color:#059669;stop-opacity:1" />
+    </linearGradient>
+    <linearGradient id="appGrad2" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" style="stop-color:#3b82f6;stop-opacity:1" />
+      <stop offset="100%" style="stop-color:#1d4ed8;stop-opacity:1" />
+    </linearGradient>
+    <linearGradient id="appGrad3" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" style="stop-color:#8b5cf6;stop-opacity:1" />
+      <stop offset="100%" style="stop-color:#6d28d9;stop-opacity:1" />
+    </linearGradient>
+  </defs>
+  
+  <rect width="800" height="300" fill="url(#bgGrad)"/>
+  
+  <!-- Left: Complicated Spreadsheet -->
+  <g opacity="0.6">
+    <!-- Spreadsheet icon -->
+    <rect x="40" y="60" width="140" height="140" fill="#f3f4f6" stroke="#9ca3af" stroke-width="2" rx="8"/>
+    <!-- Grid lines -->
+    <line x1="60" y1="80" x2="160" y2="80" stroke="#d1d5db" stroke-width="1"/>
+    <line x1="60" y1="95" x2="160" y2="95" stroke="#d1d5db" stroke-width="1"/>
+    <line x1="60" y1="110" x2="160" y2="110" stroke="#d1d5db" stroke-width="1"/>
+    <line x1="60" y1="125" x2="160" y2="125" stroke="#d1d5db" stroke-width="1"/>
+    <line x1="60" y1="140" x2="160" y2="140" stroke="#d1d5db" stroke-width="1"/>
+    <line x1="60" y1="155" x2="160" y2="155" stroke="#d1d5db" stroke-width="1"/>
+    <line x1="60" y1="170" x2="160" y2="170" stroke="#d1d5db" stroke-width="1"/>
+    <line x1="85" y1="80" x2="85" y2="180" stroke="#d1d5db" stroke-width="1"/>
+    <line x1="110" y1="80" x2="110" y2="180" stroke="#d1d5db" stroke-width="1"/>
+    <line x1="135" y1="80" x2="135" y2="180" stroke="#d1d5db" stroke-width="1"/>
+    <!-- Messy data indicators -->
+    <circle cx="70" cy="90" r="3" fill="#ef4444" opacity="0.7"/>
+    <circle cx="95" cy="100" r="3" fill="#ef4444" opacity="0.7"/>
+    <circle cx="120" cy="115" r="3" fill="#ef4444" opacity="0.7"/>
+  </g>
+  
+  <!-- Label: Spreadsheet -->
+  <text x="110" y="220" font-size="14" font-weight="600" text-anchor="middle" fill="#6b7280">
+    Complicated
+  </text>
+  
+  <!-- Arrow in middle -->
+  <g>
+    <line x1="220" y1="130" x2="320" y2="130" stroke="#d1d5db" stroke-width="3" marker-end="url(#arrowhead)"/>
+    <defs>
+      <marker id="arrowhead" markerWidth="10" markerHeight="10" refX="9" refY="3" orient="auto">
+        <polygon points="0 0, 10 3, 0 6" fill="#d1d5db" />
+      </marker>
+    </defs>
+    <text x="270" y="115" font-size="12" fill="#9ca3af" text-anchor="middle">Transform</text>
+  </g>
+  
+  <!-- Right: Three Modern Apps -->
+  <g>
+    <!-- App 1: SB_Tracker (Green) -->
+    <rect x="360" y="40" width="90" height="110" fill="url(#appGrad1)" rx="12" opacity="0.95"/>
+    <rect x="365" y="50" width="80" height="70" fill="rgba(255,255,255,0.15)" rx="8"/>
+    <text x="405" y="135" font-size="11" font-weight="600" text-anchor="middle" fill="#047857">
+      SB_Tracker
+    </text>
+    
+    <!-- App 2: MyMint (Blue) -->
+    <rect x="480" y="50" width="90" height="110" fill="url(#appGrad2)" rx="12" opacity="0.95"/>
+    <rect x="485" y="60" width="80" height="70" fill="rgba(255,255,255,0.15)" rx="8"/>
+    <text x="525" y="145" font-size="11" font-weight="600" text-anchor="middle" fill="#1e40af">
+      MyMint
+    </text>
+    
+    <!-- App 3: Team-Up (Purple) -->
+    <rect x="600" y="40" width="90" height="110" fill="url(#appGrad3)" rx="12" opacity="0.95"/>
+    <rect x="605" y="50" width="80" height="70" fill="rgba(255,255,255,0.15)" rx="8"/>
+    <text x="645" y="135" font-size="11" font-weight="600" text-anchor="middle" fill="#6d28d9">
+      Team-Up
+    </text>
+  </g>
+
+  <!-- Shared database below app badges -->
+  <g>
+    <ellipse cx="545" cy="190" rx="58" ry="12" fill="#cbd5e1"/>
+    <rect x="487" y="190" width="116" height="34" fill="#e2e8f0"/>
+    <ellipse cx="545" cy="224" rx="58" ry="12" fill="#cbd5e1"/>
+
+    <!-- Layer lines for database look -->
+    <ellipse cx="545" cy="202" rx="48" ry="8" fill="none" stroke="#94a3b8" stroke-width="1.5"/>
+    <ellipse cx="545" cy="214" rx="48" ry="8" fill="none" stroke="#94a3b8" stroke-width="1.5"/>
+  </g>
+  
+  <!-- Label: Apps -->
+  <text x="545" y="260" font-size="14" font-weight="600" text-anchor="middle" fill="#374151">
+    Modern Apps
+  </text>
+  
+  <!-- Bottom tagline -->
+  <text x="400" y="295" font-size="13" font-weight="500" text-anchor="middle" fill="#64748b">
+    Apps solve the problems spreadsheets create
+  </text>
+</svg>
