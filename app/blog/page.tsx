@@ -77,34 +77,34 @@ export default function BlogPage() {
 
           <h3 className="text-xl font-semibold mt-6 mb-3 text-gray-800">The Problem</h3>
           <p className="mb-4 text-gray-700">
-            A trader was maintaining a personal finance spreadsheet with manual bank feeds, Excel calculations for portfolio tracking, and handwritten notes on margin accounts. He'd often miss updates or calculate wrong—especially when markets moved fast.
+            At home, we were maintaining a personal finance spreadsheet with manual bank feeds, Excel calculations for portfolio tracking, and handwritten notes on all kinds of bills and accounts. We'd often miss updates or calculate wrong—especially when life was moving fast.
           </p>
           <blockquote className="my-6 px-6 py-4 bg-gray-100 border-l-4 border-green-600 italic text-gray-700">
-            "I'd open the spreadsheet and it would be three days out of date. I had no idea if I was actually up or down."
+            "I'd open the spreadsheet and it would be three days out of date. It would be hard to will myself to take the time to update it."
           </blockquote>
 
           <h3 className="text-xl font-semibold mt-6 mb-3 text-gray-800">The Solution</h3>
           <p className="mb-4 text-gray-700">
-            MyMint pulled all his accounts together—checking, savings, investment accounts, crypto wallets. Live portfolio dashboard. Automated categorization. Built-in daytrader tools for tracking position changes in real-time.
+            MyMint pulled all my accounts together—checking, savings, investment accounts, crypto wallets. Live portfolio dashboard. Automated categorization. Built-in daytrader tools for tracking position changes in real-time.
           </p>
 
           <h3 className="text-xl font-semibold mt-6 mb-3 text-gray-800">The Results</h3>
           <ul className="space-y-3 mb-4 text-gray-700">
             <li className="flex gap-3">
               <span className="text-green-600 font-bold flex-shrink-0">✓</span>
-              <span><strong className="text-gray-900">Live portfolio:</strong> See exact position value and P&L instantly (not yesterday's numbers)</span>
+              <span><strong className="text-gray-900">Live financial snapshot:</strong> See exact amounts, value, and budget decisions (not yesterday's numbers)</span>
             </li>
             <li className="flex gap-3">
               <span className="text-green-600 font-bold flex-shrink-0">✓</span>
-              <span><strong className="text-gray-900">Margin clarity:</strong> Automated perps tracking so he knows his leverage at a glance</span>
+              <span><strong className="text-gray-900">Margin clarity:</strong> Automated perps tracking so I know my leverage at a glance</span>
             </li>
             <li className="flex gap-3">
               <span className="text-green-600 font-bold flex-shrink-0">✓</span>
-              <span><strong className="text-gray-900">Smarter trades:</strong> Historical data and performance trends built in (no external tools needed)</span>
+              <span><strong className="text-gray-900">Smarter decisions:</strong> Historical data and performance trends built in (no external tools needed)</span>
             </li>
             <li className="flex gap-3">
               <span className="text-green-600 font-bold flex-shrink-0">✓</span>
-              <span><strong className="text-gray-900">Less stress:</strong> Automatic syncs mean he never has to manually input data again</span>
+              <span><strong className="text-gray-900">Less stress:</strong> Automatic syncs mean I never have to manually input data again</span>
             </li>
           </ul>
           <blockquote className="my-6 px-6 py-4 bg-gray-100 border-l-4 border-green-600 italic text-gray-700">
