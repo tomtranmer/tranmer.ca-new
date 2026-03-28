@@ -193,6 +193,15 @@ export function AppGrid({ onModalChange }: AppGridProps) {
         gradient="bg-gradient-to-br from-purple-500 to-indigo-600"
         apps={utilityApps}
       />
+      <AppIcon
+        href="https://app-demo.suefest.ca"
+        label="SueFest"
+        emoji="🎉"
+        gradient="bg-gradient-to-br from-green-400 to-emerald-500"
+        openInNewWindow={true}
+        iconSrc="/icons/sf-2026.png"
+        iconBorder="border-green-400/60"
+      />
       <ContactModal
         label="Contact"
         emoji="📞"
