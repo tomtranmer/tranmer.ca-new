@@ -10,9 +10,10 @@ export type AppIconProps = {
   openInNewWindow?: boolean;
   iconSrc?: string;
   iconBorder?: string;
+  title?: string;
 };
 
-export function AppIcon({ href, label, emoji, gradient, openInNewWindow = false, iconSrc, iconBorder }: AppIconProps) {
+export function AppIcon({ href, label, emoji, gradient, openInNewWindow = false, iconSrc, iconBorder, title }: AppIconProps) {
   const isExternal = href.startsWith('http');
   
   // Use custom styling for image icons or fallback to gradient
@@ -36,6 +37,7 @@ export function AppIcon({ href, label, emoji, gradient, openInNewWindow = false,
         rel="noopener noreferrer"
         className="group flex flex-col items-center gap-2"
         aria-label={label}
+        title={title}
         onClick={handleClick}
       >
         <div
@@ -65,6 +67,7 @@ export function AppIcon({ href, label, emoji, gradient, openInNewWindow = false,
       href={href}
       className="group flex flex-col items-center gap-2"
       aria-label={label}
+      title={title}
       onClick={handleClick}
     >
       <div
