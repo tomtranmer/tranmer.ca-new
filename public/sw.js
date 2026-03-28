@@ -3,6 +3,15 @@ const urlsToCache = [
   '/',
   '/manifest.json',
   '/favicon.ico',
+  '/icons/pwa/icon-192.svg',
+  '/icons/pwa/icon-512.svg',
+  '/icons/pwa/icon-192-maskable.svg',
+  '/icons/pwa/icon-512-maskable.svg',
+  '/icons/pwa/icon-192-maskable.png',
+  '/icons/pwa/icon-512-maskable.png',
+  '/icons/pwa/apple-touch-icon.svg',
+  '/icons/pwa/apple-touch-icon.png',
+  '/icons/pwa/favicon.ico',
 ];
 
 // Install event

@@ -1,0 +1,19 @@
+<svg viewBox="0 0 512 512" xmlns="http://www.w3.org/2000/svg">
+  <!-- Background with safe zone for maskable icons -->
+  <rect width="512" height="512" fill="#3b82f6"/>
+
+  <!-- Decorative circles -->
+  <circle cx="256" cy="256" r="180" fill="#1e40af" opacity="0.8"/>
+
+  <!-- Portfolio/Code symbol - bracket design -->
+  <g transform="translate(256, 256)">
+    <!-- Left bracket -->
+    <path d="M -80 -90 L -120 -90 L -120 90 L -80 90" stroke="white" stroke-width="16" fill="none" stroke-linecap="round" stroke-linejoin="round"/>
+
+    <!-- Right bracket -->
+    <path d="M 80 -90 L 120 -90 L 120 90 L 80 90" stroke="white" stroke-width="16" fill="none" stroke-linecap="round" stroke-linejoin="round"/>
+
+    <!-- Dot separator -->
+    <circle cx="0" cy="0" r="12" fill="white"/>
+  </g>
+</svg>
