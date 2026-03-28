@@ -64,8 +64,12 @@ export function AppGrid({ onModalChange }: AppGridProps) {
       href: "/lock-in",
       label: "Lock-In",
       emoji: "🔒",
-      gradient: "bg-gradient-to-br from-red-500 to-orange-600"
-    }
+      gradient: "bg-gradient-to-br from-red-500 to-orange-600"    },
+    {
+      href: '/referral',
+      label: 'Refer & Earn',
+      emoji: '🎁',
+      gradient: 'bg-gradient-to-br from-amber-500 to-orange-600'    }
   ];
 
   // Demo apps folder
@@ -153,10 +157,13 @@ export function AppGrid({ onModalChange }: AppGridProps) {
         iconBorder="border-green-300/60"
       />
       <AppIcon
-        href="/referral"
-        label="Refer & Earn"
-        emoji="🎁"
-        gradient="bg-gradient-to-br from-amber-500 to-orange-600"
+        href="https://app.theparisclub.ca"
+        label="PTC"
+        emoji="🎾"
+        iconSrc="/icons/ptc-icon.png"
+        gradient="bg-gradient-to-br from-green-600 to-emerald-700"
+        openInNewWindow={true}
+        title="The Paris Tennis Club"
       />
       <AppFolder
         label="App Demos"
