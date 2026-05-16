@@ -10,6 +10,8 @@ type SurveyResponses = {
   appStory: string;
   bookingEase: string;
   email: string;
+  websiteGoal: string;
+  websiteGoalOther: string;
 };
 
 function PollForm() {
@@ -21,14 +23,16 @@ function PollForm() {
     appStory: "",
     bookingEase: "",
     email: "",
+    websiteGoal: "",
+    websiteGoalOther: "",
   });
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [submitMessage, setSubmitMessage] = useState<string | null>(null);
   const [submitError, setSubmitError] = useState<string | null>(null);
 
-  // Autopopulate email from URL query param
+  // Autopopulate email from URL query param (?client= or ?email=)
   useEffect(() => {
-    const emailParam = searchParams.get('email');
+    const emailParam = searchParams.get('client') || searchParams.get('email');
     if (emailParam && !responses.email) {
       setResponses((prev) => ({ ...prev, email: emailParam }));
     }
@@ -74,6 +78,8 @@ function PollForm() {
           appStory: "",
           bookingEase: "",
           email: "",
+          websiteGoal: "",
+          websiteGoalOther: "",
         });
       } else {
         setSubmitError('Failed to submit survey. Please try again.');
@@ -89,20 +95,68 @@ function PollForm() {
   return (
     <div className="min-h-screen bg-gradient-to-br from-gray-900 to-black text-white">
       <header className="py-12 text-center">
-        <h1 className="text-4xl font-bold">Appstravaganza Onboarding</h1>
-        <p className="mt-4 text-lg">Help us pre-seed our build week.</p>
+        <h1 className="text-4xl font-bold">TWS 1Q Survey</h1>
+        <p className="mt-4 text-lg">Help us learn about you.</p>
         <div className="mt-6 p-4 bg-gradient-to-r from-green-600/20 to-emerald-600/20 border border-green-500/30 rounded-lg max-w-2xl mx-auto">
           <p className="text-green-200">
-            <strong>Not yet booked?</strong> Fill out the survey to be entered into a raffle to win a <strong>FREE BUILD</strong> on an open week in 2025!
+            <strong>Answer to Win.</strong> Fill out the 1 question survey to be entered into a raffle to win a <strong> $100 Credit</strong> to your next web bill in 2026.
           </p>
         </div>
       </header>
 
       <main className="max-w-2xl mx-auto px-6">
         <form onSubmit={handleSubmit} className="space-y-8">
-          
 
           <div>
+            <label className="block text-lg font-medium mb-4">
+              When you think of your website, you think of:
+            </label>
+            <div className="space-y-3">
+              {[
+                { value: "billboard", label: "A Billboard display to announce services and provide information to visitors." },
+                { value: "interactive", label: "An interactive space that allows visitors to accomplish something or learn something about your business." },
+                { value: "business-tool", label: "A critical business tool that keeps track of key information and processes related to my business." },
+                { value: "community", label: "A tool for showing off our values and for building community around an initiative that brings value to the world." },
+              ].map(({ value, label }) => (
+                <label key={value} className="flex items-start gap-3 cursor-pointer">
+                  <input
+                    type="radio"
+                    name="websiteGoal"
+                    value={value}
+                    checked={responses.websiteGoal === value}
+                    onChange={handleChange}
+                    className="mt-1 shrink-0"
+                  />
+                  <span>{label}</span>
+                </label>
+              ))}
+              <label className="flex items-start gap-3 cursor-pointer">
+                <input
+                  type="radio"
+                  name="websiteGoal"
+                  value="other"
+                  checked={responses.websiteGoal === "other"}
+                  onChange={handleChange}
+                  className="mt-1 shrink-0"
+                />
+                <span className="flex-1">
+                  Other. Something else I think is the main goal for my website:
+                  {responses.websiteGoal === "other" && (
+                    <input
+                      type="text"
+                      name="websiteGoalOther"
+                      value={responses.websiteGoalOther}
+                      onChange={handleChange}
+                      className="mt-2 w-full p-2 bg-white/10 rounded-lg text-white placeholder-zinc-400 block"
+                      placeholder="Describe your website goal..."
+                    />
+                  )}
+                </span>
+              </label>
+            </div>
+          </div>
+
+          {/* <div>
             <label className="block text-lg font-medium mb-4">
               What features does your app require? (auth, payments, data storage, etc.) - select all that apply
             </label>
@@ -175,7 +229,7 @@ function PollForm() {
                 </label>
               ))}
             </div>
-          </div>
+          </div> */}
 
           <div>
             <label className="block text-lg font-medium mb-4" htmlFor="email">
@@ -215,7 +269,7 @@ function PollForm() {
       </main>
 
       <footer className="py-12 text-center">
-        <p>&copy; 2025 Tranmer Web Services. All rights reserved.</p>
+        <p>&copy; 2026 Tranmer Web Services. All rights reserved.</p>
       </footer>
     </div>
   );

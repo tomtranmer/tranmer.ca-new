@@ -3,7 +3,7 @@ import nodemailer from 'nodemailer';
 
 export async function POST(request: NextRequest) {
   try {
-    const { satisfaction, features, appFeatures, appStory, bookingEase, email } = await request.json();
+    const { satisfaction, features, appFeatures, appStory, bookingEase, email, websiteGoal, websiteGoalOther } = await request.json();
 
     const transporter = nodemailer.createTransport({
       host: process.env.SMTP_HOST || 'smtp.gmail.com',
@@ -147,6 +147,15 @@ export async function POST(request: NextRequest) {
           </div>
           
           <div class="content">
+            ${websiteGoal ? `
+            <div class="field">
+              <div class="field-label">Website Goal</div>
+              <div class="field-value">
+                ${{ billboard: 'A Billboard display to announce services and provide information to visitors.', interactive: 'An interactive space that allows visitors to accomplish something or learn something about your business.', 'business-tool': 'A critical business tool that keeps track of key information and processes related to my business.', community: 'A tool for showing off our values and for building community around an initiative that brings value to the world.', other: `Other: ${websiteGoalOther}` }[websiteGoal] || websiteGoal}
+              </div>
+            </div>
+            ` : ''}
+
             ${satisfaction ? `
             <div class="field">
               <div class="field-label">Overall Satisfaction</div>
@@ -216,6 +225,7 @@ export async function POST(request: NextRequest) {
 🎯 NEW APPSTRAVAGANZA SURVEY RESPONSE
 Received: ${currentDate}
 
+${websiteGoal ? `WEBSITE GOAL: ${{ billboard: 'Billboard display', interactive: 'Interactive space', 'business-tool': 'Critical business tool', community: 'Values/community tool', other: `Other: ${websiteGoalOther}` }[websiteGoal] || websiteGoal}` : ''}
 ${satisfaction ? `SATISFACTION: ${satisfaction}` : ''}
 ${bookingEase ? `BOOKING EASE: ${bookingEase}/5` : ''}
 ${features && features.length > 0 ? `FEATURES: ${features.join(', ')}` : ''}
