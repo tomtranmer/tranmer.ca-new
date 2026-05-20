@@ -10,6 +10,15 @@ export function AppGrid({ onModalChange }: AppGridProps) {
   // Example folder with multiple apps
   const utilityApps = [
     {
+      href: "https://app.getbcard.io",
+      label: "BCard",
+      emoji: "💳",
+      gradient: "bg-gradient-to-br from-cyan-500 to-blue-600",
+      openInNewWindow: true,
+      iconSrc: "/icons/bcard_icon.png",
+      iconBorder: "border-blue-300/60"
+    },
+    {
       href: "https://bradshawdesign.ca",
       label: "Bradshaw Design",
       emoji: "🎨",
@@ -169,15 +178,6 @@ export function AppGrid({ onModalChange }: AppGridProps) {
         label="App Demos"
         gradient="bg-gradient-to-br from-indigo-500 to-violet-600"
         apps={demoApps}
-      />
-      <AppIcon
-        href="https://app.getbcard.io"
-        label="BCard"
-        emoji="💳"
-        gradient="bg-gradient-to-br from-cyan-500 to-blue-600"
-        openInNewWindow={true}
-        iconSrc="/icons/bcard_icon.png"
-        iconBorder="border-blue-300/60"
       />
       <AppIcon
         href="https://hivclinic.ca/app"

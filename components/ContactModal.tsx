@@ -114,127 +114,123 @@ export function ContactModal({ label, emoji, gradient, onModalChange }: ContactM
       {/* Contact Modal */}
       {isOpen && (
         <div
-          className="fixed inset-0 bg-black/60 backdrop-blur-sm z-50 flex items-center justify-center p-6 transition-opacity duration-300"
+          className="fixed inset-0 bg-black/70 backdrop-blur-md z-50 flex items-center justify-center p-4 transition-opacity duration-300"
           onClick={closeModal}
         >
           <div
-            className="bg-white/10 backdrop-blur-md rounded-3xl p-8 max-w-md w-full border border-white/20 shadow-2xl max-h-[90vh] overflow-y-auto"
+            className="bg-gray-900/80 backdrop-blur-xl rounded-3xl p-6 max-w-md w-full border border-white/15 shadow-2xl max-h-[90vh] overflow-y-auto"
             onClick={(e) => e.stopPropagation()}
           >
             {/* Header */}
-            <div className="text-center mb-6">
-              <div className={`w-16 h-16 rounded-2xl ${gradient} grid place-items-center text-2xl text-white mb-4 mx-auto shadow-lg border border-white/20`}>
+            <div className="text-center mb-5">
+              <div className={`w-14 h-14 rounded-2xl ${gradient} grid place-items-center text-2xl text-white mb-3 mx-auto shadow-lg border border-white/20`}>
                 <span>{emoji}</span>
               </div>
-              <h2 className="text-2xl font-bold text-white drop-shadow-[0_1px_2px_rgba(0,0,0,0.8)]">
-                Get in Touch
-              </h2>
-              <p className="text-sm text-white/60 mt-1">Send a message — I'll get back to you soon.</p>
-            </div>
-
-            {/* Contact links */}
-            <div className="space-y-3 mb-6">
-              <div className="flex items-center gap-3">
-                <div className="w-9 h-9 bg-blue-500/30 rounded-xl flex items-center justify-center shrink-0">
-                  <span className="text-base">📧</span>
-                </div>
-                <a href="mailto:help@tranmer.ca" className="text-white text-sm font-medium hover:text-blue-300 transition-colors">
-                  help@tranmer.ca
-                </a>
-              </div>
-              <div className="flex items-center gap-3">
-                <div className="w-9 h-9 bg-green-500/30 rounded-xl flex items-center justify-center shrink-0">
-                  <span className="text-base">💼</span>
-                </div>
-                <a href="https://www.linkedin.com/in/tom-tranmer-11a7b819/" target="_blank" rel="noopener noreferrer" className="text-white text-sm font-medium hover:text-green-300 transition-colors">
-                  linkedin.com/in/tomtranmer
-                </a>
-              </div>
-              <div className="flex items-center gap-3">
-                <div className="w-9 h-9 bg-gray-500/30 rounded-xl flex items-center justify-center shrink-0">
-                  <span className="text-base">💻</span>
-                </div>
-                <a href="https://github.com/tomtranmer" target="_blank" rel="noopener noreferrer" className="text-white text-sm font-medium hover:text-gray-300 transition-colors">
-                  github.com/tomtranmer
-                </a>
-              </div>
+              <h2 className="text-xl font-bold text-white">Get in Touch</h2>
+              <p className="text-xs text-white/50 mt-1">Send a message — I'll get back to you soon.</p>
             </div>
 
             {/* Form or success state */}
-            <div className="border-t border-white/10 pt-6">
-              {formState === "success" ? (
-                <div className="text-center py-4">
-                  <div className="text-4xl mb-3">✅</div>
-                  <p className="text-white font-semibold text-lg">Message sent!</p>
-                  <p className="text-white/60 text-sm mt-1">I'll get back to you as soon as I can.</p>
-                </div>
-              ) : (
-                <form onSubmit={handleSubmit} noValidate className="space-y-3">
-                  <div className="grid grid-cols-2 gap-3">
-                    <input
-                      type="text"
-                      value={name}
-                      onChange={(e) => setName(e.target.value)}
-                      placeholder="Your name"
-                      className={inputClass}
-                      disabled={formState === "submitting"}
-                      required
-                    />
-                    <input
-                      type="email"
-                      value={email}
-                      onChange={(e) => setEmail(e.target.value)}
-                      placeholder="Email address"
-                      className={inputClass}
-                      disabled={formState === "submitting"}
-                      required
-                    />
-                  </div>
+            {formState === "success" ? (
+              <div className="text-center py-6">
+                <div className="text-4xl mb-3">✅</div>
+                <p className="text-white font-semibold text-lg">Message sent!</p>
+                <p className="text-white/60 text-sm mt-1">I'll get back to you as soon as I can.</p>
+              </div>
+            ) : (
+              <form onSubmit={handleSubmit} noValidate className="space-y-3 mb-5">
+                <div className="grid grid-cols-2 gap-3">
                   <input
                     type="text"
-                    value={subject}
-                    onChange={(e) => setSubject(e.target.value)}
-                    placeholder="Subject"
+                    value={name}
+                    onChange={(e) => setName(e.target.value)}
+                    placeholder="Your name"
                     className={inputClass}
                     disabled={formState === "submitting"}
                     required
                   />
-                  <div className="relative">
-                    <textarea
-                      value={message}
-                      onChange={(e) => setMessage(e.target.value)}
-                      placeholder="Your message…"
-                      rows={4}
-                      maxLength={2000}
-                      className={`${inputClass} resize-none`}
-                      disabled={formState === "submitting"}
-                      required
-                    />
-                    <span className={`absolute bottom-2 right-3 text-xs ${message.length > 1900 ? "text-amber-300" : "text-white/30"}`}>
-                      {message.length}/2000
-                    </span>
-                  </div>
-
-                  {formState === "error" && errorMsg && (
-                    <p className="text-red-300 text-sm text-center">{errorMsg}</p>
-                  )}
-
-                  <button
-                    type="submit"
+                  <input
+                    type="email"
+                    value={email}
+                    onChange={(e) => setEmail(e.target.value)}
+                    placeholder="Email address"
+                    className={inputClass}
                     disabled={formState === "submitting"}
-                    className="w-full py-3 bg-blue-500/80 hover:bg-blue-500 disabled:bg-white/10 disabled:text-white/30 rounded-xl text-white font-medium transition-colors border border-blue-400/50 disabled:border-white/10"
-                  >
-                    {formState === "submitting" ? "Sending…" : "Send Message"}
-                  </button>
-                </form>
-              )}
+                    required
+                  />
+                </div>
+                <input
+                  type="text"
+                  value={subject}
+                  onChange={(e) => setSubject(e.target.value)}
+                  placeholder="Subject"
+                  className={inputClass}
+                  disabled={formState === "submitting"}
+                  required
+                />
+                <div className="relative">
+                  <textarea
+                    value={message}
+                    onChange={(e) => setMessage(e.target.value)}
+                    placeholder="Your message…"
+                    rows={3}
+                    maxLength={2000}
+                    className={`${inputClass} resize-none`}
+                    disabled={formState === "submitting"}
+                    required
+                  />
+                  <span className={`absolute bottom-2 right-3 text-xs ${message.length > 1900 ? "text-amber-300" : "text-white/30"}`}>
+                    {message.length}/2000
+                  </span>
+                </div>
+
+                {formState === "error" && errorMsg && (
+                  <p className="text-red-300 text-sm text-center">{errorMsg}</p>
+                )}
+
+                <button
+                  type="submit"
+                  disabled={formState === "submitting"}
+                  className="w-full py-3 bg-blue-500/80 hover:bg-blue-500 disabled:bg-white/10 disabled:text-white/30 rounded-xl text-white font-medium transition-colors border border-blue-400/50 disabled:border-white/10"
+                >
+                  {formState === "submitting" ? "Sending…" : "Send Message"}
+                </button>
+              </form>
+            )}
+
+            {/* Contact links */}
+            <div className="border-t border-white/10 pt-4 space-y-2.5">
+              <div className="flex items-center gap-3">
+                <div className="w-8 h-8 bg-blue-500/30 rounded-xl flex items-center justify-center shrink-0">
+                  <span className="text-sm">📧</span>
+                </div>
+                <a href="mailto:help@tranmer.ca" className="text-white/80 text-sm font-medium hover:text-blue-300 transition-colors">
+                  help@tranmer.ca
+                </a>
+              </div>
+              <div className="flex items-center gap-3">
+                <div className="w-8 h-8 bg-green-500/30 rounded-xl flex items-center justify-center shrink-0">
+                  <span className="text-sm">💼</span>
+                </div>
+                <a href="https://www.linkedin.com/in/tom-tranmer-11a7b819/" target="_blank" rel="noopener noreferrer" className="text-white/80 text-sm font-medium hover:text-green-300 transition-colors">
+                  linkedin.com/in/tomtranmer
+                </a>
+              </div>
+              <div className="flex items-center gap-3">
+                <div className="w-8 h-8 bg-gray-500/30 rounded-xl flex items-center justify-center shrink-0">
+                  <span className="text-sm">💻</span>
+                </div>
+                <a href="https://github.com/tomtranmer" target="_blank" rel="noopener noreferrer" className="text-white/80 text-sm font-medium hover:text-gray-300 transition-colors">
+                  github.com/tomtranmer
+                </a>
+              </div>
             </div>
 
             {/* Close button */}
             <div className="text-center mt-5">
               <button
                 onClick={closeModal}
-                className="px-8 py-3 bg-white/30 hover:bg-white/40 rounded-full text-white font-medium transition-all duration-200 border border-white/30 hover:border-white/50 hover:scale-105"
+                className="px-8 py-2.5 bg-white/20 hover:bg-white/30 rounded-full text-white font-medium transition-all duration-200 border border-white/20 hover:border-white/40 hover:scale-105 text-sm"
               >
                 Close
               </button>
