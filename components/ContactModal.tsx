@@ -9,10 +9,16 @@ export type ContactModalProps = {
   onModalChange?: (isOpen: boolean) => void;
 };
 
+type FormState = "idle" | "submitting" | "success" | "error";
+
 export function ContactModal({ label, emoji, gradient, onModalChange }: ContactModalProps) {
   const [isOpen, setIsOpen] = useState(false);
+  const [name, setName] = useState("");
   const [email, setEmail] = useState("");
-  const [isSubmitting, setIsSubmitting] = useState(false);
+  const [subject, setSubject] = useState("");
+  const [message, setMessage] = useState("");
+  const [formState, setFormState] = useState<FormState>("idle");
+  const [errorMsg, setErrorMsg] = useState("");
 
   const openModal = () => {
     setIsOpen(true);
@@ -21,39 +27,63 @@ export function ContactModal({ label, emoji, gradient, onModalChange }: ContactM
 
   const closeModal = () => {
     setIsOpen(false);
+    setName("");
     setEmail("");
-    setIsSubmitting(false);
+    setSubject("");
+    setMessage("");
+    setFormState("idle");
+    setErrorMsg("");
     onModalChange?.(false);
   };
 
-  const handleEmailRequest = async () => {
-    if (!email.trim()) return;
-    
-    setIsSubmitting(true);
-    
-    // Create mailto link with pre-filled subject and body
-    const subject = encodeURIComponent("Contact Request from Portfolio");
-    const body = encodeURIComponent(`Hi Tom,
+  const handleSubmit = async (e: React.FormEvent) => {
+    e.preventDefault();
 
-      I visited your portfolio website and would like to get in touch.
+    // Client-side validation
+    if (!name.trim() || !email.trim() || !subject.trim() || !message.trim()) {
+      setErrorMsg("All fields are required.");
+      setFormState("error");
+      return;
+    }
+    if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email.trim())) {
+      setErrorMsg("Please enter a valid email address.");
+      setFormState("error");
+      return;
+    }
+    if (message.length > 2000) {
+      setErrorMsg("Message must be 2000 characters or fewer.");
+      setFormState("error");
+      return;
+    }
 
-      My email: ${email}
+    setFormState("submitting");
+    setErrorMsg("");
 
-      Looking forward to hearing from you!
+    try {
+      const res = await fetch("https://admin.tranmer.ca/api/helpdesk/submit", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+          "X-Form-Token": process.env.NEXT_PUBLIC_HELPDESK_TOKEN ?? "",
+        },
+        body: JSON.stringify({ name: name.trim(), email: email.trim(), subject: subject.trim(), message: message.trim() }),
+      });
 
-      Best regards`);
-    
-    const mailtoLink = `mailto:tom@tranmer.ca?subject=${subject}&body=${body}`;
-    
-    // Open the user's email client
-    window.open(mailtoLink);
-    
-    // Reset form after a brief delay
-    setTimeout(() => {
-      setEmail("");
-      setIsSubmitting(false);
-    }, 1000);
+      if (res.ok) {
+        setFormState("success");
+      } else {
+        const data = await res.json().catch(() => ({}));
+        setErrorMsg((data as { error?: string }).error ?? "Something went wrong. Please try again.");
+        setFormState("error");
+      }
+    } catch {
+      setErrorMsg("Network error. Please check your connection and try again.");
+      setFormState("error");
+    }
   };
+
+  const inputClass =
+    "w-full px-4 py-2.5 bg-white/10 border border-white/20 rounded-xl text-white placeholder-white/50 focus:outline-none focus:ring-2 focus:ring-blue-400/50 focus:border-blue-400/50 transition-colors text-sm";
 
   return (
     <>
@@ -63,7 +93,7 @@ export function ContactModal({ label, emoji, gradient, onModalChange }: ContactM
         onClick={openModal}
         role="button"
         tabIndex={0}
-        aria-label={`Open ${label} contact information`}
+        aria-label={`Open ${label} contact form`}
         onKeyDown={(e) => {
           if (e.key === "Enter" || e.key === " ") {
             e.preventDefault();
@@ -87,118 +117,121 @@ export function ContactModal({ label, emoji, gradient, onModalChange }: ContactM
           className="fixed inset-0 bg-black/60 backdrop-blur-sm z-50 flex items-center justify-center p-6 transition-opacity duration-300"
           onClick={closeModal}
         >
-        {/* Modal Content */}
           <div
-            className="bg-white/10 backdrop-blur-md rounded-3xl p-8 max-w-md w-full border border-white/20 shadow-2xl max-h-[90vh] overflow-y-auto transition-all duration-300 scale-100 opacity-100"
-            onClick={(e) => { e.stopPropagation(); }}
+            className="bg-white/10 backdrop-blur-md rounded-3xl p-8 max-w-md w-full border border-white/20 shadow-2xl max-h-[90vh] overflow-y-auto"
+            onClick={(e) => e.stopPropagation()}
           >
             {/* Header */}
-            <div className="text-center mb-8">
-              <div className={`w-16 h-16 rounded-2xl ${gradient} grid place-items-center text-2xl text-white mb-4 mx-auto shadow-lg border border-white/20 hover:scale-110 transition-transform duration-300`}>
+            <div className="text-center mb-6">
+              <div className={`w-16 h-16 rounded-2xl ${gradient} grid place-items-center text-2xl text-white mb-4 mx-auto shadow-lg border border-white/20`}>
                 <span>{emoji}</span>
               </div>
               <h2 className="text-2xl font-bold text-white drop-shadow-[0_1px_2px_rgba(0,0,0,0.8)]">
-                Contact Information
+                Get in Touch
               </h2>
+              <p className="text-sm text-white/60 mt-1">Send a message — I'll get back to you soon.</p>
             </div>
 
-            {/* Contact Details */}
-            <div className="space-y-6 mb-8">
-              <div className="flex items-center gap-4 hover:scale-105 transition-transform duration-200 cursor-pointer">
-                <div className="w-10 h-10 bg-blue-500/30 rounded-xl flex items-center justify-center">
-                  <span className="text-lg">📧</span>
+            {/* Contact links */}
+            <div className="space-y-3 mb-6">
+              <div className="flex items-center gap-3">
+                <div className="w-9 h-9 bg-blue-500/30 rounded-xl flex items-center justify-center shrink-0">
+                  <span className="text-base">📧</span>
                 </div>
-                <div>
-                  <p className="text-sm text-white/60">Email</p>
-                  <a 
-                    href="mailto:help@tranmer.ca" 
-                    className="text-white font-medium hover:text-blue-300 transition-colors"
-                  >
-                    help@tranmer.ca
-                  </a>
-                </div>
+                <a href="mailto:help@tranmer.ca" className="text-white text-sm font-medium hover:text-blue-300 transition-colors">
+                  help@tranmer.ca
+                </a>
               </div>
-
-              <div className="flex items-center gap-4 hover:scale-105 transition-transform duration-200 cursor-pointer">
-                <div className="w-10 h-10 bg-green-500/30 rounded-xl flex items-center justify-center">
-                  <span className="text-lg">💼</span>
+              <div className="flex items-center gap-3">
+                <div className="w-9 h-9 bg-green-500/30 rounded-xl flex items-center justify-center shrink-0">
+                  <span className="text-base">💼</span>
                 </div>
-                <div>
-                  <p className="text-sm text-white/60">LinkedIn</p>
-                  <a 
-                    href="https://www.linkedin.com/in/tom-tranmer-11a7b819/" 
-                    target="_blank"
-                    rel="noopener noreferrer"
-                    className="text-white font-medium hover:text-green-300 transition-colors"
-                  >
-                    linkedin.com/in/tomtranmer
-                  </a>
-                </div>
+                <a href="https://www.linkedin.com/in/tom-tranmer-11a7b819/" target="_blank" rel="noopener noreferrer" className="text-white text-sm font-medium hover:text-green-300 transition-colors">
+                  linkedin.com/in/tomtranmer
+                </a>
               </div>
-
-              <div className="flex items-center gap-4 hover:scale-105 transition-transform duration-200 cursor-pointer">
-                <div className="w-10 h-10 bg-gray-500/30 rounded-xl flex items-center justify-center">
-                  <span className="text-lg">💻</span>
+              <div className="flex items-center gap-3">
+                <div className="w-9 h-9 bg-gray-500/30 rounded-xl flex items-center justify-center shrink-0">
+                  <span className="text-base">💻</span>
                 </div>
-                <div>
-                  <p className="text-sm text-white/60">GitHub</p>
-                  <a 
-                    href="https://github.com/tomtranmer" 
-                    target="_blank"
-                    rel="noopener noreferrer"
-                    className="text-white font-medium hover:text-gray-300 transition-colors"
-                  >
-                    github.com/tomtranmer
-                  </a>
-                </div>
-              </div>
-
-              <div className="flex items-center gap-4 hover:scale-105 transition-transform duration-200 cursor-pointer">
-                <div className="w-10 h-10 bg-purple-500/30 rounded-xl flex items-center justify-center">
-                  <span className="text-lg">🌐</span>
-                </div>
-                <div>
-                  <p className="text-sm text-white/60">Self-serve Hosting</p>
-                  <a 
-                    href="https://tranmerwebservices.ca" 
-                    target="_blank"
-                    rel="noopener noreferrer"
-                    className="text-white font-medium hover:text-purple-300 transition-colors"
-                  >
-                    tranmerwebservices.ca
-                  </a>
-                </div>
+                <a href="https://github.com/tomtranmer" target="_blank" rel="noopener noreferrer" className="text-white text-sm font-medium hover:text-gray-300 transition-colors">
+                  github.com/tomtranmer
+                </a>
               </div>
             </div>
 
-            {/* Email Request Section */}
-            <div className="border-t border-white/10 pt-6 mt-6">
-              <div className="text-center mb-4">
-                <h3 className="text-lg font-semibold text-white mb-2">Get in Touch</h3>
-                <p className="text-sm text-white/70">Enter your email to request more information</p>
-              </div>
-              
-              <div className="flex flex-col sm:flex-row gap-3 items-center justify-center">
-                <input
-                  type="email"
-                  value={email}
-                  onChange={(e) => setEmail(e.target.value)}
-                  placeholder="Your Email"
-                  className="w-full sm:flex-1 px-4 py-3 bg-white/10 border border-white/20 rounded-xl text-white placeholder-white/50 focus:outline-none focus:ring-2 focus:ring-blue-400/50 focus:border-blue-400/50 transition-colors text-center sm:text-left"
-                  disabled={isSubmitting}
-                />
-                <button
-                  onClick={handleEmailRequest}
-                  disabled={!email.trim() || isSubmitting}
-                  className="w-full sm:w-auto px-6 py-3 bg-blue-500/80 hover:bg-blue-500 disabled:bg-white/10 disabled:text-white/30 rounded-xl text-white font-medium transition-colors border border-blue-400/50 disabled:border-white/10 whitespace-nowrap"
-                >
-                  {isSubmitting ? "Sending..." : "Request Mail"}
-                </button>
-              </div>
+            {/* Form or success state */}
+            <div className="border-t border-white/10 pt-6">
+              {formState === "success" ? (
+                <div className="text-center py-4">
+                  <div className="text-4xl mb-3">✅</div>
+                  <p className="text-white font-semibold text-lg">Message sent!</p>
+                  <p className="text-white/60 text-sm mt-1">I'll get back to you as soon as I can.</p>
+                </div>
+              ) : (
+                <form onSubmit={handleSubmit} noValidate className="space-y-3">
+                  <div className="grid grid-cols-2 gap-3">
+                    <input
+                      type="text"
+                      value={name}
+                      onChange={(e) => setName(e.target.value)}
+                      placeholder="Your name"
+                      className={inputClass}
+                      disabled={formState === "submitting"}
+                      required
+                    />
+                    <input
+                      type="email"
+                      value={email}
+                      onChange={(e) => setEmail(e.target.value)}
+                      placeholder="Email address"
+                      className={inputClass}
+                      disabled={formState === "submitting"}
+                      required
+                    />
+                  </div>
+                  <input
+                    type="text"
+                    value={subject}
+                    onChange={(e) => setSubject(e.target.value)}
+                    placeholder="Subject"
+                    className={inputClass}
+                    disabled={formState === "submitting"}
+                    required
+                  />
+                  <div className="relative">
+                    <textarea
+                      value={message}
+                      onChange={(e) => setMessage(e.target.value)}
+                      placeholder="Your message…"
+                      rows={4}
+                      maxLength={2000}
+                      className={`${inputClass} resize-none`}
+                      disabled={formState === "submitting"}
+                      required
+                    />
+                    <span className={`absolute bottom-2 right-3 text-xs ${message.length > 1900 ? "text-amber-300" : "text-white/30"}`}>
+                      {message.length}/2000
+                    </span>
+                  </div>
+
+                  {formState === "error" && errorMsg && (
+                    <p className="text-red-300 text-sm text-center">{errorMsg}</p>
+                  )}
+
+                  <button
+                    type="submit"
+                    disabled={formState === "submitting"}
+                    className="w-full py-3 bg-blue-500/80 hover:bg-blue-500 disabled:bg-white/10 disabled:text-white/30 rounded-xl text-white font-medium transition-colors border border-blue-400/50 disabled:border-white/10"
+                  >
+                    {formState === "submitting" ? "Sending…" : "Send Message"}
+                  </button>
+                </form>
+              )}
             </div>
 
-            {/* Close Button */}
-            <div className="text-center mt-6">
+            {/* Close button */}
+            <div className="text-center mt-5">
               <button
                 onClick={closeModal}
                 className="px-8 py-3 bg-white/30 hover:bg-white/40 rounded-full text-white font-medium transition-all duration-200 border border-white/30 hover:border-white/50 hover:scale-105"
@@ -206,7 +239,6 @@ export function ContactModal({ label, emoji, gradient, onModalChange }: ContactM
                 Close
               </button>
             </div>
-          
           </div>
         </div>
       )}
