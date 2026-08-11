@@ -9,15 +9,15 @@ type AppGridProps = {
 export function AppGrid({ onModalChange }: AppGridProps) {
   // Example folder with multiple apps
   const utilityApps = [
-    {
-      href: "https://app.getbcard.io",
-      label: "BCard",
-      emoji: "💳",
-      gradient: "bg-gradient-to-br from-cyan-500 to-blue-600",
-      openInNewWindow: true,
-      iconSrc: "/icons/bcard_icon.png",
-      iconBorder: "border-blue-300/60"
-    },
+    // {
+    //   href: "https://app.getbcard.io",
+    //   label: "BCard",
+    //   emoji: "💳",
+    //   gradient: "bg-gradient-to-br from-cyan-500 to-blue-600",
+    //   openInNewWindow: true,
+    //   iconSrc: "/icons/bcard_icon.png",
+    //   iconBorder: "border-blue-300/60"
+    // },
     {
       href: "https://bradshawdesign.ca",
       label: "Bradshaw Design",
@@ -37,48 +37,50 @@ export function AppGrid({ onModalChange }: AppGridProps) {
       emoji: "🚀",
       gradient: "bg-gradient-to-br from-emerald-500 to-teal-600"
     },
-    {
-      href: "/notes",
-      label: "Notes",
-      emoji: "📝",
-      gradient: "bg-gradient-to-br from-yellow-500 to-orange-600"
-    },
+    // {
+    //   href: "/notes",
+    //   label: "Notes",
+    //   emoji: "📝",
+    //   gradient: "bg-gradient-to-br from-yellow-500 to-orange-600"
+    // },
     {
       href: "https://my.freshbooks.com",
       label: "Freshbooks",
       emoji: "📊",
       gradient: "bg-gradient-to-br from-fuchsia-500 to-pink-600"
     },
-    {
-      href: "https://tranmerwebservices.ca",
-      label: "Blog",
-      emoji: "✍️",
-      gradient: "bg-gradient-to-br from-amber-500 to-orange-600"
-    },
-    {
-      href: "https://tranmer.ca/app",
-      label: "Appstravaganza",
-      emoji: "⭐",
-      iconSrc: "/icons/app_icon.png",
-      gradient: "bg-gradient-to-br from-yellow-400 via-pink-500 to-purple-600",
-      openInNewWindow: true
-    },
+    // {
+    //   href: "https://tranmerwebservices.ca",
+    //   label: "Blog",
+    //   emoji: "✍️",
+    //   gradient: "bg-gradient-to-br from-amber-500 to-orange-600"
+    // },
+    // {
+    //   href: "https://tranmer.ca/app",
+    //   label: "Appstravaganza",
+    //   emoji: "⭐",
+    //   iconSrc: "/icons/app_icon.png",
+    //   gradient: "bg-gradient-to-br from-yellow-400 via-pink-500 to-purple-600",
+    //   openInNewWindow: true
+    // },
     {
       href: "/settings",
       label: "Settings",
       emoji: "⚙️",
       gradient: "bg-gradient-to-br from-gray-600 to-gray-700"
     },
-    {
-      href: "/lock-in",
-      label: "Lock-In",
-      emoji: "🔒",
-      gradient: "bg-gradient-to-br from-red-500 to-orange-600"    },
+    // {
+    //   href: "/lock-in",
+    //   label: "Lock-In",
+    //   emoji: "🔒",
+    //   gradient: "bg-gradient-to-br from-red-500 to-orange-600"    
+    // },
     {
       href: '/referral',
       label: 'Refer & Earn',
       emoji: '🎁',
-      gradient: 'bg-gradient-to-br from-amber-500 to-orange-600'    }
+      gradient: 'bg-gradient-to-br from-amber-500 to-orange-600'    
+    }
   ];
 
   // Demo apps folder
@@ -92,13 +94,13 @@ export function AppGrid({ onModalChange }: AppGridProps) {
       openInNewWindow: true,
       // iconSrc: "/icons/pwa/icon-192.svg"
     },
-    {
-      href: "https://booking.tranmer.ca",
-      label: "Booking",
-      emoji: "📅",
-      gradient: "bg-gradient-to-br from-sky-500 to-indigo-500",
-      openInNewWindow: true
-    },
+    // {
+    //   href: "https://booking.tranmer.ca",
+    //   label: "Booking",
+    //   emoji: "📅",
+    //   gradient: "bg-gradient-to-br from-sky-500 to-indigo-500",
+    //   openInNewWindow: true
+    // },
     // {
     //   href: "https://sb-tracker.tranmer.ca",
     //   label: "SB_Tracker",
@@ -106,20 +108,20 @@ export function AppGrid({ onModalChange }: AppGridProps) {
     //   gradient: "bg-gradient-to-br from-emerald-400 to-teal-600",
     //   openInNewWindow: true
     // },
-    {
-      href: "https://opm.tranmer.ca",
-      label: "OfficePools",
-      emoji: "🏆",
-      gradient: "bg-gradient-to-br from-purple-500 to-pink-500",
-      openInNewWindow: true
-    },
-    {
-      href: "https://mybank.tranmer.ca",
-      label: "MyBank",
-      emoji: "🏦",
-      gradient: "bg-gradient-to-br from-indigo-600 to-emerald-500",
-      openInNewWindow: true
-    },
+    // {
+    //   href: "https://opm.tranmer.ca",
+    //   label: "OfficePools",
+    //   emoji: "🏆",
+    //   gradient: "bg-gradient-to-br from-purple-500 to-pink-500",
+    //   openInNewWindow: true
+    // },
+    // {
+    //   href: "https://mybank.tranmer.ca",
+    //   label: "MyBank",
+    //   emoji: "🏦",
+    //   gradient: "bg-gradient-to-br from-indigo-600 to-emerald-500",
+    //   openInNewWindow: true
+    // },
     {
       href: "https://mycar.tranmer.ca",
       label: "MyCarC",
@@ -128,14 +130,15 @@ export function AppGrid({ onModalChange }: AppGridProps) {
       openInNewWindow: true,
       iconSrc: "/icons/mycar-icon-real.png",
       iconBorder: "border-blue-300/60"
-    },
-    {
-      href: "https://teamup.tranmer.ca",
-      label: "Team-Up Invest",
-      emoji: "💹",
-      gradient: "bg-gradient-to-br from-teal-500 to-cyan-600",
-      openInNewWindow: true
     }
+    // ,
+    // {
+    //   href: "https://teamup.tranmer.ca",
+    //   label: "Team-Up Invest",
+    //   emoji: "💹",
+    //   gradient: "bg-gradient-to-br from-teal-500 to-cyan-600",
+    //   openInNewWindow: true
+    // }
   ];
 
   return (
@@ -194,6 +197,13 @@ export function AppGrid({ onModalChange }: AppGridProps) {
         apps={utilityApps}
       />
       <AppIcon
+        href="https://teamup.tranmer.ca"
+        label="Team-Up Invest"
+        emoji="💹"
+        gradient="bg-gradient-to-br from-teal-500 to-cyan-600"
+        openInNewWindow={true}
+      /> 
+      {/* <AppIcon
         href="https://app-demo.suefest.ca"
         label="SueFest"
         emoji="🎉"
@@ -201,7 +211,7 @@ export function AppGrid({ onModalChange }: AppGridProps) {
         openInNewWindow={true}
         iconSrc="/icons/sf-2026.png"
         iconBorder="border-green-400/60"
-      />
+      /> */}
       <ContactModal
         label="Contact"
         emoji="📞"
