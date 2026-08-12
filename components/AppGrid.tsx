@@ -200,6 +200,9 @@ export function AppGrid({ onModalChange }: AppGridProps) {
         href="https://teamup.tranmer.ca"
         label="Team-Up Invest"
         emoji="💹"
+        iconSrc="/icons/team_up_icon.png"
+        iconBorder="border-indigo-300/60"
+
         gradient="bg-gradient-to-br from-teal-500 to-cyan-600"
         openInNewWindow={true}
       /> 
