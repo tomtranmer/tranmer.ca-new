@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useEffect, Suspense } from "react";
+import { useState, Suspense } from "react";
 import { useSearchParams } from "next/navigation";
 
 type SurveyResponses = {
@@ -22,21 +22,14 @@ function PollForm() {
     appFeatures: [],
     appStory: "",
     bookingEase: "",
-    email: "",
+    // Autopopulate email from URL query param (?client= or ?email=)
+    email: searchParams.get('client') || searchParams.get('email') || "",
     websiteGoal: "",
     websiteGoalOther: "",
   });
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [submitMessage, setSubmitMessage] = useState<string | null>(null);
   const [submitError, setSubmitError] = useState<string | null>(null);
-
-  // Autopopulate email from URL query param (?client= or ?email=)
-  useEffect(() => {
-    const emailParam = searchParams.get('client') || searchParams.get('email');
-    if (emailParam && !responses.email) {
-      setResponses((prev) => ({ ...prev, email: emailParam }));
-    }
-  }, [searchParams, responses.email]);
 
   const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => {
     const { name, value, type } = e.target;

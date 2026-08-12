@@ -28,19 +28,12 @@ function PreBookingForm({ onClose, scrollRef }: { onClose: () => void; scrollRef
     estimatedMonthlyCost: "",
     additionalServices: [],
     comments: "",
-    email: "",
+    // Autopopulate email from URL query param
+    email: searchParams.get('email') || "",
   });
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [submitMessage, setSubmitMessage] = useState<string | null>(null);
   const [submitError, setSubmitError] = useState<string | null>(null);
-
-  // Autopopulate email from URL query param
-  useEffect(() => {
-    const emailParam = searchParams.get('email');
-    if (emailParam && !responses.email) {
-      setResponses((prev) => ({ ...prev, email: emailParam }));
-    }
-  }, [searchParams, responses.email]);
 
   const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement>) => {
     const { name, value, type } = e.target;
