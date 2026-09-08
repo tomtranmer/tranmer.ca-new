@@ -33,14 +33,13 @@ export function trackEvent(
 }
 
 /**
- * Track referral form submission
+ * Track referral form submission.
+ *
+ * Deliberately does not send the referred email address: personally
+ * identifiable information must not be sent to Google Analytics.
  */
-export function trackReferralSubmission(
-  referredEmail: string,
-  hasReferrerEmail: boolean
-) {
+export function trackReferralSubmission(hasReferrerEmail: boolean) {
   trackEvent('referral_form_submit', {
-    referred_email: referredEmail,
     has_referrer_email: hasReferrerEmail,
     timestamp: new Date().toISOString(),
   });

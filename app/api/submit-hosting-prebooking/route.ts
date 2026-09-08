@@ -1,68 +1,35 @@
 import { NextRequest, NextResponse } from 'next/server';
 import nodemailer from 'nodemailer';
+import {
+  checkRateLimit,
+  escapeHtml,
+  forbiddenOriginResponse,
+  getClientIp,
+  isSameOrigin,
+  isValidEmail,
+  maskEmail,
+  rateLimitResponse,
+  sanitizeStringList,
+  sanitizeText,
+} from '@/lib/security';
 
-// Rate limiting store (in production, use Redis or similar)
-const rateLimitStore = new Map<string, { count: number; resetTime: number }>();
-const RATE_LIMIT_WINDOW = 15 * 60 * 1000; // 15 minutes
-const RATE_LIMIT_MAX_REQUESTS = 5; // Max 5 submissions per IP per 15 minutes
-
-// Input validation functions
-function validateEmail(email: string): boolean {
-  const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
-  return emailRegex.test(email);
-}
-
-function sanitizeInput(input: string): string {
-  if (!input || typeof input !== 'string') return '';
-  // Remove potentially dangerous characters and trim
-  return input.replace(/[<>\"'&]/g, '').trim().substring(0, 1000);
-}
-
-function validateAdditionalServices(services: unknown): string[] {
-  if (!Array.isArray(services)) return [];
-  return services
-    .filter((service): service is string => typeof service === 'string')
-    .map(service => sanitizeInput(service))
-    .filter(service => service.length > 0 && service.length <= 100)
-    .slice(0, 10); // Max 10 services
-}
-
-// Rate limiting function
-function checkRateLimit(ip: string): boolean {
-  const now = Date.now();
-  const userLimit = rateLimitStore.get(ip);
-
-  if (!userLimit || now > userLimit.resetTime) {
-    rateLimitStore.set(ip, { count: 1, resetTime: now + RATE_LIMIT_WINDOW });
-    return true;
-  }
-
-  if (userLimit.count >= RATE_LIMIT_MAX_REQUESTS) {
-    return false;
-  }
-
-  userLimit.count++;
-  return true;
-}
+const RATE_LIMIT = { limit: 5, windowMs: 15 * 60 * 1000 };
 
 export async function POST(request: NextRequest) {
   try {
-    // Get client IP for rate limiting
-    const ip = request.headers.get('x-forwarded-for') ||
-               request.headers.get('x-real-ip') ||
-               'unknown';
+    if (!isSameOrigin(request)) {
+      return forbiddenOriginResponse();
+    }
 
-    // Check rate limit
-    if (!checkRateLimit(ip)) {
-      console.warn(`Rate limit exceeded for IP: ${ip}`);
-      return NextResponse.json(
-        { error: 'Too many requests. Please try again later.' },
-        { status: 429 }
-      );
+    const ip = getClientIp(request);
+    const limit = checkRateLimit(`prebooking:${ip}`, RATE_LIMIT);
+    if (!limit.allowed) {
+      console.warn('Rate limit exceeded for a hosting pre-booking submission');
+      return rateLimitResponse(limit.retryAfterSeconds);
     }
 
     // Parse and validate request body
-    let body;
+    let body: Record<string, unknown>;
     try {
       body = await request.json();
     } catch {
@@ -90,36 +57,43 @@ export async function POST(request: NextRequest) {
       );
     }
 
-    if (!validateEmail(email)) {
+    if (!isValidEmail(email)) {
       return NextResponse.json(
         { error: 'Invalid email format' },
         { status: 400 }
       );
     }
 
-    // Sanitize inputs
-    const sanitizedEmail = sanitizeInput(email);
-    const sanitizedLockInInterest = lockInInterest ? sanitizeInput(lockInInterest) : '';
-    const sanitizedCurrentHostingPlan = currentHostingPlan ? sanitizeInput(currentHostingPlan) : '';
-    const sanitizedYearsInterested = yearsInterested ? sanitizeInput(yearsInterested) : '';
-    const sanitizedEstimatedMonthlyCost = estimatedMonthlyCost ? sanitizeInput(estimatedMonthlyCost) : '';
-    const sanitizedComments = comments ? sanitizeInput(comments) : '';
-    const sanitizedAdditionalServices = validateAdditionalServices(additionalServices);
-
-    // Validate field lengths
-    if (sanitizedEmail.length > 254) {
-      return NextResponse.json(
-        { error: 'Email too long' },
-        { status: 400 }
-      );
-    }
-
-    if (sanitizedComments.length > 1000) {
+    if (typeof comments === 'string' && comments.trim().length > 1000) {
       return NextResponse.json(
         { error: 'Comments too long (max 1000 characters)' },
         { status: 400 }
       );
     }
+
+    // Plain values are validated and length capped, for the text/plain part
+    // and for logging. The sanitized values below are HTML escaped for the
+    // HTML part of the email.
+    const plain = {
+      email: email.trim(),
+      lockInInterest: sanitizeText(lockInInterest, 200),
+      currentHostingPlan: sanitizeText(currentHostingPlan, 200),
+      yearsInterested: sanitizeText(yearsInterested, 100),
+      estimatedMonthlyCost: sanitizeText(estimatedMonthlyCost, 100),
+      comments: sanitizeText(comments, 1000),
+      additionalServices: sanitizeStringList(additionalServices, {
+        maxItems: 10,
+        maxLength: 100,
+      }),
+    };
+
+    const sanitizedEmail = escapeHtml(plain.email);
+    const sanitizedLockInInterest = escapeHtml(plain.lockInInterest);
+    const sanitizedCurrentHostingPlan = escapeHtml(plain.currentHostingPlan);
+    const sanitizedYearsInterested = escapeHtml(plain.yearsInterested);
+    const sanitizedEstimatedMonthlyCost = escapeHtml(plain.estimatedMonthlyCost);
+    const sanitizedComments = escapeHtml(plain.comments);
+    const sanitizedAdditionalServices = plain.additionalServices.map(escapeHtml);
 
     const currentDate = new Date().toLocaleDateString('en-US', {
       weekday: 'long',
@@ -142,7 +116,7 @@ export async function POST(request: NextRequest) {
     const transporter = nodemailer.createTransport({
       host: process.env.SMTP_HOST,
       port: parseInt(process.env.SMTP_PORT || '465'),
-      secure: process.env.SMTP_SECURE === 'true' || true, // Default to secure
+      secure: process.env.SMTP_SECURE !== 'false', // Secure unless explicitly disabled
       auth: {
         user: process.env.SMTP_USER,
         pass: process.env.SMTP_PASS,
@@ -165,7 +139,7 @@ export async function POST(request: NextRequest) {
     const mailOptions = {
       from: process.env.SMTP_USER,
       to: 'help@tranmer.ca',
-      subject: `🔒 New Hosting Pre-Booking Interest - ${sanitizedEmail || 'Anonymous'}`,
+      subject: `🔒 New Hosting Pre-Booking Interest - ${plain.email || 'Anonymous'}`,
       html: `
         <!DOCTYPE html>
         <html>
@@ -362,13 +336,13 @@ export async function POST(request: NextRequest) {
 🔒 NEW HOSTING PRE-BOOKING INTEREST
 Received: ${currentDate}
 
-INTEREST LEVEL: ${sanitizedLockInInterest}
-CURRENT PLAN: ${sanitizedCurrentHostingPlan}
-LOCK-IN PERIOD: ${sanitizedYearsInterested}
-${sanitizedEstimatedMonthlyCost ? `ESTIMATED MONTHLY COST: ${sanitizedEstimatedMonthlyCost}` : ''}
-${sanitizedAdditionalServices && sanitizedAdditionalServices.length > 0 ? `ADDITIONAL SERVICES: ${sanitizedAdditionalServices.join(', ')}` : ''}
-${sanitizedComments ? `COMMENTS: ${sanitizedComments}` : ''}
-CONTACT: ${sanitizedEmail}
+INTEREST LEVEL: ${plain.lockInInterest}
+CURRENT PLAN: ${plain.currentHostingPlan}
+LOCK-IN PERIOD: ${plain.yearsInterested}
+${plain.estimatedMonthlyCost ? `ESTIMATED MONTHLY COST: ${plain.estimatedMonthlyCost}` : ''}
+${plain.additionalServices.length > 0 ? `ADDITIONAL SERVICES: ${plain.additionalServices.join(', ')}` : ''}
+${plain.comments ? `COMMENTS: ${plain.comments}` : ''}
+CONTACT: ${plain.email}
 
 ---
 Tranmer Web Services - Hosting Pre-Booking System
@@ -384,7 +358,7 @@ Tranmer Web Services - Hosting Pre-Booking System
     await Promise.race([emailPromise, timeoutPromise]);
 
     // Log successful submission (without sensitive data)
-    console.log(`Hosting pre-booking form submitted from IP: ${ip}, Email: ${sanitizedEmail.substring(0, 3)}***`);
+    console.log(`Hosting pre-booking form submitted. Email: ${maskEmail(plain.email)}`);
 
     return NextResponse.json({ message: 'Email sent successfully' });
   } catch (error) {

@@ -36,7 +36,7 @@ export default function ReferralPage() {
       setSubmissionState("success");
       
       // Track successful referral submission
-      trackReferralSubmission(referredEmail, !!referrerEmail);
+      trackReferralSubmission(!!referrerEmail);
       
       setTimeout(() => {
         setSubmissionState("idle");

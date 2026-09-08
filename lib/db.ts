@@ -3,6 +3,16 @@ import { Pool, QueryResult } from 'pg';
 // Create a single pool instance to be reused across the application
 let pool: Pool | null = null;
 
+const LOCAL_HOSTS = new Set(['localhost', '127.0.0.1', '::1', '[::1]']);
+
+function isLocalConnection(connectionString: string): boolean {
+  try {
+    return LOCAL_HOSTS.has(new URL(connectionString).hostname);
+  } catch {
+    return false;
+  }
+}
+
 function getPool(): Pool {
   // Validate DATABASE_URL on first pool access (runtime, not build-time)
   const url = process.env.DATABASE_URL;
@@ -17,9 +27,12 @@ function getPool(): Pool {
   if (!pool) {
     pool = new Pool({
       connectionString: url,
-      ssl: {
-        rejectUnauthorized: false,
-      },
+      // Verify the server certificate. Disabling this (the previous default)
+      // leaves the connection open to man-in-the-middle interception. Managed
+      // providers such as Neon present certificates from a public CA, so
+      // verification works out of the box. Local development databases
+      // generally speak plaintext, so TLS is skipped only for loopback hosts.
+      ssl: isLocalConnection(url) ? false : { rejectUnauthorized: true },
     });
 
     pool.on('error', (err) => {

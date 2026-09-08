@@ -8,8 +8,10 @@ const nextConfig: NextConfig = {
   async headers() {
     return [
       {
-        // Apply headers to API routes
-        source: '/api/:path*',
+        // Apply baseline security headers to every route, not just /api.
+        // Pages host the contact, referral and pre-booking forms, so they
+        // need clickjacking protection too.
+        source: '/:path*',
         headers: [
           {
             key: 'X-Content-Type-Options',
@@ -20,12 +22,18 @@ const nextConfig: NextConfig = {
             value: 'DENY',
           },
           {
-            key: 'X-XSS-Protection',
-            value: '1; mode=block',
+            // Modern equivalent of X-Frame-Options. Scoped to framing only,
+            // so it cannot break scripts, styles or fonts on the page.
+            key: 'Content-Security-Policy',
+            value: "frame-ancestors 'none'",
           },
           {
             key: 'Referrer-Policy',
             value: 'strict-origin-when-cross-origin',
+          },
+          {
+            key: 'Permissions-Policy',
+            value: 'camera=(), microphone=(), geolocation=(), interest-cohort=()',
           },
         ],
       },

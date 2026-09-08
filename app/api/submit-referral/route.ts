@@ -1,16 +1,49 @@
 import { NextRequest, NextResponse } from 'next/server';
 import nodemailer from 'nodemailer';
 import { query, initializeDatabase } from '@/lib/db';
+import {
+  checkRateLimit,
+  escapeHtml,
+  forbiddenOriginResponse,
+  getClientIp,
+  isSameOrigin,
+  isValidEmail,
+  maskEmail,
+  rateLimitResponse,
+} from '@/lib/security';
+
+// This endpoint sends mail to an address the caller supplies, so it is the
+// most abusable route on the site. Keep the limit tight.
+const RATE_LIMIT = { limit: 3, windowMs: 60 * 60 * 1000 };
 
 export async function POST(request: NextRequest) {
   try {
-    // Initialize database on first request
-    await initializeDatabase();
+    if (!isSameOrigin(request)) {
+      return forbiddenOriginResponse();
+    }
 
-    const { referredEmail, referrerEmail } = await request.json();
+    const ip = getClientIp(request);
+    const limit = checkRateLimit(`referral:${ip}`, RATE_LIMIT);
+    if (!limit.allowed) {
+      console.warn('Rate limit exceeded for a referral submission');
+      return rateLimitResponse(limit.retryAfterSeconds);
+    }
+
+    let body: Record<string, unknown>;
+    try {
+      body = await request.json();
+    } catch {
+      return NextResponse.json(
+        { message: 'Invalid JSON payload' },
+        { status: 400 }
+      );
+    }
+
+    const referredEmail = typeof body.referredEmail === 'string' ? body.referredEmail.trim() : '';
+    const referrerEmail = typeof body.referrerEmail === 'string' ? body.referrerEmail.trim() : '';
 
     // Validate referredEmail
-    if (!referredEmail || typeof referredEmail !== 'string') {
+    if (!referredEmail) {
       return NextResponse.json(
         { message: 'Referred email is required' },
         { status: 400 }
@@ -18,8 +51,7 @@ export async function POST(request: NextRequest) {
     }
 
     // Validate email format
-    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
-    if (!emailRegex.test(referredEmail)) {
+    if (!isValidEmail(referredEmail)) {
       return NextResponse.json(
         { message: 'Invalid email format for referred email' },
         { status: 400 }
@@ -27,12 +59,19 @@ export async function POST(request: NextRequest) {
     }
 
     // Validate referrer email if provided
-    if (referrerEmail && !emailRegex.test(referrerEmail)) {
+    if (referrerEmail && !isValidEmail(referrerEmail)) {
       return NextResponse.json(
         { message: 'Invalid email format for referrer email' },
         { status: 400 }
       );
     }
+
+    // Escaped copies for interpolation into the HTML email bodies.
+    const safeReferredEmail = escapeHtml(referredEmail);
+    const safeReferrerEmail = escapeHtml(referrerEmail);
+
+    // Initialize database on first request
+    await initializeDatabase();
 
     // Check referral limit (5 per customer)
     let referralStatus = 'pending';
@@ -77,7 +116,7 @@ export async function POST(request: NextRequest) {
 
     // Create introduction email
     const introducedByText = referrerEmail
-      ? `${referrerEmail} thinks you should talk to TWS about hosting migration.`
+      ? `${safeReferrerEmail} thinks you should talk to TWS about hosting migration.`
       : 'Someone thinks you should talk to TWS about hosting migration.';
 
     const emailHtml = `
@@ -322,9 +361,9 @@ export async function POST(request: NextRequest) {
               <h1>Thanks for the Referral!</h1>
             </div>
             <div class="content">
-              <p class="greeting">Hi ${referrerEmail},</p>
-              
-              <p>We've just sent an introduction email to <strong>${referredEmail}</strong> telling them about your experience with TWS Hosting.</p>
+              <p class="greeting">Hi ${safeReferrerEmail},</p>
+
+              <p>We've just sent an introduction email to <strong>${safeReferredEmail}</strong> telling them about your experience with TWS Hosting.</p>
               
               <div class="highlight-box">
                 <strong>As one of our valued customers, we really appreciate you sharing TWS with your network.</strong>
@@ -386,11 +425,11 @@ export async function POST(request: NextRequest) {
 
     const referralId = result.rows[0].id;
 
-    // Log referral
+    // Log referral without recording full addresses in platform logs
     console.log(`[REFERRAL] New referral tracked:`, {
       id: referralId,
-      referrerEmail: referrerEmail || 'anonymous',
-      referredEmail,
+      referrerEmail: referrerEmail ? maskEmail(referrerEmail) : 'anonymous',
+      referredEmail: maskEmail(referredEmail),
       status: referralStatus,
       timestamp: emailSentAt.toISOString(),
     });
@@ -411,19 +450,17 @@ export async function POST(request: NextRequest) {
     const safeError = error instanceof Error ? error.message : 'Unknown error';
     console.error('Error submitting referral:', safeError);
 
-    // Check if this is a database connection error
+    // Check if this is a database connection error. The detail stays in the
+    // server logs above; clients only ever see a generic message.
     if (safeError.includes('ECONNREFUSED') || safeError.includes('DATABASE_URL')) {
       return NextResponse.json(
-        { 
-          message: 'Service temporarily unavailable. Please try again in a few moments.',
-          error: 'Database connection error - please check that DATABASE_URL is configured',
-        },
+        { message: 'Service temporarily unavailable. Please try again in a few moments.' },
         { status: 503 }
       );
     }
 
     return NextResponse.json(
-      { message: `Failed to send referral: ${safeError}` },
+      { message: 'Failed to send referral. Please try again.' },
       { status: 500 }
     );
   }

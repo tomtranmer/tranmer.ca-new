@@ -1,14 +1,78 @@
 import { NextRequest, NextResponse } from 'next/server';
 import nodemailer from 'nodemailer';
+import {
+  checkRateLimit,
+  escapeHtml,
+  forbiddenOriginResponse,
+  getClientIp,
+  isSameOrigin,
+  isValidEmail,
+  rateLimitResponse,
+  sanitizeStringList,
+  sanitizeText,
+} from '@/lib/security';
+
+const RATE_LIMIT = { limit: 5, windowMs: 15 * 60 * 1000 };
 
 export async function POST(request: NextRequest) {
   try {
-    const { satisfaction, features, appFeatures, appStory, bookingEase, email, websiteGoal, websiteGoalOther } = await request.json();
+    if (!isSameOrigin(request)) {
+      return forbiddenOriginResponse();
+    }
+
+    const ip = getClientIp(request);
+    const limit = checkRateLimit(`survey:${ip}`, RATE_LIMIT);
+    if (!limit.allowed) {
+      return rateLimitResponse(limit.retryAfterSeconds);
+    }
+
+    let body: Record<string, unknown>;
+    try {
+      body = await request.json();
+    } catch {
+      return NextResponse.json({ error: 'Invalid JSON payload' }, { status: 400 });
+    }
+
+    const emailInput = typeof body.email === 'string' ? body.email.trim() : '';
+    if (emailInput && !isValidEmail(emailInput)) {
+      return NextResponse.json({ error: 'Invalid email format' }, { status: 400 });
+    }
+
+    // Plain values are validated and length capped, for the text/plain part
+    // and for logging. The escaped values below are what the HTML part uses.
+    const plain = {
+      satisfaction: sanitizeText(body.satisfaction, 200),
+      appStory: sanitizeText(body.appStory, 2000),
+      bookingEase: sanitizeText(body.bookingEase, 10),
+      email: emailInput,
+      websiteGoal: sanitizeText(body.websiteGoal, 100),
+      websiteGoalOther: sanitizeText(body.websiteGoalOther, 500),
+      features: sanitizeStringList(body.features, { maxItems: 25, maxLength: 200 }),
+      appFeatures: sanitizeStringList(body.appFeatures, { maxItems: 25, maxLength: 200 }),
+    };
+
+    const satisfaction = escapeHtml(plain.satisfaction);
+    const appStory = escapeHtml(plain.appStory);
+    const bookingEase = escapeHtml(plain.bookingEase);
+    const bookingEaseScore = Number.parseInt(plain.bookingEase, 10) || 0;
+    const email = escapeHtml(plain.email);
+    const websiteGoal = escapeHtml(plain.websiteGoal);
+    const websiteGoalOther = escapeHtml(plain.websiteGoalOther);
+    const features = plain.features.map(escapeHtml);
+    const appFeatures = plain.appFeatures.map(escapeHtml);
+
+    if (!process.env.SMTP_HOST || !process.env.SMTP_USER || !process.env.SMTP_PASS) {
+      console.error('SMTP configuration missing');
+      return NextResponse.json(
+        { error: 'Email service temporarily unavailable' },
+        { status: 503 }
+      );
+    }
 
     const transporter = nodemailer.createTransport({
-      host: process.env.SMTP_HOST || 'smtp.gmail.com',
+      host: process.env.SMTP_HOST,
       port: parseInt(process.env.SMTP_PORT || '587'),
-      secure: true, // true for 465, false for other ports
+      secure: process.env.SMTP_SECURE !== 'false',
       auth: {
         user: process.env.SMTP_USER,
         pass: process.env.SMTP_PASS,
@@ -27,7 +91,7 @@ export async function POST(request: NextRequest) {
     const mailOptions = {
       from: process.env.SMTP_USER,
       to: 'help@tranmer.ca',
-      subject: `🎯 New Appstravaganza Survey Response - ${email || 'Anonymous'}`,
+      subject: `🎯 New Appstravaganza Survey Response - ${plain.email || 'Anonymous'}`,
       html: `
         <!DOCTYPE html>
         <html>
@@ -169,7 +233,7 @@ export async function POST(request: NextRequest) {
               <div class="field-value">
                 <span class="rating">${bookingEase}/5</span>
                 <span style="margin-left: 10px; color: #718096;">
-                  ${bookingEase >= 4 ? '😊 Great experience!' : bookingEase >= 3 ? '👍 Good' : '⚠️ Needs improvement'}
+                  ${bookingEaseScore >= 4 ? '😊 Great experience!' : bookingEaseScore >= 3 ? '👍 Good' : '⚠️ Needs improvement'}
                 </span>
               </div>
             </div>
@@ -225,13 +289,13 @@ export async function POST(request: NextRequest) {
 🎯 NEW APPSTRAVAGANZA SURVEY RESPONSE
 Received: ${currentDate}
 
-${websiteGoal ? `WEBSITE GOAL: ${{ billboard: 'Billboard display', interactive: 'Interactive space', 'business-tool': 'Critical business tool', community: 'Values/community tool', other: `Other: ${websiteGoalOther}` }[websiteGoal as string] || websiteGoal}` : ''}
-${satisfaction ? `SATISFACTION: ${satisfaction}` : ''}
-${bookingEase ? `BOOKING EASE: ${bookingEase}/5` : ''}
-${features && features.length > 0 ? `FEATURES: ${features.join(', ')}` : ''}
-${appFeatures && appFeatures.length > 0 ? `APP FEATURES: ${appFeatures.join(', ')}` : ''}
-${appStory ? `APP STORY: ${appStory}` : ''}
-${email ? `CONTACT: ${email}` : ''}
+${plain.websiteGoal ? `WEBSITE GOAL: ${{ billboard: 'Billboard display', interactive: 'Interactive space', 'business-tool': 'Critical business tool', community: 'Values/community tool', other: `Other: ${plain.websiteGoalOther}` }[plain.websiteGoal] || plain.websiteGoal}` : ''}
+${plain.satisfaction ? `SATISFACTION: ${plain.satisfaction}` : ''}
+${plain.bookingEase ? `BOOKING EASE: ${plain.bookingEase}/5` : ''}
+${plain.features.length > 0 ? `FEATURES: ${plain.features.join(', ')}` : ''}
+${plain.appFeatures.length > 0 ? `APP FEATURES: ${plain.appFeatures.join(', ')}` : ''}
+${plain.appStory ? `APP STORY: ${plain.appStory}` : ''}
+${plain.email ? `CONTACT: ${plain.email}` : ''}
 
 ---
 Tranmer Web Services - Appstravaganza Survey System
