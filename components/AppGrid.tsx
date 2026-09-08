@@ -198,7 +198,7 @@ export function AppGrid({ onModalChange }: AppGridProps) {
       />
       <AppIcon
         href="https://teamup.tranmer.ca"
-        label="Team-Up Invest"
+        label="$Team-Up"
         emoji="💹"
         iconSrc="/icons/team_up_icon.png"
         iconBorder="border-indigo-300/60"
