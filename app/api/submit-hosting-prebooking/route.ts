@@ -12,6 +12,7 @@ import {
   sanitizeStringList,
   sanitizeText,
 } from '@/lib/security';
+import { checkBotId } from 'botid/server';
 
 const RATE_LIMIT = { limit: 5, windowMs: 15 * 60 * 1000 };
 
@@ -19,6 +20,11 @@ export async function POST(request: NextRequest) {
   try {
     if (!isSameOrigin(request)) {
       return forbiddenOriginResponse();
+    }
+
+    const verification = await checkBotId();
+    if (verification.isBot) {
+      return NextResponse.json({ error: 'Access denied' }, { status: 403 });
     }
 
     const ip = getClientIp(request);

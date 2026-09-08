@@ -1,3 +1,5 @@
+
+import Image from 'next/image';
 export default function BlogPage() {
   return (
     <main className="min-h-screen flex items-center justify-center bg-gradient-to-br from-gray-50 to-gray-100 py-12 px-4 sm:px-6 lg:px-8">
@@ -11,7 +13,7 @@ export default function BlogPage() {
             How They Change the Businesses of Tracking
           </h3>
           <div className="my-8 bg-gradient-to-br from-gray-50 to-gray-100 rounded-lg p-6 border border-gray-200">
-            <img src="/blog-hero.svg" alt="From complicated spreadsheets to modern apps" className="w-full h-auto" />
+            <Image src="/blog-hero.svg" alt="From complicated spreadsheets to modern apps" className="w-full h-auto" />
           </div>
           <div className="space-y-4 text-lg text-gray-600">
             <p>
