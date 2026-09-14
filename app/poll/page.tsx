@@ -92,7 +92,7 @@ function PollForm() {
         <p className="mt-4 text-lg">Help us learn about you.</p>
         <div className="mt-6 p-4 bg-gradient-to-r from-green-600/20 to-emerald-600/20 border border-green-500/30 rounded-lg max-w-2xl mx-auto">
           <p className="text-green-200">
-            <strong>Answer to Win.</strong> Fill out the 1 question survey to be entered into a raffle to win a <strong> $100 Credit</strong> to your next web bill in 2026.
+            <strong>Answer to Win.</strong> Fill out the 1 question survey to be entered into a raffle to win a <strong> $100 Credit</strong> to your next web bill in 2026. Your submissions will be saved unitl the next clinet raffle is drawn.
           </p>
         </div>
       </header>
