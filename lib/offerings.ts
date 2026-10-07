@@ -1,6 +1,6 @@
 // Single source of truth for the TWS 3x3 offering grid.
-// Every design variant under app/services renders from this file, so pricing
-// and copy changes only need to happen here.
+// The /web page renders from this file, so pricing and copy changes only
+// need to happen here.
 
 export type LayerId = "build" | "support" | "infra";
 
@@ -124,27 +124,21 @@ export const layers: Layer[] = [
         id: "infra-billboard",
         name: "Web · Billboard",
         tagline: "A fast, simple presence",
-        // TODO(pricing): set the monthly price for billboard hosting.
-        price: null,
-        priceLabel: "TBD",
+        price: 25,
         features: ["Static / brochure site", "Custom domain + SSL", "Global CDN"],
       },
       {
         id: "infra-ecommerce",
         name: "Web · eCommerce",
         tagline: "Sell online",
-        // TODO(pricing): set the monthly price for eCommerce hosting.
-        price: null,
-        priceLabel: "TBD",
+        price: 25,
         features: ["Everything in Billboard", "Store + payments", "Database + backups"],
       },
       {
         id: "infra-app",
         name: "App · Integrated Hosting",
         tagline: "Custom software, fully hosted",
-        // TODO(pricing): set the monthly price for integrated app hosting.
-        price: null,
-        priceLabel: "TBD",
+        price: 25,
         features: [
           "Everything in eCommerce",
           "Custom app + APIs",
@@ -155,14 +149,17 @@ export const layers: Layer[] = [
   },
 ];
 
-/** Occasional full-time sprint, available on top of any combination. */
+/**
+ * Occasional full-time sprint. A monthly upgrade that replaces the chosen
+ * Builder Availability tier for the month it's booked.
+ */
 export const buildSprint = {
   id: "build-sprint",
   name: "Build Sprint",
   tagline: "Full-time build for a month",
   price: 2500,
   description:
-    "When a project needs a push, book an occasional month of full-time development on top of any plan.",
+    "When a project needs a push, upgrade to a month of full-time development. It replaces your build plan for that month.",
 };
 
 /** Layers ordered top-down (Build → Support → Infrastructure). */
@@ -188,11 +185,16 @@ export type Selection = Record<LayerId, string>;
 /**
  * Totals the known monthly prices for a selection. `pending` counts the
  * chosen tiers that don't have a price yet, so the UI can say "+ TBD".
+ * With `sprint`, the Build Sprint replaces the build tier for the month.
  */
-export function totalFor(selection: Selection): { known: number; pending: number } {
-  let known = 0;
+export function totalFor(
+  selection: Selection,
+  { sprint = false }: { sprint?: boolean } = {},
+): { known: number; pending: number } {
+  let known = sprint ? buildSprint.price : 0;
   let pending = 0;
   for (const layer of layers) {
+    if (sprint && layer.id === "build") continue;
     const tier = layer.tiers.find((t) => t.id === selection[layer.id]);
     if (!tier) continue;
     if (tier.price === null) pending += 1;
@@ -201,21 +203,14 @@ export function totalFor(selection: Selection): { known: number; pending: number
   return { known, pending };
 }
 
-/** Example bundles, used by the matrix design. */
-export const presets: { name: string; blurb: string; selection: Selection }[] = [
-  {
-    name: "Launch",
-    blurb: "A billboard site you manage yourself.",
-    selection: { infra: "infra-billboard", support: "support-none", build: "build-none" },
-  },
-  {
-    name: "Grow",
-    blurb: "An online store with email support and a feature a month.",
-    selection: { infra: "infra-ecommerce", support: "support-minimal", build: "build-starter" },
-  },
-  {
-    name: "Partner",
-    blurb: "A custom app, fully supported, with an active builder.",
-    selection: { infra: "infra-app", support: "support-full", build: "build-active" },
-  },
-];
+/**
+ * 0-3 "premium" rank for a tier within its layer, used to escalate styling.
+ * The cheapest tier is always 0 and the most capable is always 3, so a
+ * three-tier layer maps to 0, 2, 3.
+ */
+export function premiumRank(layer: Layer, tierId: string): 0 | 1 | 2 | 3 {
+  const i = layer.tiers.findIndex((t) => t.id === tierId);
+  const n = layer.tiers.length;
+  if (i <= 0 || n < 2) return 0;
+  return Math.round((i * 3) / (n - 1)) as 0 | 1 | 2 | 3;
+}
