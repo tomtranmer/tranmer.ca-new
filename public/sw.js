@@ -1,4 +1,4 @@
-const CACHE_NAME = 'tranmer-ca-v1';
+const CACHE_NAME = 'tranmer-ca-v2';
 const urlsToCache = [
   '/',
   '/manifest.json',
@@ -25,14 +25,26 @@ self.addEventListener('install', (event) => {
 });
 
 // Fetch event
+// Pages are network-first so a deploy (including security fixes) reaches
+// returning visitors; the cached copy is only an offline fallback. Static
+// icons stay cache-first. Non-GET and cross-origin requests are not touched.
 self.addEventListener('fetch', (event) => {
+  const { request } = event;
+  if (request.method !== 'GET' || new URL(request.url).origin !== self.location.origin) {
+    return;
+  }
+
+  if (request.mode === 'navigate') {
+    event.respondWith(
+      fetch(request).catch(() =>
+        caches.match(request).then((cached) => cached || caches.match('/'))
+      )
+    );
+    return;
+  }
+
   event.respondWith(
-    caches.match(event.request)
-      .then((response) => {
-        // Return cached version or fetch from network
-        return response || fetch(event.request);
-      }
-    )
+    caches.match(request).then((cached) => cached || fetch(request))
   );
 });
 

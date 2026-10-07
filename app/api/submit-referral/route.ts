@@ -1,5 +1,4 @@
 import { NextRequest, NextResponse } from 'next/server';
-import nodemailer from 'nodemailer';
 import { query, initializeDatabase } from '@/lib/db';
 import {
   checkRateLimit,
@@ -11,15 +10,29 @@ import {
   maskEmail,
   rateLimitResponse,
 } from '@/lib/security';
+import { createMailTransport } from '@/lib/mail';
+import { checkBotId } from 'botid/server';
 
 // This endpoint sends mail to an address the caller supplies, so it is the
 // most abusable route on the site. Keep the limit tight.
 const RATE_LIMIT = { limit: 3, windowMs: 60 * 60 * 1000 };
 
+// The per-IP limit is per serverless instance, so these database-backed caps
+// are the real backstop: one address can't be emailed again within the
+// cooldown however many "referrers" name it, and the site never sends more
+// than a day's worth of referral mail. Held referrals are still recorded.
+const REFERRED_COOLDOWN_DAYS = 30;
+const DAILY_REFERRAL_EMAIL_CAP = 50;
+
 export async function POST(request: NextRequest) {
   try {
     if (!isSameOrigin(request)) {
       return forbiddenOriginResponse();
+    }
+
+    const verification = await checkBotId();
+    if (verification.isBot) {
+      return NextResponse.json({ message: 'Access denied' }, { status: 403 });
     }
 
     const ip = getClientIp(request);
@@ -101,18 +114,38 @@ export async function POST(request: NextRequest) {
       );
     }
 
-    // Set up email transporter
-    const transporter = nodemailer.createTransport({
-      host: process.env.SMTP_HOST || 'smtp.gmail.com',
-      port: parseInt(process.env.SMTP_PORT || '587'),
-      secure: process.env.SMTP_SECURE === 'true' || false,
-      auth: {
-        user: process.env.SMTP_USER,
-        pass: process.env.SMTP_PASS,
-      },
-      connectionTimeout: 10000,
-      socketTimeout: 10000,
-    });
+    const [recentIntro, sentToday] = await Promise.all([
+      query(
+        `SELECT 1 FROM referrals
+         WHERE referred_email = $1
+           AND email_sent_at > NOW() - make_interval(days => $2)
+         LIMIT 1`,
+        [referredEmail, REFERRED_COOLDOWN_DAYS]
+      ),
+      query(
+        `SELECT COUNT(*) AS count FROM referrals
+         WHERE email_sent_at > NOW() - INTERVAL '1 day'`
+      ),
+    ]);
+
+    let sendEmails = true;
+    if (recentIntro.rows.length > 0) {
+      sendEmails = false;
+      referralStatus = 'HELD_RECENTLY_CONTACTED';
+    } else if (parseInt(sentToday.rows[0].count, 10) >= DAILY_REFERRAL_EMAIL_CAP) {
+      sendEmails = false;
+      referralStatus = 'HELD_DAILY_CAP';
+      console.warn('Daily referral email cap reached; holding referral');
+    }
+
+    const transporter = createMailTransport();
+    if (!transporter) {
+      console.error('SMTP configuration missing');
+      return NextResponse.json(
+        { message: 'Service temporarily unavailable. Please try again in a few moments.' },
+        { status: 503 }
+      );
+    }
 
     // Create introduction email
     const introducedByText = referrerEmail
@@ -247,31 +280,33 @@ export async function POST(request: NextRequest) {
 
     // Send email to referee with referrer CC'd
     const ccList = referrerEmail ? referrerEmail : undefined;
-    
-    try {
-      // Send email to referee with 15 second timeout
-      await Promise.race([
-        transporter.sendMail({
-          from: process.env.SMTP_USER || 'help@tranmer.ca',
-          to: referredEmail,
-          cc: ccList,
-          subject: `${referrerEmail ? referrerEmail + ' suggests' : 'Someone suggests'} TWS for Your Hosting Migration`,
-          html: emailHtml,
-        }),
-        new Promise((_, reject) =>
-          setTimeout(() => reject(new Error('Email sending timeout')), 15000)
-        ),
-      ]);
-    } catch (emailError) {
-      // Log email error but continue - referral is still tracked
-      // Only log safe error message, not the full error object which may contain sensitive data
-      const safeError = emailError instanceof Error ? emailError.message : 'Unknown error';
-      console.error('Email sending failed (referee):', safeError);
-      // Still proceed with sending referrer email and storing the referral
+
+    if (sendEmails) {
+      try {
+        // Send email to referee with 15 second timeout
+        await Promise.race([
+          transporter.sendMail({
+            from: process.env.SMTP_USER || 'help@tranmer.ca',
+            to: referredEmail,
+            cc: ccList,
+            subject: `${referrerEmail ? referrerEmail + ' suggests' : 'Someone suggests'} TWS for Your Hosting Migration`,
+            html: emailHtml,
+          }),
+          new Promise((_, reject) =>
+            setTimeout(() => reject(new Error('Email sending timeout')), 15000)
+          ),
+        ]);
+      } catch (emailError) {
+        // Log email error but continue - referral is still tracked
+        // Only log safe error message, not the full error object which may contain sensitive data
+        const safeError = emailError instanceof Error ? emailError.message : 'Unknown error';
+        console.error('Email sending failed (referee):', safeError);
+        // Still proceed with sending referrer email and storing the referral
+      }
     }
 
     // Send thank you email to referrer if provided
-    if (referrerEmail) {
+    if (sendEmails && referrerEmail) {
       const referrerEmailHtml = `
         <!DOCTYPE html>
         <html>
@@ -415,7 +450,7 @@ export async function POST(request: NextRequest) {
     }
 
     // Store referral in database
-    const emailSentAt = new Date();
+    const emailSentAt = sendEmails ? new Date() : null;
     const result = await query(
       `INSERT INTO referrals (referrer_email, referred_email, email_sent_at, status, notes) 
        VALUES ($1, $2, $3, $4, $5) 
@@ -431,17 +466,21 @@ export async function POST(request: NextRequest) {
       referrerEmail: referrerEmail ? maskEmail(referrerEmail) : 'anonymous',
       referredEmail: maskEmail(referredEmail),
       status: referralStatus,
-      timestamp: emailSentAt.toISOString(),
+      timestamp: new Date().toISOString(),
     });
 
     return NextResponse.json(
       {
         success: true,
-        message: referralStatus === 'OVER_LIMIT' 
+        message: !sendEmails
+          ? 'Thanks! Your referral has been received.'
+          : referralStatus === 'OVER_LIMIT'
           ? `Referral saved for ${referredEmail}. Note: You have exceeded the 5 referral promotional limit, but we're still tracking this.`
           : `Introduction email sent to ${referredEmail}${referrerEmail ? ' and thank you email sent to ' + referrerEmail : ''}`,
         referralId,
-        status: referralStatus,
+        // Held statuses stay server side so the response can't be used to
+        // learn whether an address was recently contacted.
+        status: sendEmails ? referralStatus : 'received',
       },
       { status: 200 }
     );

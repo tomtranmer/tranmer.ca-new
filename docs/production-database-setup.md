@@ -66,10 +66,10 @@ Your production environment needs these variables:
 | Variable | Required | Example | Source |
 |----------|----------|---------|--------|
 | `DATABASE_URL` | ✅ Yes | `postgresql://user:pw@neon.tech/db` | Neon/Database provider |
-| `SMTP_HOST` | ✅ Yes | `mail.mailconfig.net` | Email provider |
+| `SMTP_HOST` | ✅ Yes | `<smtp-host>` | Email provider |
 | `SMTP_PORT` | ✅ Yes | `465` | Email provider |
 | `SMTP_SECURE` | ✅ Yes | `true` | Email provider |
-| `SMTP_USER` | ✅ Yes | `webapp@tomtranmer.com` | Email provider |
+| `SMTP_USER` | ✅ Yes | `<smtp-username>` | Email provider |
 | `SMTP_PASS` | ✅ Yes | Your SMTP password | Email provider |
 | `NEXT_PUBLIC_GA_ID` | ⚠️ Optional | `G-XXXXXXXXXX` | Google Analytics |
 

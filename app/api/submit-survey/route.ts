@@ -1,5 +1,4 @@
 import { NextRequest, NextResponse } from 'next/server';
-import nodemailer from 'nodemailer';
 import {
   checkRateLimit,
   escapeHtml,
@@ -11,6 +10,8 @@ import {
   sanitizeStringList,
   sanitizeText,
 } from '@/lib/security';
+import { createMailTransport } from '@/lib/mail';
+import { checkBotId } from 'botid/server';
 
 const RATE_LIMIT = { limit: 5, windowMs: 15 * 60 * 1000 };
 
@@ -18,6 +19,11 @@ export async function POST(request: NextRequest) {
   try {
     if (!isSameOrigin(request)) {
       return forbiddenOriginResponse();
+    }
+
+    const verification = await checkBotId();
+    if (verification.isBot) {
+      return NextResponse.json({ error: 'Access denied' }, { status: 403 });
     }
 
     const ip = getClientIp(request);
@@ -61,23 +67,14 @@ export async function POST(request: NextRequest) {
     const features = plain.features.map(escapeHtml);
     const appFeatures = plain.appFeatures.map(escapeHtml);
 
-    if (!process.env.SMTP_HOST || !process.env.SMTP_USER || !process.env.SMTP_PASS) {
+    const transporter = createMailTransport();
+    if (!transporter) {
       console.error('SMTP configuration missing');
       return NextResponse.json(
         { error: 'Email service temporarily unavailable' },
         { status: 503 }
       );
     }
-
-    const transporter = nodemailer.createTransport({
-      host: process.env.SMTP_HOST,
-      port: parseInt(process.env.SMTP_PORT || '587'),
-      secure: process.env.SMTP_SECURE !== 'false',
-      auth: {
-        user: process.env.SMTP_USER,
-        pass: process.env.SMTP_PASS,
-      },
-    });
 
     const currentDate = new Date().toLocaleDateString('en-US', {
       weekday: 'long',

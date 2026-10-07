@@ -180,17 +180,17 @@ table: referrals
 ### Environment Variables Required
 The following environment variables are already configured in `.env.local`:
 ```
-SMTP_HOST=mail.mailconfig.net
+SMTP_HOST=<smtp-host>
 SMTP_PORT=465
 SMTP_SECURE=true
-SMTP_USER=webapp@tomtranmer.com
+SMTP_USER=<smtp-username>
 SMTP_PASS=[configured]
 
 DATABASE_URL=postgresql://...  # Neon PostgreSQL
 PGHOST, PGUSER, PGPASSWORD, etc. # Connection parameters
 ```
 
-**SMTP Details:** Using webapp@tomtranmer.com to send introduction emails from help@tranmer.ca with CC to referrer
+**SMTP Details:** Using the configured SMTP account to send introduction emails from help@tranmer.ca with CC to referrer
 
 ---
 
@@ -276,7 +276,7 @@ PGHOST, PGUSER, PGPASSWORD, etc. # Connection parameters
   - **All referrals accepted and stored**, including over-limit
   - Referrals over 5 count marked with `OVER_LIMIT` status + note in DB
   - Duplicate prevention (per referrer + referred pair)
-  - Email sending via SMTP (webapp@tomtranmer.com) with 15-second timeout
+  - Email sending via SMTP with 15-second timeout
   - Introduction email sent from help@tranmer.ca
   - Both referrer and referee are CC'd on the email
   - Error handling and logging
