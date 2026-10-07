@@ -5,7 +5,11 @@
   --foreground: #171717;
 }
 
-/* Tailwind variables are configured via the default setup; no custom @theme at-rule used. */
+/* Expose the page colors to Tailwind (bg-background, text-foreground/70, ...). */
+@theme inline {
+  --color-background: var(--background);
+  --color-foreground: var(--foreground);
+}
 
 @media (prefers-color-scheme: dark) {
   :root {
