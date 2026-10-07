@@ -188,7 +188,7 @@ export type Selection = Record<LayerId, string>;
  * With `sprint`, the Build Sprint replaces the build tier for the month.
  */
 export function totalFor(
-  selection: Selection,
+  selection: Partial<Selection>,
   { sprint = false }: { sprint?: boolean } = {},
 ): { known: number; pending: number } {
   let known = sprint ? buildSprint.price : 0;

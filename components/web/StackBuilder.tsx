@@ -4,7 +4,7 @@ import { useState } from "react";
 import {
   buildSprint,
   formatPrice,
-  layersTopDown,
+  layersBottomUp,
   premiumRank,
   totalFor,
   type Selection,
@@ -35,32 +35,42 @@ const rankStyles = [
   },
 ] as const;
 
-const initial: Selection = {
-  build: "build-none",
-  support: "support-minimal",
-  infra: "infra-billboard",
-};
 
 const money = (n: number) => `$${n.toLocaleString("en-CA")}`;
 
 export function StackBuilder() {
-  const [selection, setSelection] = useState<Selection>(initial);
+  const [selection, setSelection] = useState<Partial<Selection>>({});
   const [sprint, setSprint] = useState(false);
   const { known, pending } = totalFor(selection, { sprint });
+
+  // Each level unlocks only once every level below it has a selection.
+  const isUnlocked = (index: number) =>
+    layersBottomUp.slice(0, index).every((l) => selection[l.id]);
+  const sprintUnlocked = layersBottomUp
+    .filter((l) => l.id !== "build")
+    .every((l) => selection[l.id]);
+  const complete = layersBottomUp.every((l) => selection[l.id] || (sprint && l.id === "build"));
 
   return (
     <div className="grid gap-8 lg:grid-cols-[1fr_300px]">
       <div className="space-y-10">
-        {layersTopDown.map((layer) => {
+        {layersBottomUp.map((layer, index) => {
           const replaced = sprint && layer.id === "build";
+          const locked = !isUnlocked(index);
+          const previous = layersBottomUp[index - 1];
           return (
-            <fieldset key={layer.id}>
+            <fieldset key={layer.id} disabled={locked}>
               <legend className="mb-3">
                 <span className="text-xs font-semibold uppercase tracking-wide text-foreground/50">
                   Level {layer.level} · {layer.name}
                 </span>
                 <span className="block text-xl font-semibold">{layer.question}</span>
               </legend>
+              {locked && previous && (
+                <p className="mb-3 text-sm text-foreground/50">
+                  Choose your {previous.name} (Level {previous.level}) first.
+                </p>
+              )}
               {replaced && (
                 <p className="mb-3 text-sm text-amber-700 dark:text-amber-400">
                   Replaced by the {buildSprint.name} this month.
@@ -68,7 +78,7 @@ export function StackBuilder() {
               )}
               <div
                 className={`grid gap-3 sm:grid-cols-2 md:grid-cols-[repeat(auto-fit,minmax(0,1fr))] ${
-                  replaced ? "pointer-events-none opacity-40" : ""
+                  replaced || locked ? "pointer-events-none opacity-40" : ""
                 }`}
               >
                 {layer.tiers.map((tier) => {
@@ -121,7 +131,7 @@ export function StackBuilder() {
         <label
           className={`relative block cursor-pointer overflow-hidden rounded-2xl border-2 border-amber-400 bg-gradient-to-r from-zinc-950 via-violet-950 to-zinc-950 p-5 text-white shadow-2xl shadow-amber-500/20 transition hover:-translate-y-0.5 ${
             sprint ? "ring-2 ring-amber-400 ring-offset-2 ring-offset-background" : ""
-          }`}
+          } ${sprintUnlocked ? "" : "pointer-events-none opacity-40"}`}
         >
           <span
             aria-hidden
@@ -131,6 +141,7 @@ export function StackBuilder() {
             <input
               type="checkbox"
               checked={sprint}
+              disabled={!sprintUnlocked}
               onChange={(e) => setSprint(e.target.checked)}
               className="mt-1 h-4 w-4 accent-amber-400"
             />
@@ -151,13 +162,21 @@ export function StackBuilder() {
       <aside className="h-fit rounded-2xl border border-foreground/10 bg-foreground/[0.03] p-6 lg:sticky lg:top-6">
         <p className="text-sm font-semibold uppercase tracking-wide text-foreground/50">Your stack</p>
         <ul className="mt-4 space-y-3 text-sm">
-          {layersTopDown.map((layer) => {
-            const tier = layer.tiers.find((t) => t.id === selection[layer.id])!;
+          {layersBottomUp.map((layer) => {
+            const tier = layer.tiers.find((t) => t.id === selection[layer.id]);
             if (sprint && layer.id === "build") {
               return (
                 <li key={layer.id} className="flex justify-between gap-2">
                   <span>{buildSprint.name}</span>
                   <span className="font-medium">{money(buildSprint.price)}</span>
+                </li>
+              );
+            }
+            if (!tier) {
+              return (
+                <li key={layer.id} className="flex justify-between gap-2 text-foreground/40">
+                  <span>{layer.name}</span>
+                  <span>—</span>
                 </li>
               );
             }
@@ -181,24 +200,30 @@ export function StackBuilder() {
           )}
           {sprint && <p className="mt-1 text-xs text-foreground/50">Sprint pricing applies to the month it&apos;s booked.</p>}
         </div>
-        <a
-          href={`mailto:help@tranmer.ca?subject=${encodeURIComponent("TWS plan enquiry")}&body=${encodeURIComponent(
-            planSummary(selection, sprint),
-          )}`}
-          className="mt-6 block rounded-full bg-blue-600 px-4 py-2 text-center font-medium text-white hover:bg-blue-700"
-        >
-          Request this plan
-        </a>
+        {complete ? (
+          <a
+            href={`mailto:help@tranmer.ca?subject=${encodeURIComponent("TWS plan enquiry")}&body=${encodeURIComponent(
+              planSummary(selection, sprint),
+            )}`}
+            className="mt-6 block rounded-full bg-blue-600 px-4 py-2 text-center font-medium text-white hover:bg-blue-700"
+          >
+            Request this plan
+          </a>
+        ) : (
+          <p className="mt-6 rounded-full bg-foreground/10 px-4 py-2 text-center text-sm font-medium text-foreground/50">
+            Choose all three levels to request
+          </p>
+        )}
       </aside>
     </div>
   );
 }
 
-function planSummary(selection: Selection, sprint: boolean): string {
-  const lines = layersTopDown.map((layer) => {
+function planSummary(selection: Partial<Selection>, sprint: boolean): string {
+  const lines = layersBottomUp.map((layer) => {
     if (sprint && layer.id === "build") return `${layer.name}: ${buildSprint.name}`;
-    const tier = layer.tiers.find((t) => t.id === selection[layer.id])!;
-    return `${layer.name}: ${tier.name}`;
+    const tier = layer.tiers.find((t) => t.id === selection[layer.id]);
+    return `${layer.name}: ${tier?.name ?? "Not selected"}`;
   });
   return `Hi Tom,\n\nI'm interested in this plan:\n\n${lines.join("\n")}\n\nAbout my project:\n`;
 }
