@@ -61,7 +61,20 @@ export async function closePool(): Promise<void> {
   }
 }
 
-export async function initializeDatabase(): Promise<void> {
+// Schema setup runs once per server instance rather than on every request.
+let initialized: Promise<void> | null = null;
+
+export function initializeDatabase(): Promise<void> {
+  if (!initialized) {
+    initialized = createSchema().catch((error) => {
+      initialized = null; // retry on the next request
+      throw error;
+    });
+  }
+  return initialized;
+}
+
+async function createSchema(): Promise<void> {
   try {
     // Create referrals table if it doesn't exist
     await query(`

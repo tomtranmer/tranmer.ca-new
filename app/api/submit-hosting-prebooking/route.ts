@@ -1,5 +1,4 @@
 import { NextRequest, NextResponse } from 'next/server';
-import nodemailer from 'nodemailer';
 import {
   checkRateLimit,
   escapeHtml,
@@ -12,6 +11,7 @@ import {
   sanitizeStringList,
   sanitizeText,
 } from '@/lib/security';
+import { createMailTransport } from '@/lib/mail';
 import { checkBotId } from 'botid/server';
 
 const RATE_LIMIT = { limit: 5, windowMs: 15 * 60 * 1000 };
@@ -110,24 +110,14 @@ export async function POST(request: NextRequest) {
       minute: '2-digit'
     });
 
-    // Check SMTP configuration
-    if (!process.env.SMTP_HOST || !process.env.SMTP_USER || !process.env.SMTP_PASS) {
+    const transporter = createMailTransport();
+    if (!transporter) {
       console.error('SMTP configuration missing');
       return NextResponse.json(
         { error: 'Email service temporarily unavailable' },
         { status: 503 }
       );
     }
-
-    const transporter = nodemailer.createTransport({
-      host: process.env.SMTP_HOST,
-      port: parseInt(process.env.SMTP_PORT || '465'),
-      secure: process.env.SMTP_SECURE !== 'false', // Secure unless explicitly disabled
-      auth: {
-        user: process.env.SMTP_USER,
-        pass: process.env.SMTP_PASS,
-      },
-    });
 
     // Verify transporter configuration
     try {

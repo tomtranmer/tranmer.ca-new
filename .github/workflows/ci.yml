@@ -6,11 +6,15 @@ on:
       - main
   pull_request:
 
+# CI only reads the repo; keep the token read-only.
+permissions:
+  contents: read
+
 jobs:
   build:
     strategy:
       matrix:
-        node-version: [20.x, 22.x]
+        node-version: [22.x, 24.x]
     runs-on: ubuntu-latest
     steps:
       - name: Checkout

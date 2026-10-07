@@ -3,7 +3,7 @@ import { withBotId } from 'botid/next/config';
 
 
 const nextConfig: NextConfig = {
-  /* config options here */
+  poweredByHeader: false,
   images: {
     qualities: [75, 80],
   },
@@ -28,6 +28,10 @@ const nextConfig: NextConfig = {
             // so it cannot break scripts, styles or fonts on the page.
             key: 'Content-Security-Policy',
             value: "frame-ancestors 'none'",
+          },
+          {
+            key: 'Strict-Transport-Security',
+            value: 'max-age=63072000',
           },
           {
             key: 'Referrer-Policy',
