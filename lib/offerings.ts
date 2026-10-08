@@ -91,23 +91,24 @@ export const layers: Layer[] = [
       {
         id: "support-minimal",
         name: "Minimal Support",
-        tagline: "On call by email",
-        // TODO(pricing): set the monthly price for minimal support.
-        price: null,
-        priceLabel: "TBD",
-        features: ["On call for support requests via email", "Issue triage and fixes"],
+        tagline: "Email support + one minor site request a month",
+        price: 50,
+        features: [
+          "Support requests via email",
+          "Issue triage and fixes",
+          "1 minor site request per month",
+        ],
       },
       {
         id: "support-full",
         name: "Full Support",
-        tagline: "We run it with you",
-        // TODO(pricing): set the monthly price for full support.
-        price: null,
-        priceLabel: "TBD",
+        tagline: "Phone support, training + one minor site request a week",
+        price: 200,
         features: [
           "Everything in Minimal",
-          "Content management requests",
+          "Support by phone call",
           "Training for you and your team",
+          "1 minor site request per week",
         ],
       },
     ],
@@ -130,17 +131,25 @@ export const layers: Layer[] = [
       {
         id: "infra-ecommerce",
         name: "Web · eCommerce",
-        tagline: "Sell online",
-        price: 25,
-        features: ["Everything in Billboard", "Store + payments", "Database + backups"],
+        tagline: "Sell online with faster servers and online monitoring",
+        price: 50,
+        features: [
+          "Everything in Billboard",
+          "Store + payments",
+          "Faster servers",
+          "Online monitoring",
+          "Database + backups",
+        ],
       },
       {
         id: "infra-app",
         name: "App · Integrated Hosting",
-        tagline: "Custom software, fully hosted",
-        price: 25,
+        tagline: "Includes servers, data compute and email processing (sends)",
+        price: 75,
         features: [
           "Everything in eCommerce",
+          "Servers + data compute",
+          "Email processing (sends)",
           "Custom app + APIs",
           "Integrations, auth and background jobs",
         ],
@@ -162,6 +171,55 @@ export const buildSprint = {
     "When a project needs a push, upgrade to a month of full-time development. It replaces your build plan for that month.",
 };
 
+export type Addon = {
+  id: string;
+  name: string;
+  tagline: string;
+  /** Price in CAD per billing period. */
+  price: number;
+  billing: "monthly" | "annual";
+  /** What one unit of the price buys, e.g. "account". */
+  unit?: string;
+};
+
+/** Optional products that sit alongside any plan. */
+export const addons: Addon[] = [
+  {
+    id: "addon-domain",
+    name: "Domain",
+    tagline: "Register and renew your domain name",
+    price: 30,
+    billing: "annual",
+  },
+  {
+    id: "addon-email-imap",
+    name: "Email · IMAP",
+    tagline: "5 GB mailbox that works with any mail app",
+    price: 5,
+    billing: "monthly",
+    unit: "account",
+  },
+  {
+    id: "addon-email-gmail",
+    name: "Email · Gmail",
+    tagline: "Google Workspace Business Starter",
+    price: 12.5,
+    billing: "monthly",
+    unit: "account",
+  },
+];
+
+/** Formats a CAD amount, keeping cents only when there are any. */
+export function money(n: number): string {
+  const cents = Number.isInteger(n) ? 0 : 2;
+  return `$${n.toLocaleString("en-CA", { minimumFractionDigits: cents, maximumFractionDigits: cents })}`;
+}
+
+export function formatAddonPrice(addon: Addon): string {
+  const period = addon.billing === "annual" ? "/yr" : "/mo";
+  return `${money(addon.price)}${period}${addon.unit ? ` per ${addon.unit}` : ""}`;
+}
+
 /** Layers ordered top-down (Build → Support → Infrastructure). */
 export const layersTopDown = [...layers].sort((a, b) => b.level - a.level);
 
@@ -177,7 +235,7 @@ export function getLayer(id: LayerId): Layer {
 export function formatPrice(tier: Pick<Tier, "price" | "priceLabel">): string {
   if (tier.price === null) return tier.priceLabel ?? "TBD";
   if (tier.price === 0) return tier.priceLabel ?? "$0";
-  return `$${tier.price.toLocaleString("en-CA")}`;
+  return money(tier.price);
 }
 
 export type Selection = Record<LayerId, string>;
@@ -186,13 +244,17 @@ export type Selection = Record<LayerId, string>;
  * Totals the known monthly prices for a selection. `pending` counts the
  * chosen tiers that don't have a price yet, so the UI can say "+ TBD".
  * With `sprint`, the Build Sprint replaces the build tier for the month.
+ * Monthly add-ons are included; annual ones are totalled by `annualTotalFor`.
  */
 export function totalFor(
   selection: Partial<Selection>,
-  { sprint = false }: { sprint?: boolean } = {},
+  { sprint = false, addonIds = [] }: { sprint?: boolean; addonIds?: string[] } = {},
 ): { known: number; pending: number } {
   let known = sprint ? buildSprint.price : 0;
   let pending = 0;
+  for (const addon of addons) {
+    if (addon.billing === "monthly" && addonIds.includes(addon.id)) known += addon.price;
+  }
   for (const layer of layers) {
     if (sprint && layer.id === "build") continue;
     const tier = layer.tiers.find((t) => t.id === selection[layer.id]);
@@ -213,4 +275,11 @@ export function premiumRank(layer: Layer, tierId: string): 0 | 1 | 2 | 3 {
   const n = layer.tiers.length;
   if (i <= 0 || n < 2) return 0;
   return Math.round((i * 3) / (n - 1)) as 0 | 1 | 2 | 3;
+}
+
+/** Totals the chosen add-ons that bill annually. */
+export function annualTotalFor(addonIds: string[]): number {
+  return addons
+    .filter((a) => a.billing === "annual" && addonIds.includes(a.id))
+    .reduce((sum, a) => sum + a.price, 0);
 }

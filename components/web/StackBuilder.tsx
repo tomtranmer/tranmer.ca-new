@@ -2,9 +2,13 @@
 
 import { useState } from "react";
 import {
+  addons,
+  annualTotalFor,
   buildSprint,
+  formatAddonPrice,
   formatPrice,
   layersBottomUp,
+  money,
   premiumRank,
   totalFor,
   type Selection,
@@ -36,12 +40,15 @@ const rankStyles = [
 ] as const;
 
 
-const money = (n: number) => `$${n.toLocaleString("en-CA")}`;
-
 export function StackBuilder() {
   const [selection, setSelection] = useState<Partial<Selection>>({});
   const [sprint, setSprint] = useState(false);
-  const { known, pending } = totalFor(selection, { sprint });
+  const [addonIds, setAddonIds] = useState<string[]>([]);
+  const { known, pending } = totalFor(selection, { sprint, addonIds });
+  const annual = annualTotalFor(addonIds);
+  const chosenAddons = addons.filter((a) => addonIds.includes(a.id));
+  const toggleAddon = (id: string, on: boolean) =>
+    setAddonIds((ids) => (on ? [...ids, id] : ids.filter((x) => x !== id)));
 
   // Each level unlocks only once every level below it has a selection.
   const isUnlocked = (index: number) =>
@@ -157,6 +164,40 @@ export function StackBuilder() {
             </span>
           </span>
         </label>
+
+        <fieldset>
+          <legend className="mb-3">
+            <span className="text-xs font-semibold uppercase tracking-wide text-foreground/50">
+              Optional
+            </span>
+            <span className="block text-xl font-semibold">Product add-ons</span>
+          </legend>
+          <div className="grid gap-3 sm:grid-cols-3">
+            {addons.map((addon) => {
+              const checked = addonIds.includes(addon.id);
+              return (
+                <label
+                  key={addon.id}
+                  className={`flex cursor-pointer items-start gap-3 rounded-xl border-2 border-foreground/15 bg-background p-4 transition hover:-translate-y-0.5 ${
+                    checked ? "ring-2 ring-blue-500 ring-offset-2 ring-offset-background" : ""
+                  }`}
+                >
+                  <input
+                    type="checkbox"
+                    checked={checked}
+                    onChange={(e) => toggleAddon(addon.id, e.target.checked)}
+                    className="mt-1 h-4 w-4 accent-blue-500"
+                  />
+                  <span>
+                    <span className="block font-semibold">{addon.name}</span>
+                    <span className="block text-sm text-foreground/60">{addon.tagline}</span>
+                    <span className="mt-2 block font-bold">{formatAddonPrice(addon)}</span>
+                  </span>
+                </label>
+              );
+            })}
+          </div>
+        </fieldset>
       </div>
 
       <aside className="h-fit rounded-2xl border border-foreground/10 bg-foreground/[0.03] p-6 lg:sticky lg:top-6">
@@ -187,12 +228,21 @@ export function StackBuilder() {
               </li>
             );
           })}
+          {chosenAddons.map((addon) => (
+            <li key={addon.id} className="flex justify-between gap-2">
+              <span className="text-foreground/70">{addon.name}</span>
+              <span className="font-medium">{formatAddonPrice(addon)}</span>
+            </li>
+          ))}
         </ul>
         <div className="mt-4 border-t border-foreground/10 pt-4">
           <p className="text-3xl font-bold">
             {money(known)}
             <span className="text-base font-normal text-foreground/60">/mo</span>
           </p>
+          {annual > 0 && (
+            <p className="text-sm text-foreground/60">+ {money(annual)}/yr</p>
+          )}
           {pending > 0 && (
             <p className="text-xs text-foreground/50">
               + {pending} item{pending > 1 ? "s" : ""} priced on request
@@ -203,7 +253,7 @@ export function StackBuilder() {
         {complete ? (
           <a
             href={`mailto:help@tranmer.ca?subject=${encodeURIComponent("TWS plan enquiry")}&body=${encodeURIComponent(
-              planSummary(selection, sprint),
+              planSummary(selection, sprint, chosenAddons.map((a) => `${a.name} (${formatAddonPrice(a)})`)),
             )}`}
             className="mt-6 block rounded-full bg-blue-600 px-4 py-2 text-center font-medium text-white hover:bg-blue-700"
           >
@@ -219,11 +269,12 @@ export function StackBuilder() {
   );
 }
 
-function planSummary(selection: Partial<Selection>, sprint: boolean): string {
+function planSummary(selection: Partial<Selection>, sprint: boolean, addonLines: string[]): string {
   const lines = layersBottomUp.map((layer) => {
     if (sprint && layer.id === "build") return `${layer.name}: ${buildSprint.name}`;
     const tier = layer.tiers.find((t) => t.id === selection[layer.id]);
     return `${layer.name}: ${tier?.name ?? "Not selected"}`;
   });
+  if (addonLines.length) lines.push(`Add-ons: ${addonLines.join(", ")}`);
   return `Hi Tom,\n\nI'm interested in this plan:\n\n${lines.join("\n")}\n\nAbout my project:\n`;
 }
