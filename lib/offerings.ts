@@ -180,7 +180,16 @@ export type Addon = {
   billing: "monthly" | "annual";
   /** What one unit of the price buys, e.g. "account". */
   unit?: string;
+  /** When the add-on comes free with the plan. See `includedAddonIds`. */
+  includedWith?: IncludedRule;
 };
+
+/**
+ * - `hostedSupportedAbove`: plans with hosting and paid support whose monthly
+ *   tiers total more than this amount.
+ * - `activeBuild`: any paid Builder Availability tier, or the Build Sprint.
+ */
+export type IncludedRule = { hostedSupportedAbove: number } | "activeBuild";
 
 /** Optional products that sit alongside any plan. */
 export const addons: Addon[] = [
@@ -206,6 +215,30 @@ export const addons: Addon[] = [
     price: 12.5,
     billing: "monthly",
     unit: "account",
+  },
+  {
+    id: "addon-malware",
+    name: "Malware Assurance",
+    tagline: "Malware scanning, and cleanup if your site is ever compromised",
+    price: 100,
+    billing: "annual",
+    includedWith: { hostedSupportedAbove: 100 },
+  },
+  {
+    id: "addon-email-sending",
+    name: "Email Sending · Resend",
+    tagline: "Transactional email from your site or app",
+    price: 10,
+    billing: "monthly",
+    includedWith: "activeBuild",
+  },
+  {
+    id: "addon-database",
+    name: "App Database · Neon",
+    tagline: "Managed Postgres database for your app",
+    price: 10,
+    billing: "monthly",
+    includedWith: "activeBuild",
   },
 ];
 
@@ -282,4 +315,29 @@ export function annualTotalFor(addonIds: string[]): number {
   return addons
     .filter((a) => a.billing === "annual" && addonIds.includes(a.id))
     .reduce((sum, a) => sum + a.price, 0);
+}
+
+/** Short description of when an add-on is free, for display. */
+export function includedNote(rule: IncludedRule): string {
+  if (rule === "activeBuild") return "Free with any active build plan";
+  return `Free with plans over ${money(rule.hostedSupportedAbove)}/mo that include hosting and support`;
+}
+
+/** Add-ons the plan gets for free, per each add-on's `includedWith` rule. */
+export function includedAddonIds(
+  selection: Partial<Selection>,
+  { sprint = false }: { sprint?: boolean } = {},
+): string[] {
+  const tierPrice = (id: LayerId) =>
+    getLayer(id).tiers.find((t) => t.id === selection[id])?.price ?? 0;
+  const activeBuild = sprint || tierPrice("build") > 0;
+  const hostedSupported = !!selection.infra && tierPrice("support") > 0;
+  const { known } = totalFor(selection, { sprint });
+  return addons
+    .filter(({ includedWith: rule }) => {
+      if (!rule) return false;
+      if (rule === "activeBuild") return activeBuild;
+      return hostedSupported && known > rule.hostedSupportedAbove;
+    })
+    .map((a) => a.id);
 }

@@ -1,5 +1,5 @@
 import { describe, it, expect } from 'vitest'
-import { annualTotalFor, buildSprint, formatAddonPrice, formatPrice, getLayer, layers, layersTopDown, premiumRank, totalFor } from '../lib/offerings'
+import { annualTotalFor, buildSprint, formatAddonPrice, formatPrice, getLayer, includedAddonIds, includedNote, layers, layersTopDown, premiumRank, totalFor } from '../lib/offerings'
 
 describe('offerings', () => {
   it('has three layers ordered build → support → infra from the top', () => {
@@ -58,5 +58,36 @@ describe('offerings', () => {
   it('formats add-on prices with cents and billing period', () => {
     expect(formatAddonPrice({ id: 'x', name: 'x', tagline: '', price: 12.5, billing: 'monthly', unit: 'account' })).toBe('$12.50/mo per account')
     expect(formatAddonPrice({ id: 'y', name: 'y', tagline: '', price: 30, billing: 'annual' })).toBe('$30/yr')
+  })
+
+  it('includes Malware Assurance free with hosted, supported plans over $100/month', () => {
+    // $25 + $50 + $100 = $175 with paid support
+    expect(includedAddonIds({ build: 'build-starter', support: 'support-minimal', infra: 'infra-billboard' })).toContain('addon-malware')
+    // $75 + $50 = $125
+    expect(includedAddonIds({ build: 'build-none', support: 'support-minimal', infra: 'infra-app' })).toEqual(['addon-malware'])
+    // $25 + $50 = $75: not above $100
+    expect(includedAddonIds({ build: 'build-none', support: 'support-minimal', infra: 'infra-billboard' })).toEqual([])
+    // Over $100 but self-managed (no support)
+    expect(includedAddonIds({ build: 'build-active', support: 'support-none', infra: 'infra-app' })).not.toContain('addon-malware')
+    // The sprint counts toward the monthly total
+    expect(includedAddonIds({ build: 'build-none', support: 'support-minimal', infra: 'infra-billboard' }, { sprint: true })).toContain('addon-malware')
+  })
+
+  it('includes Resend and Neon free with any active build plan', () => {
+    const plan = { support: 'support-none', infra: 'infra-billboard' }
+    expect(includedAddonIds({ ...plan, build: 'build-none' })).toEqual([])
+    for (const build of ['build-starter', 'build-maintenance', 'build-active']) {
+      expect(includedAddonIds({ ...plan, build })).toEqual(['addon-email-sending', 'addon-database'])
+    }
+    expect(includedAddonIds({ ...plan, build: 'build-none' }, { sprint: true })).toEqual(['addon-email-sending', 'addon-database'])
+  })
+
+  it('describes when add-ons are free', () => {
+    expect(includedNote('activeBuild')).toBe('Free with any active build plan')
+    expect(includedNote({ hostedSupportedAbove: 100 })).toBe('Free with plans over $100/mo that include hosting and support')
+  })
+
+  it('charges Malware Assurance at $100/yr otherwise', () => {
+    expect(annualTotalFor(['addon-malware'])).toBe(100)
   })
 })

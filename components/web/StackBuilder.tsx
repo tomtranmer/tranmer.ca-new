@@ -7,6 +7,8 @@ import {
   buildSprint,
   formatAddonPrice,
   formatPrice,
+  includedAddonIds,
+  includedNote,
   layersBottomUp,
   money,
   premiumRank,
@@ -44,9 +46,13 @@ export function StackBuilder() {
   const [selection, setSelection] = useState<Partial<Selection>>({});
   const [sprint, setSprint] = useState(false);
   const [addonIds, setAddonIds] = useState<string[]>([]);
-  const { known, pending } = totalFor(selection, { sprint, addonIds });
-  const annual = annualTotalFor(addonIds);
-  const chosenAddons = addons.filter((a) => addonIds.includes(a.id));
+  const included = includedAddonIds(selection, { sprint });
+  const paidAddonIds = addonIds.filter((id) => !included.includes(id));
+  const { known, pending } = totalFor(selection, { sprint, addonIds: paidAddonIds });
+  const annual = annualTotalFor(paidAddonIds);
+  const chosenAddons = addons.filter((a) => addonIds.includes(a.id) || included.includes(a.id));
+  const addonPrice = (a: (typeof addons)[number]) =>
+    included.includes(a.id) ? "Included" : formatAddonPrice(a);
   const toggleAddon = (id: string, on: boolean) =>
     setAddonIds((ids) => (on ? [...ids, id] : ids.filter((x) => x !== id)));
 
@@ -172,26 +178,40 @@ export function StackBuilder() {
             </span>
             <span className="block text-xl font-semibold">Product add-ons</span>
           </legend>
-          <div className="grid gap-3 sm:grid-cols-3">
+          <div className="grid gap-3 sm:grid-cols-2">
             {addons.map((addon) => {
-              const checked = addonIds.includes(addon.id);
+              const free = included.includes(addon.id);
+              const checked = free || addonIds.includes(addon.id);
               return (
                 <label
                   key={addon.id}
-                  className={`flex cursor-pointer items-start gap-3 rounded-xl border-2 border-foreground/15 bg-background p-4 transition hover:-translate-y-0.5 ${
+                  className={`flex items-start ${free ? "" : "cursor-pointer"} gap-3 rounded-xl border-2 border-foreground/15 bg-background p-4 transition hover:-translate-y-0.5 ${
                     checked ? "ring-2 ring-blue-500 ring-offset-2 ring-offset-background" : ""
                   }`}
                 >
                   <input
                     type="checkbox"
                     checked={checked}
+                    disabled={free}
                     onChange={(e) => toggleAddon(addon.id, e.target.checked)}
                     className="mt-1 h-4 w-4 accent-blue-500"
                   />
                   <span>
                     <span className="block font-semibold">{addon.name}</span>
                     <span className="block text-sm text-foreground/60">{addon.tagline}</span>
-                    <span className="mt-2 block font-bold">{formatAddonPrice(addon)}</span>
+                    {free ? (
+                      <span className="mt-2 block font-bold">
+                        <s className="font-normal text-foreground/40">{formatAddonPrice(addon)}</s>{" "}
+                        <span className="text-green-700 dark:text-green-400">Included with your plan</span>
+                      </span>
+                    ) : (
+                      <span className="mt-2 block font-bold">{formatAddonPrice(addon)}</span>
+                    )}
+                    {addon.includedWith && !free && (
+                      <span className="mt-1 block text-xs text-foreground/50">
+                        {includedNote(addon.includedWith)}
+                      </span>
+                    )}
                   </span>
                 </label>
               );
@@ -231,7 +251,7 @@ export function StackBuilder() {
           {chosenAddons.map((addon) => (
             <li key={addon.id} className="flex justify-between gap-2">
               <span className="text-foreground/70">{addon.name}</span>
-              <span className="font-medium">{formatAddonPrice(addon)}</span>
+              <span className="font-medium">{addonPrice(addon)}</span>
             </li>
           ))}
         </ul>
@@ -253,7 +273,7 @@ export function StackBuilder() {
         {complete ? (
           <a
             href={`mailto:help@tranmer.ca?subject=${encodeURIComponent("TWS plan enquiry")}&body=${encodeURIComponent(
-              planSummary(selection, sprint, chosenAddons.map((a) => `${a.name} (${formatAddonPrice(a)})`)),
+              planSummary(selection, sprint, chosenAddons.map((a) => `${a.name} (${addonPrice(a)})`)),
             )}`}
             className="mt-6 block rounded-full bg-blue-600 px-4 py-2 text-center font-medium text-white hover:bg-blue-700"
           >
