@@ -26,3 +26,11 @@ export function createMailTransport(): Transporter | null {
     socketTimeout: 10_000,
   });
 }
+
+/** Reject if sending takes longer than `ms`, so a slow SMTP server can't hang a request. */
+export function withTimeout<T>(promise: Promise<T>, ms = 15_000): Promise<T> {
+  return Promise.race([
+    promise,
+    new Promise<never>((_, reject) => setTimeout(() => reject(new Error('Email sending timeout')), ms)),
+  ]);
+}

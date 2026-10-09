@@ -1,9 +1,9 @@
 "use client";
 
 import { useRouter } from "next/navigation";
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { StackBuilder } from "@/components/web/StackBuilder";
-import { money, type PlanState } from "@/lib/offerings";
+import { freeTierId, money, type PlanState } from "@/lib/offerings";
 import { expenseLabel, formatExpensePrice, type CurrentPlan, type SbClientStatus } from "@/lib/sbTracker";
 
 type ClientSummary = {
@@ -33,7 +33,12 @@ export function AccountView({
 }) {
   const router = useRouter();
   const [plan, setPlan] = useState<PlanState>({
-    selection: current?.selection ?? {},
+    // Levels 2 and 3 start on their free tiers unless the client already has one.
+    selection: {
+      support: freeTierId("support"),
+      build: freeTierId("build"),
+      ...current?.selection,
+    },
     sprint: current?.sprint ?? false,
     addonIds: current?.addonIds ?? [],
   });
@@ -224,7 +229,137 @@ export function AccountView({
           </button>
         </div>
       </section>
+
+      <CancelSection />
     </div>
+  );
+}
+
+function CancelSection() {
+  const router = useRouter();
+  const [confirming, setConfirming] = useState(false);
+  const [reason, setReason] = useState("");
+  const [status, setStatus] = useState<Status>("idle");
+  const [errorMsg, setErrorMsg] = useState("");
+
+  useEffect(() => {
+    if (!confirming) return;
+    const onKey = (e: KeyboardEvent) => {
+      if (e.key === "Escape" && status !== "submitting") setConfirming(false);
+    };
+    window.addEventListener("keydown", onKey);
+    return () => window.removeEventListener("keydown", onKey);
+  }, [confirming, status]);
+
+  const submit = async () => {
+    setStatus("submitting");
+    setErrorMsg("");
+    try {
+      const res = await fetch("/api/client/cancel-request", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ confirm: true, reason }),
+      });
+      if (res.ok) {
+        setStatus("success");
+        setConfirming(false);
+        return;
+      }
+      if (res.status === 401) {
+        router.push("/web");
+        return;
+      }
+      const data = await res.json().catch(() => ({}));
+      setErrorMsg((data as { error?: string }).error ?? "Something went wrong. Please try again.");
+      setStatus("error");
+    } catch {
+      setErrorMsg("Network error. Please check your connection and try again.");
+      setStatus("error");
+    }
+  };
+
+  if (status === "success") {
+    return (
+      <section className="rounded-2xl border border-foreground/15 p-6">
+        <h2 className="font-semibold">Cancellation request sent</h2>
+        <p className="mt-1 text-sm text-foreground/60">
+          Nothing has been switched off yet. We&apos;ve emailed you a copy and will be in touch to confirm the
+          details and end date.
+        </p>
+      </section>
+    );
+  }
+
+  return (
+    <section className="border-t border-foreground/10 pt-8 text-center">
+      <button
+        type="button"
+        onClick={() => setConfirming(true)}
+        className="text-sm font-medium text-red-600 underline-offset-4 hover:underline dark:text-red-400"
+      >
+        Request cancellation
+      </button>
+
+      {confirming && (
+        <div
+          className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 p-4 backdrop-blur-sm"
+          onClick={() => status !== "submitting" && setConfirming(false)}
+        >
+          <div
+            role="alertdialog"
+            aria-modal="true"
+            aria-labelledby="cancel-title"
+            aria-describedby="cancel-desc"
+            className="w-full max-w-md rounded-2xl border border-foreground/15 bg-background p-6 text-left text-foreground shadow-2xl"
+            onClick={(e) => e.stopPropagation()}
+          >
+            <h2 id="cancel-title" className="text-xl font-bold">
+              Request cancellation?
+            </h2>
+            <p id="cancel-desc" className="mt-2 text-sm text-foreground/70">
+              This sends a cancellation request to TWS. Your services stay on until we confirm the details and
+              end date with you.
+            </p>
+            <label className="mt-4 block">
+              <span className="mb-1 block text-sm font-medium">Reason (optional)</span>
+              <textarea
+                value={reason}
+                onChange={(e) => setReason(e.target.value)}
+                rows={3}
+                maxLength={2000}
+                placeholder="Anything we could do better, or timing we should know about…"
+                className="w-full resize-y rounded-xl border border-foreground/20 bg-background px-4 py-2.5 text-sm focus:border-blue-500 focus:outline-none focus:ring-2 focus:ring-blue-500/40"
+                disabled={status === "submitting"}
+              />
+            </label>
+            {status === "error" && errorMsg && (
+              <p role="alert" className="mt-3 text-sm text-red-600 dark:text-red-400">
+                {errorMsg}
+              </p>
+            )}
+            <div className="mt-5 flex flex-wrap justify-end gap-3">
+              <button
+                type="button"
+                autoFocus
+                onClick={() => setConfirming(false)}
+                disabled={status === "submitting"}
+                className="rounded-full border border-foreground/20 px-4 py-2 text-sm font-medium hover:bg-foreground/5"
+              >
+                Keep my plan
+              </button>
+              <button
+                type="button"
+                onClick={submit}
+                disabled={status === "submitting"}
+                className="rounded-full bg-red-600 px-4 py-2 text-sm font-medium text-white hover:bg-red-700 disabled:opacity-50"
+              >
+                {status === "submitting" ? "Sending…" : "Yes, request cancellation"}
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+    </section>
   );
 }
 

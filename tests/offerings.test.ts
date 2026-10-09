@@ -1,5 +1,5 @@
 import { describe, it, expect } from 'vitest'
-import { annualTotalFor, buildSprint, formatAddonPrice, formatPrice, getLayer, includedAddonIds, includedNote, layers, layersTopDown, premiumRank, totalFor } from '../lib/offerings'
+import { annualTotalFor, buildSprint, formatAddonPrice, formatPrice, freeTierId, getLayer, includedAddonIds, includedNote, layers, layersTopDown, premiumRank, totalFor } from '../lib/offerings'
 
 describe('offerings', () => {
   it('has three layers ordered build → support → infra from the top', () => {
@@ -89,5 +89,12 @@ describe('offerings', () => {
 
   it('charges Malware Assurance at $100/yr otherwise', () => {
     expect(annualTotalFor(['addon-malware'])).toBe(100)
+  })
+})
+
+describe('freeTierId', () => {
+  it('returns the $0 tier for support and build', () => {
+    expect(freeTierId('support')).toBe('support-none')
+    expect(freeTierId('build')).toBe('build-none')
   })
 })

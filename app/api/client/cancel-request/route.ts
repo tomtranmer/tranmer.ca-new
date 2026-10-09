@@ -6,19 +6,20 @@ import {
   isSameOrigin,
   maskEmail,
   rateLimitResponse,
+  sanitizeText,
 } from '@/lib/security';
 import { createMailTransport, withTimeout } from '@/lib/mail';
 import { getClientSession } from '@/lib/clientSession';
 import {
   CHANGE_REQUEST_CC,
   CHANGE_REQUEST_TO,
-  parseChangeRequest,
-  renderClientConfirmation,
-  renderStaffEmail,
+  MAX_NOTES_LENGTH,
+  renderCancellationConfirmation,
+  renderCancellationEmail,
 } from '@/lib/changeRequest';
 import { loadClientContext } from '@/lib/sbTracker';
 
-const LIMIT = { limit: 5, windowMs: 60 * 60 * 1000 };
+const LIMIT = { limit: 3, windowMs: 60 * 60 * 1000 };
 
 export async function POST(request: NextRequest) {
   try {
@@ -29,12 +30,14 @@ export async function POST(request: NextRequest) {
       return NextResponse.json({ error: 'Your session has expired. Please log in again.' }, { status: 401 });
     }
 
-    const limit = checkRateLimit(`change-request:${session.clientId}`, LIMIT);
+    const limit = checkRateLimit(`cancel-request:${session.clientId}`, LIMIT);
     if (!limit.allowed) return rateLimitResponse(limit.retryAfterSeconds);
 
-    const parsed = parseChangeRequest(await request.json().catch(() => null), session.email);
-    if (!parsed.ok) return NextResponse.json({ error: parsed.error }, { status: 400 });
-    const changeRequest = parsed.request;
+    const body = (await request.json().catch(() => null)) as { reason?: unknown; confirm?: unknown } | null;
+    if (body?.confirm !== true) {
+      return NextResponse.json({ error: 'Please confirm the cancellation.' }, { status: 400 });
+    }
+    const reason = sanitizeText(body.reason, MAX_NOTES_LENGTH);
 
     const transporter = createMailTransport();
     if (!transporter) {
@@ -45,24 +48,17 @@ export async function POST(request: NextRequest) {
       );
     }
 
-    // The current plan comes from SB Tracker, never from the browser.
     const { client, current } = await loadClientContext(session.clientId);
 
     await initializeDatabase();
     const saved = await query(
-      `INSERT INTO client_change_requests (client_id, email, requested_plan, notes, new_email)
-       VALUES ($1, $2, $3, $4, $5) RETURNING id`,
-      [
-        session.clientId,
-        session.email,
-        JSON.stringify(changeRequest.plan),
-        changeRequest.notes || null,
-        changeRequest.newEmail,
-      ]
+      `INSERT INTO client_change_requests (client_id, email, kind, requested_plan, notes)
+       VALUES ($1, $2, 'cancel', '{}'::jsonb, $3) RETURNING id`,
+      [session.clientId, session.email, reason || null]
     );
     const requestId = saved.rows[0].id;
 
-    const staff = renderStaffEmail({ sessionEmail: session.email, client, current, request: changeRequest });
+    const staff = renderCancellationEmail({ sessionEmail: session.email, client, current, reason });
     await withTimeout(
       transporter.sendMail({
         from: process.env.SMTP_USER || 'help@tranmer.ca',
@@ -76,27 +72,24 @@ export async function POST(request: NextRequest) {
     );
     await query(`UPDATE client_change_requests SET emailed_at = NOW() WHERE id = $1`, [requestId]);
 
-    // Goes to the address on file, so the owner hears about any request made
-    // in their name, including a request to move the account to a new email.
     try {
-      const confirmation = renderClientConfirmation(changeRequest);
       await withTimeout(
         transporter.sendMail({
           from: process.env.SMTP_USER || 'help@tranmer.ca',
           to: session.email,
           replyTo: CHANGE_REQUEST_TO,
-          ...confirmation,
+          ...renderCancellationConfirmation(reason),
         })
       );
     } catch (error) {
-      console.error('Change request confirmation failed:', error instanceof Error ? error.message : 'Unknown error');
+      console.error('Cancellation confirmation failed:', error instanceof Error ? error.message : 'Unknown error');
     }
 
-    console.log('[CHANGE REQUEST]', { id: requestId, email: maskEmail(session.email) });
+    console.log('[CANCEL REQUEST]', { id: requestId, email: maskEmail(session.email) });
     return NextResponse.json({ ok: true, requestId });
   } catch (error) {
     const safeError = error instanceof Error ? error.message : 'Unknown error';
-    console.error('Error submitting change request:', safeError);
+    console.error('Error submitting cancellation request:', safeError);
     return NextResponse.json(
       { error: 'We couldn’t send your request. Please try again or email help@tranmer.ca.' },
       { status: 500 }

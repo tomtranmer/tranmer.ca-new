@@ -102,25 +102,12 @@ function list(lines: string[]): string {
   return `<ul>${lines.map((l) => `<li>${escapeHtml(l)}</li>`).join('')}</ul>`;
 }
 
-export function renderStaffEmail({
-  sessionEmail,
-  client,
-  current,
-  request,
-}: {
-  sessionEmail: string;
-  client: SbClient | null;
-  current: CurrentPlan | null;
-  request: ChangeRequest;
-}): { subject: string; html: string; text: string } {
-  const name = client?.name ?? sessionEmail;
-  const totals = planTotals(request.plan);
-  const totalLine = `${money(totals.monthly)}/mo${totals.annual ? ` + ${money(totals.annual)}/yr` : ''}${
-    totals.pending ? ` + ${totals.pending} item(s) priced on request` : ''
-  }`;
+type Section = [title: string, lines: string[]];
 
+/** Who the client is and what SB Tracker says they have, for staff emails. */
+function clientSections(sessionEmail: string, client: SbClient | null, current: CurrentPlan | null): Section[] {
   const clientLines = [
-    `Name: ${name}`,
+    `Name: ${client?.name ?? sessionEmail}`,
     `Logged in as: ${sessionEmail}`,
     `SB Tracker client ID: ${client?.id ?? 'unknown'}`,
     client?.freshbooksClientId ? `FreshBooks client ID: ${client.freshbooksClientId}` : null,
@@ -137,11 +124,40 @@ export function renderStaffEmail({
       ]
     : ['Plan items not available from SB Tracker yet.'];
 
-  const sections: [string, string[]][] = [
+  return [
     ['Client', clientLines],
     ['Current plan (SB Tracker)', currentLines],
-    ['Requested plan', [...describePlan(request.plan), `Estimated total: ${totalLine}`]],
   ];
+}
+
+function renderSections(heading: string, sections: Section[]): { html: string; text: string } {
+  const html = `<!DOCTYPE html><html><body style="font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;line-height:1.5;color:#1e293b">
+<h2>${escapeHtml(heading)}</h2>
+${sections.map(([title, lines]) => `<h3>${escapeHtml(title)}</h3>${list(lines)}`).join('\n')}
+<p style="color:#64748b;font-size:13px">Sent from the tranmer.ca client portal. Reply to respond to the client.</p>
+</body></html>`;
+  const text = sections.map(([title, lines]) => `${title}\n${lines.map((l) => `- ${l}`).join('\n')}`).join('\n\n');
+  return { html, text };
+}
+
+export function renderStaffEmail({
+  sessionEmail,
+  client,
+  current,
+  request,
+}: {
+  sessionEmail: string;
+  client: SbClient | null;
+  current: CurrentPlan | null;
+  request: ChangeRequest;
+}): { subject: string; html: string; text: string } {
+  const totals = planTotals(request.plan);
+  const totalLine = `${money(totals.monthly)}/mo${totals.annual ? ` + ${money(totals.annual)}/yr` : ''}${
+    totals.pending ? ` + ${totals.pending} item(s) priced on request` : ''
+  }`;
+
+  const sections = clientSections(sessionEmail, client, current);
+  sections.push(['Requested plan', [...describePlan(request.plan), `Estimated total: ${totalLine}`]]);
   if (request.newEmail) {
     sections.push([
       'Email change requested',
@@ -154,14 +170,43 @@ export function renderStaffEmail({
   }
   if (request.notes) sections.push(['Notes from client', [request.notes]]);
 
-  const subject = `Plan change request: ${sanitizeText(name, 100)}`;
-  const html = `<!DOCTYPE html><html><body style="font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;line-height:1.5;color:#1e293b">
-<h2>Plan change request</h2>
-${sections.map(([title, lines]) => `<h3>${escapeHtml(title)}</h3>${list(lines)}`).join('\n')}
-<p style="color:#64748b;font-size:13px">Sent from the tranmer.ca client portal. Reply to respond to the client.</p>
-</body></html>`;
-  const text = sections.map(([title, lines]) => `${title}\n${lines.map((l) => `- ${l}`).join('\n')}`).join('\n\n');
-  return { subject, html, text };
+  const subject = `Plan change request: ${sanitizeText(client?.name ?? sessionEmail, 100)}`;
+  return { subject, ...renderSections('Plan change request', sections) };
+}
+
+export function renderCancellationEmail({
+  sessionEmail,
+  client,
+  current,
+  reason,
+}: {
+  sessionEmail: string;
+  client: SbClient | null;
+  current: CurrentPlan | null;
+  reason: string;
+}): { subject: string; html: string; text: string } {
+  const sections = clientSections(sessionEmail, client, current);
+  sections.push([
+    'Cancellation requested',
+    [
+      reason ? `Reason: ${reason}` : 'No reason given.',
+      'Confirm with the client, then end their services in SB Tracker, FreshBooks and Stripe.',
+    ],
+  ]);
+  const subject = `Cancellation request: ${sanitizeText(client?.name ?? sessionEmail, 100)}`;
+  return { subject, ...renderSections('Cancellation request', sections) };
+}
+
+export function renderCancellationConfirmation(reason: string): { subject: string; html: string } {
+  return {
+    subject: 'We received your cancellation request',
+    html: `<!DOCTYPE html><html><body style="font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;line-height:1.5;color:#1e293b">
+<p>We've received your request to cancel your TWS services. Nothing has been switched off yet: we'll be in touch to confirm the details and the end date.</p>
+${reason ? `<h3>Your note</h3><p>${escapeHtml(reason)}</p>` : ''}
+<p>If you didn't make this request, or you've changed your mind, reply to this email.</p>
+<p>TWS · <a href="mailto:help@tranmer.ca">help@tranmer.ca</a></p>
+</body></html>`,
+  };
 }
 
 export function renderClientConfirmation(request: ChangeRequest): { subject: string; html: string } {

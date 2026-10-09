@@ -265,6 +265,11 @@ export function getLayer(id: LayerId): Layer {
   return layer;
 }
 
+/** The layer's $0 tier, if it has one. */
+export function freeTierId(id: LayerId): string | undefined {
+  return getLayer(id).tiers.find((t) => t.price === 0)?.id;
+}
+
 export function formatPrice(tier: Pick<Tier, "price" | "priceLabel">): string {
   if (tier.price === null) return tier.priceLabel ?? "TBD";
   if (tier.price === 0) return tier.priceLabel ?? "$0";

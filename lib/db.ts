@@ -134,6 +134,11 @@ async function createSchema(): Promise<void> {
       );
     `);
 
+    await query(`
+      ALTER TABLE client_change_requests
+      ADD COLUMN IF NOT EXISTS kind VARCHAR(20) NOT NULL DEFAULT 'change';
+    `);
+
     console.log('Database initialized successfully');
   } catch (error) {
     // Only log safe error message, not the full error object which may contain connection strings

@@ -14,7 +14,7 @@ import {
   planFromExpenses,
   type SbExpense,
 } from '../lib/sbTracker'
-import { parseChangeRequest, renderStaffEmail } from '../lib/changeRequest'
+import { parseChangeRequest, renderCancellationEmail, renderStaffEmail } from '../lib/changeRequest'
 
 beforeAll(() => {
   process.env.CLIENT_SESSION_SECRET = 'test-secret-that-is-at-least-32-characters-long'
@@ -217,5 +217,26 @@ describe('renderStaffEmail', () => {
     expect(html).toContain('&lt;script&gt;')
     expect(text).toContain('To: new@example.com')
     expect(text).toContain('Plan items not available')
+  })
+})
+
+describe('renderCancellationEmail', () => {
+  it('names the client, escapes the reason and includes the current plan', () => {
+    const { subject, html, text } = renderCancellationEmail({
+      sessionEmail: 'a@example.com',
+      client: {
+        id: '7', name: 'Acme', email: 'a@example.com', contactEmails: [], status: 'active',
+        mrrCad: 25, renewalDate: '2026-11-01', estimatedCostCad: 7.09, freshbooksClientId: 'fb1',
+      },
+      current: planFromExpenses([
+        { id: '1', name: 'Hosting', offeringId: 'infra-billboard', amountCents: 2500, interval: 'month', quantity: 1 },
+      ]),
+      reason: 'Moving <b>on</b>',
+    })
+    expect(subject).toBe('Cancellation request: Acme')
+    expect(html).not.toContain('<b>on</b>')
+    expect(text).toContain('Reason: Moving <b>on</b>')
+    expect(text).toContain('Infrastructure')
+    expect(text).toContain('FreshBooks client ID: fb1')
   })
 })

@@ -240,3 +240,20 @@ export function planFromExpenses(expenses: SbExpense[]): CurrentPlan {
   }
   return plan;
 }
+
+/**
+ * The client and their current plan for a staff email. Never throws: if SB
+ * Tracker is unreachable the request still goes through, marked unavailable.
+ */
+export async function loadClientContext(
+  id: string,
+): Promise<{ client: SbClient | null; current: CurrentPlan | null }> {
+  try {
+    const client = await getClient(id);
+    const expenses = await getClientExpenses(id);
+    return { client, current: expenses ? planFromExpenses(expenses) : null };
+  } catch (error) {
+    console.error('SB Tracker lookup failed:', error instanceof Error ? error.message : 'Unknown error');
+    return { client: null, current: null };
+  }
+}
