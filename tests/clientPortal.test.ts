@@ -8,6 +8,8 @@ import {
 import {
   clientMatchesEmail,
   findClientsByEmail,
+  formatExpensePrice,
+  getClientExpenses,
   parseClient,
   planFromExpenses,
   type SbExpense,
@@ -60,10 +62,17 @@ describe('SB Tracker client parsing', () => {
       email: 'owner@acme.test',
       contact_emails: ['Billing@Acme.test'],
       status: 'past_due',
-      renewal_date: '2026-11-01',
-      monthly_client_expenses: 95,
+      renewsAt: '2026-11-01T00:00:00.000Z',
+      estimatedMonthlyExpenses: 95,
+      mrr: 12550,
     })
-    expect(client).toMatchObject({ id: '7', status: 'past_due', monthlyExpensesCad: 95 })
+    expect(client).toMatchObject({
+      id: '7',
+      status: 'past_due',
+      renewalDate: '2026-11-01',
+      monthlyExpensesCad: 95,
+      mrrCad: 125.5,
+    })
     expect(clientMatchesEmail(client!, ' billing@acme.test ')).toBe(true)
     expect(clientMatchesEmail(client!, 'someone@acme.test')).toBe(false)
   })
@@ -103,6 +112,30 @@ describe('findClientsByEmail', () => {
 
   it('throws when not configured', async () => {
     await expect(findClientsByEmail('a@example.com')).rejects.toThrow(/not configured/)
+  })
+})
+
+describe('getClientExpenses', () => {
+  afterEach(() => {
+    vi.unstubAllGlobals()
+    delete process.env.SB_TRACKER_API_URL
+    delete process.env.SB_TRACKER_API_KEY
+  })
+
+  it('keeps unpriced items', async () => {
+    process.env.SB_TRACKER_API_URL = 'https://sb.test'
+    process.env.SB_TRACKER_API_KEY = 'key'
+    vi.stubGlobal('fetch', vi.fn(async () => Response.json({
+      items: [
+        { id: 'a', name: 'Vercel', offering_id: null, amount_cents: null },
+        { id: 'b', name: 'Domain', offering_id: 'addon-domain', amount_cents: 3000, interval: 'year' },
+      ],
+    })))
+    const items = (await getClientExpenses('7'))!
+    expect(items.map((i) => [i.name, formatExpensePrice(i)])).toEqual([
+      ['Vercel', 'Varies'],
+      ['Domain', '$30/yr'],
+    ])
   })
 })
 

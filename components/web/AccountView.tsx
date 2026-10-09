@@ -12,7 +12,7 @@ import {
   money,
   type PlanState,
 } from "@/lib/offerings";
-import type { CurrentPlan, SbClientStatus } from "@/lib/sbTracker";
+import { formatExpensePrice, type CurrentPlan, type SbClientStatus } from "@/lib/sbTracker";
 
 type ClientSummary = {
   name: string;
@@ -248,7 +248,7 @@ function CurrentPlanList({ current }: { current: CurrentPlan }) {
     if (current.addonIds.includes(addon.id)) rows.push([addon.name, formatAddonPrice(addon)]);
   }
   for (const item of current.other) {
-    rows.push([item.name, `${money(item.amountCents / 100)}/${item.interval === "year" ? "yr" : "mo"}`]);
+    rows.push([item.name, formatExpensePrice(item)]);
   }
   if (rows.length === 0) {
     return <p className="mt-3 text-sm text-foreground/60">No active services on file.</p>;

@@ -17,7 +17,7 @@ import {
   type PlanState,
 } from '@/lib/offerings';
 import { escapeHtml, isValidEmail, sanitizeText } from '@/lib/security';
-import type { CurrentPlan, SbClient } from '@/lib/sbTracker';
+import { formatExpensePrice, type CurrentPlan, type SbClient } from '@/lib/sbTracker';
 
 export const CHANGE_REQUEST_TO = 'help@tranmer.ca';
 export const CHANGE_REQUEST_CC = 'help@helpdesk.tranmer.ca';
@@ -133,7 +133,7 @@ export function renderStaffEmail({
     ? [
         ...describePlan(current),
         ...current.other.map(
-          (e) => `Other: ${e.name} (${money(e.amountCents / 100)}/${e.interval === 'year' ? 'yr' : 'mo'})`,
+          (e) => `Other: ${e.name} (${formatExpensePrice(e)})`,
         ),
       ]
     : ['Plan items not available from SB Tracker yet.'];

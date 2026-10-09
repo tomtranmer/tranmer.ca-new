@@ -5,7 +5,7 @@
  * client component: the key must stay on the server. What this file expects
  * from SB Tracker is written up in docs/client-portal/sb-tracker-api-requirements.md.
  */
-import { addons, buildSprint, layers, type Selection } from '@/lib/offerings';
+import { addons, buildSprint, layers, money, type Selection } from '@/lib/offerings';
 
 export type SbClientStatus = 'active' | 'past_due' | 'canceled';
 
@@ -25,7 +25,8 @@ export type SbExpense = {
   id: string;
   name: string;
   offeringId: string | null;
-  amountCents: number;
+  /** Null for unpriced items such as usage-billed hosting or plugins. */
+  amountCents: number | null;
   interval: 'month' | 'year';
   quantity: number;
 };
@@ -72,6 +73,15 @@ async function sbFetch(path: string): Promise<Response> {
 
 const str = (v: unknown): string | null => (typeof v === 'string' && v ? v : null);
 const num = (v: unknown): number | null => (typeof v === 'number' && Number.isFinite(v) ? v : null);
+const cents = (v: unknown): number | null => {
+  const n = num(v);
+  return n === null ? null : n / 100;
+};
+/** "2026-11-01T00:00:00.000Z" → "2026-11-01"; other strings pass through. */
+const day = (v: unknown): string | null => {
+  const s = str(v);
+  return s && /^\d{4}-\d{2}-\d{2}T/.test(s) ? s.slice(0, 10) : s;
+};
 
 /** Normalise one client object, accepting snake_case or camelCase fields. */
 export function parseClient(raw: unknown): SbClient | null {
@@ -88,9 +98,10 @@ export function parseClient(raw: unknown): SbClient | null {
     email,
     contactEmails: Array.isArray(contacts) ? contacts.filter((e): e is string => typeof e === 'string') : [],
     status: status === 'past_due' || status === 'canceled' ? status : 'active',
-    mrrCad: num(r.mrr ?? r.mrr_cad ?? r.monthly_recurring_revenue),
-    renewalDate: str(r.renewal_date ?? r.renewalDate),
-    monthlyExpensesCad: num(r.monthly_client_expenses ?? r.monthlyClientExpenses ?? r.monthly_expenses),
+    // SB Tracker sends mrr in cents and estimatedMonthlyExpenses in dollars.
+    mrrCad: cents(r.mrr),
+    renewalDate: day(r.renewsAt ?? r.renewal_date),
+    monthlyExpensesCad: num(r.estimatedMonthlyExpenses ?? r.monthly_client_expenses),
     freshbooksClientId: str(r.freshbooks_client_id ?? r.freshbooksClientId),
   };
 }
@@ -162,8 +173,8 @@ export async function getClientExpenses(id: string): Promise<SbExpense[] | null>
   return listFrom(await res.json()).flatMap((raw) => {
     if (!raw || typeof raw !== 'object') return [];
     const r = raw as Record<string, unknown>;
+    if (r.id === undefined || r.id === null) return [];
     const amountCents = num(r.amount_cents ?? r.amountCents);
-    if (r.id === undefined || amountCents === null) return [];
     return [
       {
         id: String(r.id),
@@ -175,6 +186,12 @@ export async function getClientExpenses(id: string): Promise<SbExpense[] | null>
       },
     ];
   });
+}
+
+/** "$12.50/mo", or "Varies" for an unpriced item. */
+export function formatExpensePrice(expense: SbExpense): string {
+  if (expense.amountCents === null) return 'Varies';
+  return `${money(expense.amountCents / 100)}/${expense.interval === 'year' ? 'yr' : 'mo'}`;
 }
 
 /** Map Client Expenses onto the offerings grid so the builder can start from them. */

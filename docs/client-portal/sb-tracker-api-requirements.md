@@ -16,6 +16,9 @@ read-only GET endpoints. Everything below is also read-only, and all errors use 
 | `GET /api/clients` | Finding the client whose email matches the login email (paged scan, `limit=100`) |
 | `GET /api/clients/:id` | Name, status, renewal date and monthly client expenses on the account page |
 
+Fields read from the client object: `id`, `name`, `email`, `status`, `mrr` (cents), `renewsAt`
+(ISO date or timestamp, shown as a date) and `estimatedMonthlyExpenses` (CAD dollars).
+
 Clients with status `canceled` can't log in. `active` and `past_due` can.
 
 `portal_token` is ignored and never sent to the browser. If nothing else uses it with the API key,
@@ -74,6 +77,8 @@ Returns the client's **active recurring** Client Expenses, which are their plan 
     `build-sprint`
   - Add-ons: `addon-domain`, `addon-email-imap`, `addon-email-gmail`, `addon-malware`,
     `addon-email-sending`, `addon-database`
+- `amount_cents` may be `null` for unpriced items (usage-billed hosting such as Vercel or Azure,
+  plugins). tranmer.ca shows these as "Varies".
 - Items with no `offering_id` are still returned. tranmer.ca lists them as "Other services" so the
   client sees everything they pay for.
 - Ended or cancelled expenses are left out.
