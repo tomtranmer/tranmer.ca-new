@@ -17,7 +17,7 @@ import {
   type PlanState,
 } from '@/lib/offerings';
 import { escapeHtml, isValidEmail, sanitizeText } from '@/lib/security';
-import { formatExpensePrice, type CurrentPlan, type SbClient } from '@/lib/sbTracker';
+import { expenseLabel, formatExpensePrice, type CurrentPlan, type SbClient } from '@/lib/sbTracker';
 
 export const CHANGE_REQUEST_TO = 'help@tranmer.ca';
 export const CHANGE_REQUEST_CC = 'help@helpdesk.tranmer.ca';
@@ -126,15 +126,14 @@ export function renderStaffEmail({
     client?.freshbooksClientId ? `FreshBooks client ID: ${client.freshbooksClientId}` : null,
     client ? `Status: ${client.status}` : null,
     client?.renewalDate ? `Renewal date: ${client.renewalDate}` : null,
-    client?.monthlyExpensesCad != null ? `Monthly client expenses: ${money(client.monthlyExpensesCad)}` : null,
+    client?.mrrCad != null ? `MRR (last 12 months): ${money(client.mrrCad)}` : null,
+    client?.estimatedCostCad != null ? `Estimated TWS cost: ${money(client.estimatedCostCad)}/mo` : null,
   ].filter((l): l is string => !!l);
 
   const currentLines = current
     ? [
-        ...describePlan(current),
-        ...current.other.map(
-          (e) => `Other: ${e.name} (${formatExpensePrice(e)})`,
-        ),
+        ...current.items.map((e) => `${expenseLabel(e)} (${formatExpensePrice(e)})`),
+        `Billed: ${money(current.monthlyCad)}/mo${current.annualCad ? ` + ${money(current.annualCad)}/yr` : ''}`,
       ]
     : ['Plan items not available from SB Tracker yet.'];
 

@@ -17,7 +17,8 @@ export type SbClient = {
   status: SbClientStatus;
   mrrCad: number | null;
   renewalDate: string | null;
-  monthlyExpensesCad: number | null;
+  /** TWS's own estimated monthly cost for this client. Staff only: never show it to the client. */
+  estimatedCostCad: number | null;
   freshbooksClientId: string | null;
 };
 
@@ -37,6 +38,11 @@ export type CurrentPlan = {
   addonIds: string[];
   /** Expenses that don't map to an offering, shown as "Other services". */
   other: SbExpense[];
+  /** Every item with the price SB Tracker bills, for display. */
+  items: SbExpense[];
+  /** What the client pays, from the priced items. */
+  monthlyCad: number;
+  annualCad: number;
 };
 
 export class SbTrackerError extends Error {
@@ -98,10 +104,10 @@ export function parseClient(raw: unknown): SbClient | null {
     email,
     contactEmails: Array.isArray(contacts) ? contacts.filter((e): e is string => typeof e === 'string') : [],
     status: status === 'past_due' || status === 'canceled' ? status : 'active',
-    // SB Tracker sends mrr in cents and estimatedMonthlyExpenses in dollars.
+    // SB Tracker sends mrr and estimatedMonthlyExpenses in cents.
     mrrCad: cents(r.mrr),
     renewalDate: day(r.renewsAt ?? r.renewal_date),
-    monthlyExpensesCad: num(r.estimatedMonthlyExpenses ?? r.monthly_client_expenses),
+    estimatedCostCad: cents(r.estimatedMonthlyExpenses),
     freshbooksClientId: str(r.freshbooks_client_id ?? r.freshbooksClientId),
   };
 }
@@ -191,13 +197,39 @@ export async function getClientExpenses(id: string): Promise<SbExpense[] | null>
 /** "$12.50/mo", or "Varies" for an unpriced item. */
 export function formatExpensePrice(expense: SbExpense): string {
   if (expense.amountCents === null) return 'Varies';
-  return `${money(expense.amountCents / 100)}/${expense.interval === 'year' ? 'yr' : 'mo'}`;
+  const qty = expense.quantity > 1 ? `${expense.quantity} × ` : '';
+  return `${qty}${money(expense.amountCents / 100)}/${expense.interval === 'year' ? 'yr' : 'mo'}`;
+}
+
+/** Display name: the offering's name when the item maps to one. */
+export function expenseLabel(expense: SbExpense): string {
+  const id = expense.offeringId;
+  if (!id) return expense.name;
+  if (id === buildSprint.id) return buildSprint.name;
+  for (const layer of layers) {
+    const tier = layer.tiers.find((t) => t.id === id);
+    if (tier) return `${layer.name} · ${tier.name}`;
+  }
+  return addons.find((a) => a.id === id)?.name ?? expense.name;
 }
 
 /** Map Client Expenses onto the offerings grid so the builder can start from them. */
 export function planFromExpenses(expenses: SbExpense[]): CurrentPlan {
-  const plan: CurrentPlan = { selection: {}, sprint: false, addonIds: [], other: [] };
+  const plan: CurrentPlan = {
+    selection: {},
+    sprint: false,
+    addonIds: [],
+    other: [],
+    items: expenses,
+    monthlyCad: 0,
+    annualCad: 0,
+  };
   for (const expense of expenses) {
+    if (expense.amountCents !== null) {
+      const amount = (expense.amountCents * expense.quantity) / 100;
+      if (expense.interval === 'year') plan.annualCad += amount;
+      else plan.monthlyCad += amount;
+    }
     const id = expense.offeringId;
     const layer = id ? layers.find((l) => l.tiers.some((t) => t.id === id)) : undefined;
     if (layer && id) plan.selection[layer.id] = id;

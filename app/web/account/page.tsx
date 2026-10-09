@@ -43,7 +43,6 @@ export default async function AccountPage() {
               name: client.name,
               status: client.status,
               renewalDate: client.renewalDate,
-              monthlyExpensesCad: client.monthlyExpensesCad,
             }
           }
           current={current}

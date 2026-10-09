@@ -70,7 +70,7 @@ describe('SB Tracker client parsing', () => {
       id: '7',
       status: 'past_due',
       renewalDate: '2026-11-01',
-      monthlyExpensesCad: 95,
+      estimatedCostCad: 0.95,
       mrrCad: 125.5,
     })
     expect(clientMatchesEmail(client!, ' billing@acme.test ')).toBe(true)
@@ -157,6 +157,19 @@ describe('planFromExpenses', () => {
     expect(plan.sprint).toBe(true)
     expect(plan.addonIds).toEqual(['addon-domain'])
     expect(plan.other.map((e) => e.name)).toEqual(['Legacy hosting', 'Mystery'])
+  })
+
+  it('totals what the client is billed, skipping unpriced items', () => {
+    const plan = planFromExpenses([
+      { id: '1', name: 'Hosting', offeringId: 'infra-billboard', amountCents: 2500, interval: 'month', quantity: 1 },
+      { id: '2', name: 'Mail', offeringId: 'addon-email-imap', amountCents: 500, interval: 'month', quantity: 3 },
+      { id: '3', name: 'Domain', offeringId: 'addon-domain', amountCents: 3000, interval: 'year', quantity: 1 },
+      { id: '4', name: 'Vercel', offeringId: null, amountCents: null, interval: 'month', quantity: 1 },
+    ])
+    expect(plan.monthlyCad).toBe(40)
+    expect(plan.annualCad).toBe(30)
+    expect(plan.items).toHaveLength(4)
+    expect(formatExpensePrice(plan.items[1])).toBe('3 × $5/mo')
   })
 })
 

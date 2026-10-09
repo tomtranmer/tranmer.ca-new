@@ -14,10 +14,11 @@ read-only GET endpoints. Everything below is also read-only, and all errors use 
 | Endpoint | Used for |
 | --- | --- |
 | `GET /api/clients` | Finding the client whose email matches the login email (paged scan, `limit=100`) |
-| `GET /api/clients/:id` | Name, status, renewal date and monthly client expenses on the account page |
+| `GET /api/clients/:id` | Name, status and renewal date on the account page; MRR and estimated cost in the staff email |
 
 Fields read from the client object: `id`, `name`, `email`, `status`, `mrr` (cents), `renewsAt`
-(ISO date or timestamp, shown as a date) and `estimatedMonthlyExpenses` (CAD dollars).
+(ISO date or timestamp, shown as a date) and `estimatedMonthlyExpenses` (cents; TWS's own cost,
+shown to staff only, never to the client). What the client pays comes from R2's item amounts.
 
 Clients with status `canceled` can't log in. `active` and `past_due` can.
 

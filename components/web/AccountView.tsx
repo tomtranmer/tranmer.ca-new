@@ -3,22 +3,13 @@
 import { useRouter } from "next/navigation";
 import { useState } from "react";
 import { StackBuilder } from "@/components/web/StackBuilder";
-import {
-  addons,
-  buildSprint,
-  formatAddonPrice,
-  formatPrice,
-  layersBottomUp,
-  money,
-  type PlanState,
-} from "@/lib/offerings";
-import { formatExpensePrice, type CurrentPlan, type SbClientStatus } from "@/lib/sbTracker";
+import { money, type PlanState } from "@/lib/offerings";
+import { expenseLabel, formatExpensePrice, type CurrentPlan, type SbClientStatus } from "@/lib/sbTracker";
 
 type ClientSummary = {
   name: string;
   status: SbClientStatus;
   renewalDate: string | null;
-  monthlyExpensesCad: number | null;
 };
 
 type Status = "idle" | "submitting" | "success" | "error";
@@ -127,15 +118,18 @@ export function AccountView({
             Your itemised plan isn&apos;t available online yet. Describe what you&apos;d like to change below.
           </p>
         )}
-        {client && (client.monthlyExpensesCad != null || client.renewalDate) && (
+        {(current || client?.renewalDate) && (
           <dl className="mt-4 flex flex-wrap gap-x-8 gap-y-2 border-t border-foreground/10 pt-4 text-sm">
-            {client.monthlyExpensesCad != null && (
+            {current && (
               <div>
-                <dt className="text-foreground/50">Monthly services</dt>
-                <dd className="font-semibold">{money(client.monthlyExpensesCad)}/mo</dd>
+                <dt className="text-foreground/50">You pay</dt>
+                <dd className="font-semibold">
+                  {money(current.monthlyCad)}/mo
+                  {current.annualCad > 0 && ` + ${money(current.annualCad)}/yr`}
+                </dd>
               </div>
             )}
-            {client.renewalDate && (
+            {client?.renewalDate && (
               <div>
                 <dt className="text-foreground/50">Renews</dt>
                 <dd className="font-semibold">{client.renewalDate}</dd>
@@ -235,30 +229,15 @@ export function AccountView({
 }
 
 function CurrentPlanList({ current }: { current: CurrentPlan }) {
-  const rows: [string, string][] = [];
-  for (const layer of layersBottomUp) {
-    if (current.sprint && layer.id === "build") {
-      rows.push([layer.name, `${buildSprint.name} · ${money(buildSprint.price)}/mo`]);
-      continue;
-    }
-    const tier = layer.tiers.find((t) => t.id === current.selection[layer.id]);
-    if (tier) rows.push([layer.name, `${tier.name} · ${formatPrice(tier)}${tier.price ? "/mo" : ""}`]);
-  }
-  for (const addon of addons) {
-    if (current.addonIds.includes(addon.id)) rows.push([addon.name, formatAddonPrice(addon)]);
-  }
-  for (const item of current.other) {
-    rows.push([item.name, formatExpensePrice(item)]);
-  }
-  if (rows.length === 0) {
+  if (current.items.length === 0) {
     return <p className="mt-3 text-sm text-foreground/60">No active services on file.</p>;
   }
   return (
     <ul className="mt-4 divide-y divide-foreground/10 text-sm">
-      {rows.map(([label, value], i) => (
-        <li key={i} className="flex justify-between gap-4 py-2">
-          <span className="text-foreground/70">{label}</span>
-          <span className="font-medium">{value}</span>
+      {current.items.map((item) => (
+        <li key={item.id} className="flex justify-between gap-4 py-2">
+          <span className="text-foreground/70">{expenseLabel(item)}</span>
+          <span className="font-medium">{formatExpensePrice(item)}</span>
         </li>
       ))}
     </ul>
