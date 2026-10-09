@@ -13,6 +13,7 @@ import {
   money,
   premiumRank,
   totalFor,
+  type PlanState,
   type Selection,
 } from "@/lib/offerings";
 
@@ -42,10 +43,26 @@ const rankStyles = [
 ] as const;
 
 
-export function StackBuilder() {
-  const [selection, setSelection] = useState<Partial<Selection>>({});
-  const [sprint, setSprint] = useState(false);
-  const [addonIds, setAddonIds] = useState<string[]>([]);
+type StackBuilderProps = {
+  /** Starting plan, e.g. a signed-in client's current subscription. */
+  initial?: PlanState;
+  /**
+   * Called on every change. When set, the parent owns submission, so the
+   * "Request this plan" email link is hidden.
+   */
+  onPlanChange?: (plan: PlanState) => void;
+};
+
+export function StackBuilder({ initial, onPlanChange }: StackBuilderProps = {}) {
+  const [selection, setSelection] = useState<Partial<Selection>>(initial?.selection ?? {});
+  const [sprint, setSprint] = useState(initial?.sprint ?? false);
+  const [addonIds, setAddonIds] = useState<string[]>(initial?.addonIds ?? []);
+  const update = (patch: Partial<PlanState>) => {
+    if (patch.selection) setSelection(patch.selection);
+    if (patch.sprint !== undefined) setSprint(patch.sprint);
+    if (patch.addonIds) setAddonIds(patch.addonIds);
+    onPlanChange?.({ selection, sprint, addonIds, ...patch });
+  };
   const included = includedAddonIds(selection, { sprint });
   const paidAddonIds = addonIds.filter((id) => !included.includes(id));
   const { known, pending } = totalFor(selection, { sprint, addonIds: paidAddonIds });
@@ -54,7 +71,7 @@ export function StackBuilder() {
   const addonPrice = (a: (typeof addons)[number]) =>
     included.includes(a.id) ? "Included" : formatAddonPrice(a);
   const toggleAddon = (id: string, on: boolean) =>
-    setAddonIds((ids) => (on ? [...ids, id] : ids.filter((x) => x !== id)));
+    update({ addonIds: on ? [...addonIds, id] : addonIds.filter((x) => x !== id) });
 
   // Each level unlocks only once every level below it has a selection.
   const isUnlocked = (index: number) =>
@@ -111,7 +128,7 @@ export function StackBuilder() {
                         value={tier.id}
                         checked={checked}
                         disabled={replaced}
-                        onChange={() => setSelection((s) => ({ ...s, [layer.id]: tier.id }))}
+                        onChange={() => update({ selection: { ...selection, [layer.id]: tier.id } })}
                         className="sr-only"
                       />
                       {rank === 3 && (
@@ -155,7 +172,7 @@ export function StackBuilder() {
               type="checkbox"
               checked={sprint}
               disabled={!sprintUnlocked}
-              onChange={(e) => setSprint(e.target.checked)}
+              onChange={(e) => update({ sprint: e.target.checked })}
               className="mt-1 h-4 w-4 accent-amber-400"
             />
             <span>
@@ -270,7 +287,7 @@ export function StackBuilder() {
           )}
           {sprint && <p className="mt-1 text-xs text-foreground/50">Sprint pricing applies to the month it&apos;s booked.</p>}
         </div>
-        {complete ? (
+        {onPlanChange ? null : complete ? (
           <a
             href={`mailto:help@tranmer.ca?subject=${encodeURIComponent("TWS plan enquiry")}&body=${encodeURIComponent(
               planSummary(selection, sprint, chosenAddons.map((a) => `${a.name} (${addonPrice(a)})`)),

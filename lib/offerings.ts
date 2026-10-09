@@ -273,6 +273,13 @@ export function formatPrice(tier: Pick<Tier, "price" | "priceLabel">): string {
 
 export type Selection = Record<LayerId, string>;
 
+/** Everything the plan builder lets a client choose. */
+export type PlanState = {
+  selection: Partial<Selection>;
+  sprint: boolean;
+  addonIds: string[];
+};
+
 /**
  * Totals the known monthly prices for a selection. `pending` counts the
  * chosen tiers that don't have a price yet, so the UI can say "+ TBD".

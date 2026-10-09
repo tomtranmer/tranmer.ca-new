@@ -1,6 +1,6 @@
 import type { Metadata } from "next";
 import { ThemeToggle } from "@/components/ThemeToggle";
-import { StackBuilder } from "@/components/web/StackBuilder";
+import { PlansView } from "@/components/web/PlansView";
 
 export const metadata: Metadata = {
   title: "Plans | Tranmer Web Services",
@@ -28,7 +28,7 @@ export default function WebPage() {
       </header>
 
       <main className="mx-auto max-w-5xl px-4 pb-16">
-        <StackBuilder />
+        <PlansView />
       </main>
 
       <footer className="border-t border-foreground/10 px-4 py-10 text-center">
