@@ -72,6 +72,13 @@ export function StackBuilder({ initial, onPlanChange }: StackBuilderProps = {}) 
   const { known, pending } = totalFor(selection, { sprint, addonIds: paidAddonIds, addonQty });
   const annual = annualTotalFor(paidAddonIds, addonQty);
   const chosenAddons = addons.filter((a) => addonIds.includes(a.id) || included.includes(a.id));
+  const includedAddons = chosenAddons.filter((a) => included.includes(a.id));
+  // $0 tiers the plan has, listed under "Included in your plan" rather than priced.
+  const freeTiers = layersBottomUp.flatMap((layer) => {
+    if (sprint && layer.id === "build") return [];
+    const tier = layer.tiers.find((t) => t.id === selection[layer.id]);
+    return tier?.price === 0 ? [tier] : [];
+  });
   const addonPrice = (a: (typeof addons)[number]) => {
     if (included.includes(a.id)) return a.includedUsage ? "Included*" : "Included";
     const qty = addonQuantity(a, addonQty);
@@ -286,6 +293,7 @@ export function StackBuilder({ initial, onPlanChange }: StackBuilderProps = {}) 
                 </li>
               );
             }
+            if (tier.price === 0) return null;
             return (
               <li key={layer.id} className="flex justify-between gap-2">
                 <span className="text-foreground/70">{tier.name}</span>
@@ -293,13 +301,39 @@ export function StackBuilder({ initial, onPlanChange }: StackBuilderProps = {}) 
               </li>
             );
           })}
-          {chosenAddons.map((addon) => (
-            <li key={addon.id} className="flex justify-between gap-2">
-              <span className="text-foreground/70">{addon.name}</span>
-              <span className="font-medium">{addonPrice(addon)}</span>
-            </li>
-          ))}
+          {chosenAddons
+            .filter((addon) => !included.includes(addon.id))
+            .map((addon) => (
+              <li key={addon.id} className="flex justify-between gap-2">
+                <span className="text-foreground/70">{addon.name}</span>
+                <span className="font-medium">{addonPrice(addon)}</span>
+              </li>
+            ))}
         </ul>
+        {(freeTiers.length > 0 || includedAddons.length > 0) && (
+          <>
+            <p className="mt-5 border-t border-foreground/10 pt-3 text-xs font-semibold uppercase tracking-wide text-foreground/50">
+              Included in your plan
+            </p>
+            <ul className="mt-3 space-y-3 text-sm">
+              {freeTiers.map((tier) => (
+                <li key={tier.id} className="flex justify-between gap-2">
+                  <span className="text-foreground/70">{tier.name}</span>
+                  {/* "As Quoted" says how it's billed; a plain "Included" would repeat the heading. */}
+                  {tier.priceLabel && tier.priceLabel !== "Included" && (
+                    <span className="font-medium">{tier.priceLabel}</span>
+                  )}
+                </li>
+              ))}
+              {includedAddons.map((addon) => (
+                <li key={addon.id} className="text-foreground/70">
+                  {addon.name}
+                  {addon.includedUsage ? "*" : ""}
+                </li>
+              ))}
+            </ul>
+          </>
+        )}
         <div className="mt-4 border-t border-foreground/10 pt-4">
           <p className="text-3xl font-bold">
             {money(known)}

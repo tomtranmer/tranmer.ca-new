@@ -39,10 +39,10 @@ export const layers: Layer[] = [
     tiers: [
       {
         id: "build-none",
-        name: "On Request",
+        name: "Build Requests",
         tagline: "No monthly commitment",
         price: 0,
-        priceLabel: "Quoted",
+        priceLabel: "As Quoted",
         features: ["Build quotes provided on request", "Pay per project"],
       },
       {
