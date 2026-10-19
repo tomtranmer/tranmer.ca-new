@@ -11,7 +11,7 @@ import {
   maskEmail,
   rateLimitResponse,
 } from '@/lib/security';
-import { createMailTransport } from '@/lib/mail';
+import { isMailConfigured, sendEmail } from '@/lib/mail';
 import { CODE_TTL_MINUTES, generateLoginCode, hashLoginCode } from '@/lib/clientSession';
 import { findClientsByEmail, isSbTrackerConfigured } from '@/lib/sbTracker';
 
@@ -45,9 +45,8 @@ export async function POST(request: NextRequest) {
     const emailLimit = checkRateLimit(`client-login-email:${email}`, EMAIL_LIMIT);
     if (!emailLimit.allowed) return rateLimitResponse(emailLimit.retryAfterSeconds);
 
-    const transporter = createMailTransport();
-    if (!transporter || !isSbTrackerConfigured()) {
-      console.error('Client login unavailable: SMTP or SB Tracker not configured');
+    if (!isMailConfigured() || !isSbTrackerConfigured()) {
+      console.error('Client login unavailable: email or SB Tracker not configured');
       return NextResponse.json(
         { error: 'Client login is temporarily unavailable. Please email help@tranmer.ca.' },
         { status: 503 }
@@ -83,20 +82,17 @@ export async function POST(request: NextRequest) {
       [email, clients[0].id, hashLoginCode(email, code), CODE_TTL_MINUTES]
     );
 
-    await Promise.race([
-      transporter.sendMail({
-        from: process.env.SMTP_USER || 'help@tranmer.ca',
-        to: email,
-        subject: `Your TWS login code: ${code}`,
-        text: `Your TWS client login code is ${code}. It expires in ${CODE_TTL_MINUTES} minutes.\n\nIf you didn't ask for this, you can ignore this email.`,
-        html: `<!DOCTYPE html><html><body style="font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;color:#1e293b">
+    await sendEmail({
+      tag: 'login-code',
+      to: email,
+      subject: `Your TWS login code: ${code}`,
+      text: `Your TWS client login code is ${code}. It expires in ${CODE_TTL_MINUTES} minutes.\n\nIf you didn't ask for this, you can ignore this email.`,
+      html: `<!DOCTYPE html><html><body style="font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;color:#1e293b">
 <p>Your TWS client login code is:</p>
 <p style="font-size:32px;font-weight:700;letter-spacing:8px;font-family:monospace">${escapeHtml(code)}</p>
 <p>It expires in ${CODE_TTL_MINUTES} minutes. If you didn't ask for this, you can ignore this email.</p>
 </body></html>`,
-      }),
-      new Promise((_, reject) => setTimeout(() => reject(new Error('Email sending timeout')), 15000)),
-    ]);
+    });
 
     console.log('[CLIENT LOGIN] Code sent to', maskEmail(email));
     return NextResponse.json(SENT);

@@ -11,7 +11,7 @@ import {
   sanitizeStringList,
   sanitizeText,
 } from '@/lib/security';
-import { createMailTransport } from '@/lib/mail';
+import { isMailConfigured, sendEmail } from '@/lib/mail';
 import { checkBotId } from 'botid/server';
 
 const RATE_LIMIT = { limit: 5, windowMs: 15 * 60 * 1000 };
@@ -110,30 +110,16 @@ export async function POST(request: NextRequest) {
       minute: '2-digit'
     });
 
-    const transporter = createMailTransport();
-    if (!transporter) {
-      console.error('SMTP configuration missing');
+    if (!isMailConfigured()) {
+      console.error('Email configuration missing');
       return NextResponse.json(
         { error: 'Email service temporarily unavailable' },
         { status: 503 }
       );
     }
 
-    // Verify transporter configuration
-    try {
-      await transporter.verify();
-    } catch (error) {
-      // Only log safe error message, not the full error object which may contain sensitive data
-      const safeError = error instanceof Error ? error.message : 'Unknown error';
-      console.error('SMTP verification failed:', safeError);
-      return NextResponse.json(
-        { error: 'Email service configuration error' },
-        { status: 503 }
-      );
-    }
-
     const mailOptions = {
-      from: process.env.SMTP_USER,
+      tag: 'hosting-prebooking',
       to: 'help@tranmer.ca',
       subject: `🔒 New Hosting Pre-Booking Interest - ${plain.email || 'Anonymous'}`,
       html: `
@@ -345,13 +331,8 @@ Tranmer Web Services - Hosting Pre-Booking System
       `.trim(),
     };
 
-    // Send email with timeout
-    const emailPromise = transporter.sendMail(mailOptions);
-    const timeoutPromise = new Promise((_, reject) => {
-      setTimeout(() => reject(new Error('Email sending timeout')), 30000); // 30 second timeout
-    });
-
-    await Promise.race([emailPromise, timeoutPromise]);
+    // sendEmail applies its own per-provider timeouts.
+    await sendEmail(mailOptions);
 
     // Log successful submission (without sensitive data)
     console.log(`Hosting pre-booking form submitted. Email: ${maskEmail(plain.email)}`);

@@ -7,7 +7,7 @@ import {
   maskEmail,
   rateLimitResponse,
 } from '@/lib/security';
-import { createMailTransport, withTimeout } from '@/lib/mail';
+import { isMailConfigured, sendEmail } from '@/lib/mail';
 import { getClientSession } from '@/lib/clientSession';
 import {
   CHANGE_REQUEST_CC,
@@ -36,9 +36,8 @@ export async function POST(request: NextRequest) {
     if (!parsed.ok) return NextResponse.json({ error: parsed.error }, { status: 400 });
     const changeRequest = parsed.request;
 
-    const transporter = createMailTransport();
-    if (!transporter) {
-      console.error('SMTP configuration missing');
+    if (!isMailConfigured()) {
+      console.error('Email configuration missing');
       return NextResponse.json(
         { error: 'Service temporarily unavailable. Please email help@tranmer.ca.' },
         { status: 503 }
@@ -63,31 +62,29 @@ export async function POST(request: NextRequest) {
     const requestId = saved.rows[0].id;
 
     const staff = renderStaffEmail({ sessionEmail: session.email, client, current, request: changeRequest });
-    await withTimeout(
-      transporter.sendMail({
-        from: process.env.SMTP_USER || 'help@tranmer.ca',
-        to: CHANGE_REQUEST_TO,
-        cc: CHANGE_REQUEST_CC,
-        replyTo: session.email,
-        subject: `${staff.subject} (#${requestId})`,
-        html: staff.html,
-        text: staff.text,
-      })
-    );
+    await sendEmail({
+      tag: 'change-request',
+      idempotencyKey: `change-request-${requestId}`,
+      to: CHANGE_REQUEST_TO,
+      cc: CHANGE_REQUEST_CC,
+      replyTo: session.email,
+      subject: `${staff.subject} (#${requestId})`,
+      html: staff.html,
+      text: staff.text,
+    });
     await query(`UPDATE client_change_requests SET emailed_at = NOW() WHERE id = $1`, [requestId]);
 
     // Goes to the address on file, so the owner hears about any request made
     // in their name, including a request to move the account to a new email.
     try {
       const confirmation = renderClientConfirmation(changeRequest);
-      await withTimeout(
-        transporter.sendMail({
-          from: process.env.SMTP_USER || 'help@tranmer.ca',
-          to: session.email,
-          replyTo: CHANGE_REQUEST_TO,
-          ...confirmation,
-        })
-      );
+      await sendEmail({
+        tag: 'change-confirmation',
+        idempotencyKey: `change-confirmation-${requestId}`,
+        to: session.email,
+        replyTo: CHANGE_REQUEST_TO,
+        ...confirmation,
+      });
     } catch (error) {
       console.error('Change request confirmation failed:', error instanceof Error ? error.message : 'Unknown error');
     }

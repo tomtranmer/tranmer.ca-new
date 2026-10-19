@@ -8,7 +8,7 @@ import {
   rateLimitResponse,
   sanitizeText,
 } from '@/lib/security';
-import { createMailTransport, withTimeout } from '@/lib/mail';
+import { isMailConfigured, sendEmail } from '@/lib/mail';
 import { getClientSession } from '@/lib/clientSession';
 import {
   CHANGE_REQUEST_CC,
@@ -39,9 +39,8 @@ export async function POST(request: NextRequest) {
     }
     const reason = sanitizeText(body.reason, MAX_NOTES_LENGTH);
 
-    const transporter = createMailTransport();
-    if (!transporter) {
-      console.error('SMTP configuration missing');
+    if (!isMailConfigured()) {
+      console.error('Email configuration missing');
       return NextResponse.json(
         { error: 'Service temporarily unavailable. Please email help@tranmer.ca.' },
         { status: 503 }
@@ -59,28 +58,26 @@ export async function POST(request: NextRequest) {
     const requestId = saved.rows[0].id;
 
     const staff = renderCancellationEmail({ sessionEmail: session.email, client, current, reason });
-    await withTimeout(
-      transporter.sendMail({
-        from: process.env.SMTP_USER || 'help@tranmer.ca',
-        to: CHANGE_REQUEST_TO,
-        cc: CHANGE_REQUEST_CC,
-        replyTo: session.email,
-        subject: `${staff.subject} (#${requestId})`,
-        html: staff.html,
-        text: staff.text,
-      })
-    );
+    await sendEmail({
+      tag: 'cancel-request',
+      idempotencyKey: `cancel-request-${requestId}`,
+      to: CHANGE_REQUEST_TO,
+      cc: CHANGE_REQUEST_CC,
+      replyTo: session.email,
+      subject: `${staff.subject} (#${requestId})`,
+      html: staff.html,
+      text: staff.text,
+    });
     await query(`UPDATE client_change_requests SET emailed_at = NOW() WHERE id = $1`, [requestId]);
 
     try {
-      await withTimeout(
-        transporter.sendMail({
-          from: process.env.SMTP_USER || 'help@tranmer.ca',
-          to: session.email,
-          replyTo: CHANGE_REQUEST_TO,
-          ...renderCancellationConfirmation(reason),
-        })
-      );
+      await sendEmail({
+        tag: 'cancel-confirmation',
+        idempotencyKey: `cancel-confirmation-${requestId}`,
+        to: session.email,
+        replyTo: CHANGE_REQUEST_TO,
+        ...renderCancellationConfirmation(reason),
+      });
     } catch (error) {
       console.error('Cancellation confirmation failed:', error instanceof Error ? error.message : 'Unknown error');
     }

@@ -10,7 +10,7 @@ import {
   sanitizeStringList,
   sanitizeText,
 } from '@/lib/security';
-import { createMailTransport } from '@/lib/mail';
+import { isMailConfigured, sendEmail } from '@/lib/mail';
 import { checkBotId } from 'botid/server';
 
 const RATE_LIMIT = { limit: 5, windowMs: 15 * 60 * 1000 };
@@ -67,9 +67,8 @@ export async function POST(request: NextRequest) {
     const features = plain.features.map(escapeHtml);
     const appFeatures = plain.appFeatures.map(escapeHtml);
 
-    const transporter = createMailTransport();
-    if (!transporter) {
-      console.error('SMTP configuration missing');
+    if (!isMailConfigured()) {
+      console.error('Email configuration missing');
       return NextResponse.json(
         { error: 'Email service temporarily unavailable' },
         { status: 503 }
@@ -86,7 +85,7 @@ export async function POST(request: NextRequest) {
     });
 
     const mailOptions = {
-      from: process.env.SMTP_USER,
+      tag: 'survey',
       to: 'help@tranmer.ca',
       subject: `🎯 New Appstravaganza Survey Response - ${plain.email || 'Anonymous'}`,
       html: `
@@ -299,7 +298,7 @@ Tranmer Web Services - Appstravaganza Survey System
       `.trim(),
     };
 
-    await transporter.sendMail(mailOptions);
+    await sendEmail(mailOptions);
     return NextResponse.json({ message: 'Email sent successfully' });
   } catch (error) {
     // Only log safe error message, not the full error object which may contain sensitive data

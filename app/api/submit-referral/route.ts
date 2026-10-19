@@ -10,7 +10,7 @@ import {
   maskEmail,
   rateLimitResponse,
 } from '@/lib/security';
-import { createMailTransport } from '@/lib/mail';
+import { isMailConfigured, sendEmail } from '@/lib/mail';
 import { checkBotId } from 'botid/server';
 
 // This endpoint sends mail to an address the caller supplies, so it is the
@@ -138,9 +138,8 @@ export async function POST(request: NextRequest) {
       console.warn('Daily referral email cap reached; holding referral');
     }
 
-    const transporter = createMailTransport();
-    if (!transporter) {
-      console.error('SMTP configuration missing');
+    if (!isMailConfigured()) {
+      console.error('Email configuration missing');
       return NextResponse.json(
         { message: 'Service temporarily unavailable. Please try again in a few moments.' },
         { status: 503 }
@@ -283,19 +282,13 @@ export async function POST(request: NextRequest) {
 
     if (sendEmails) {
       try {
-        // Send email to referee with 15 second timeout
-        await Promise.race([
-          transporter.sendMail({
-            from: process.env.SMTP_USER || 'help@tranmer.ca',
-            to: referredEmail,
-            cc: ccList,
-            subject: `${referrerEmail ? referrerEmail + ' suggests' : 'Someone suggests'} TWS for Your Hosting Migration`,
-            html: emailHtml,
-          }),
-          new Promise((_, reject) =>
-            setTimeout(() => reject(new Error('Email sending timeout')), 15000)
-          ),
-        ]);
+        await sendEmail({
+          tag: 'referral',
+          to: referredEmail,
+          cc: ccList,
+          subject: `${referrerEmail ? referrerEmail + ' suggests' : 'Someone suggests'} TWS for Your Hosting Migration`,
+          html: emailHtml,
+        });
       } catch (emailError) {
         // Log email error but continue - referral is still tracked
         // Only log safe error message, not the full error object which may contain sensitive data
@@ -428,18 +421,12 @@ export async function POST(request: NextRequest) {
       `;
 
       try {
-        // Send thank you email to referrer with 15 second timeout
-        await Promise.race([
-          transporter.sendMail({
-            from: process.env.SMTP_USER || 'help@tranmer.ca',
-            to: referrerEmail,
-            subject: 'Thanks for Referring a Friend to TWS!',
-            html: referrerEmailHtml,
-          }),
-          new Promise((_, reject) =>
-            setTimeout(() => reject(new Error('Email sending timeout')), 15000)
-          ),
-        ]);
+        await sendEmail({
+          tag: 'referral-thanks',
+          to: referrerEmail,
+          subject: 'Thanks for Referring a Friend to TWS!',
+          html: referrerEmailHtml,
+        });
       } catch (referrerEmailError) {
         // Log email error but continue - referral is still tracked
         // Only log safe error message, not the full error object which may contain sensitive data
