@@ -126,6 +126,9 @@ function clientSections(sessionEmail: string, client: SbClient | null, current: 
     `Logged in as: ${sessionEmail}`,
     `SB Tracker client ID: ${client?.id ?? 'unknown'}`,
     client?.freshbooksClientId ? `FreshBooks client ID: ${client.freshbooksClientId}` : null,
+    client && !client.portalUrl
+      ? 'No SB Tracker portal link, so the client sees no "View in SB Tracker" button. Open the client in SB Tracker and click "Share Link with Client" to create one.'
+      : null,
     client ? `Status: ${client.status}` : null,
     client?.renewalDate ? `Renewal date: ${client.renewalDate}` : null,
     client?.mrrCad != null ? `MRR (last 12 months): ${money(client.mrrCad)}` : null,

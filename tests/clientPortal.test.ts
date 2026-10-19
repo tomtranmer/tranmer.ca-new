@@ -356,5 +356,6 @@ describe('renderCancellationEmail', () => {
     expect(text).toContain('Reason: Moving <b>on</b>')
     expect(text).toContain('Infrastructure')
     expect(text).toContain('FreshBooks client ID: fb1')
+    expect(text).toContain('click "Share Link with Client"')
   })
 })

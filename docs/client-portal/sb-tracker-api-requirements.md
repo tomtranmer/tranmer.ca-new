@@ -25,7 +25,10 @@ Clients with status `canceled` can't log in. `active` and `past_due` can.
 `portalUrl` (the client's `/portal/<token>` page) is shown as a "View in SB Tracker" link on the
 account page, only to the logged-in client it belongs to, and only if it's an https URL. Make sure
 `NEXT_PUBLIC_APP_URL` is set in SB Tracker, or the URL comes back as `undefined/portal/...` and the
-link is hidden. The "Open most recent invoice (FreshBooks)" link comes from R5.
+link is hidden. A client with no portal link yet gets no button; staff change-request and
+cancellation emails say so, with a reminder to click "Share Link with Client" on the client in
+SB Tracker. That button replaces any earlier link, so old shared links stop working.
+The "Open most recent invoice (FreshBooks)" link comes from R5.
 
 ## R1. Look up a client by email (required)
 
