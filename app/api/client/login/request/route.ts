@@ -3,7 +3,6 @@ import { checkBotId } from 'botid/server';
 import { query, initializeDatabase } from '@/lib/db';
 import {
   checkRateLimit,
-  escapeHtml,
   forbiddenOriginResponse,
   getClientIp,
   isSameOrigin,
@@ -12,6 +11,7 @@ import {
   rateLimitResponse,
 } from '@/lib/security';
 import { isMailConfigured, sendEmail } from '@/lib/mail';
+import { renderLoginCodeEmail } from '@/lib/loginCodeEmail';
 import { CODE_TTL_MINUTES, generateLoginCode, hashLoginCode } from '@/lib/clientSession';
 import { findClientsByEmail, isSbTrackerConfigured } from '@/lib/sbTracker';
 
@@ -82,17 +82,7 @@ export async function POST(request: NextRequest) {
       [email, clients[0].id, hashLoginCode(email, code), CODE_TTL_MINUTES]
     );
 
-    await sendEmail({
-      tag: 'login-code',
-      to: email,
-      subject: `Your TWS login code: ${code}`,
-      text: `Your TWS client login code is ${code}. It expires in ${CODE_TTL_MINUTES} minutes.\n\nIf you didn't ask for this, you can ignore this email.`,
-      html: `<!DOCTYPE html><html><body style="font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;color:#1e293b">
-<p>Your TWS client login code is:</p>
-<p style="font-size:32px;font-weight:700;letter-spacing:8px;font-family:monospace">${escapeHtml(code)}</p>
-<p>It expires in ${CODE_TTL_MINUTES} minutes. If you didn't ask for this, you can ignore this email.</p>
-</body></html>`,
-    });
+    await sendEmail({ tag: 'login-code', to: email, ...renderLoginCodeEmail(code, CODE_TTL_MINUTES) });
 
     console.log('[CLIENT LOGIN] Code sent to', maskEmail(email));
     return NextResponse.json(SENT);

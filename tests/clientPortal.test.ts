@@ -14,6 +14,7 @@ import {
   planFromExpenses,
   type SbExpense,
 } from '../lib/sbTracker'
+import { renderLoginCodeEmail } from '../lib/loginCodeEmail'
 import { parseChangeRequest, planTotals, renderCancellationEmail, renderStaffEmail } from '../lib/changeRequest'
 
 beforeAll(() => {
@@ -40,6 +41,20 @@ describe('client sessions', () => {
     expect(verifySession(token)).toBeNull()
     expect(verifySession('nope')).toBeNull()
     expect(verifySession(undefined)).toBeNull()
+  })
+})
+
+describe('login code email', () => {
+  it('puts the code in the subject, preheader, body and plain text', () => {
+    const email = renderLoginCodeEmail('123456', 10)
+    expect(email.subject).toBe('Your TWS login code: 123456')
+    expect(email.html.match(/123456/g)?.length).toBeGreaterThanOrEqual(3)
+    expect(email.html).toContain('Expires in 10 minutes')
+    expect(email.text).toContain('Your TWS client login code is 123456')
+  })
+
+  it('escapes the code in HTML', () => {
+    expect(renderLoginCodeEmail('<b>', 10).html).not.toContain('<b>')
   })
 })
 
