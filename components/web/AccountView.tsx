@@ -3,7 +3,7 @@
 import { useRouter } from "next/navigation";
 import { useEffect, useState } from "react";
 import { StackBuilder } from "@/components/web/StackBuilder";
-import { freeTierId, money, type PlanState } from "@/lib/offerings";
+import { freeTierId, getLayer, money, type PlanState } from "@/lib/offerings";
 import { expenseLabel, formatExpensePrice, type CurrentPlan, type SbClientStatus } from "@/lib/sbTracker";
 
 type ClientSummary = {
@@ -41,7 +41,11 @@ export function AccountView({
     },
     sprint: current?.sprint ?? false,
     addonIds: current?.addonIds ?? [],
+    addonQty: current?.addonQty ?? {},
   });
+  const inferredInfra = current?.inferred.includes("infra")
+    ? getLayer("infra").tiers.find((t) => t.id === current.selection.infra)
+    : undefined;
   const [notes, setNotes] = useState("");
   const [changeEmail, setChangeEmail] = useState(false);
   const [newEmail, setNewEmail] = useState("");
@@ -158,6 +162,23 @@ export function AccountView({
             <p className="mb-6 text-foreground/60">
               Adjust your plan below. Nothing changes until we confirm it with you.
             </p>
+            {(inferredInfra || (current && current.other.length > 0)) && (
+              <div className="mb-6 space-y-1 rounded-xl bg-foreground/5 p-4 text-sm text-foreground/70">
+                {inferredInfra && (
+                  <p>
+                    We&apos;ve started you on <strong>{inferredInfra.name}</strong> as the closest match to your
+                    current hosting. Change it if that&apos;s not right.
+                  </p>
+                )}
+                {current && current.other.length > 0 && (
+                  <p>
+                    Also on your plan, and not changed here:{" "}
+                    {current.other.map((e) => e.name).join(", ")}. Mention them in the notes if you&apos;d
+                    like to change them.
+                  </p>
+                )}
+              </div>
+            )}
             <StackBuilder initial={plan} onPlanChange={setPlan} />
           </div>
 

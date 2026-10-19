@@ -5,6 +5,7 @@
  * client's identity and current plan come from the session and SB Tracker.
  */
 import {
+  addonQuantity,
   addons,
   annualTotalFor,
   buildSprint,
@@ -14,6 +15,7 @@ import {
   formatAddonPrice,
   formatPrice,
   totalFor,
+  MAX_ADDON_QTY,
   type PlanState,
 } from '@/lib/offerings';
 import { escapeHtml, isValidEmail, sanitizeText } from '@/lib/security';
@@ -57,6 +59,16 @@ export function parseChangeRequest(
       if (!plan.addonIds.includes(id)) plan.addonIds.push(id);
     }
   }
+  const rawQty = (b.addonQty && typeof b.addonQty === 'object' ? b.addonQty : {}) as Record<string, unknown>;
+  for (const id of plan.addonIds) {
+    const addon = addons.find((a) => a.id === id);
+    const q = rawQty[id];
+    if (!addon?.unit || q === undefined || q === 1) continue;
+    if (typeof q !== 'number' || !Number.isInteger(q) || q < 1 || q > MAX_ADDON_QTY) {
+      return { ok: false, error: `Invalid number of ${addon.unit}s for ${addon.name}` };
+    }
+    plan.addonQty = { ...plan.addonQty, [id]: q };
+  }
 
   const notes = sanitizeText(b.notes, MAX_NOTES_LENGTH);
 
@@ -86,7 +98,10 @@ export function describePlan(plan: PlanState): string[] {
   });
   for (const addon of addons) {
     if (included.includes(addon.id)) lines.push(`Add-on: ${addon.name} (included)`);
-    else if (plan.addonIds.includes(addon.id)) lines.push(`Add-on: ${addon.name} (${formatAddonPrice(addon)})`);
+    else if (plan.addonIds.includes(addon.id)) {
+      const qty = addonQuantity(addon, plan.addonQty);
+      lines.push(`Add-on: ${addon.name} (${qty > 1 ? `${qty} × ` : ''}${formatAddonPrice(addon)})`);
+    }
   }
   return lines;
 }
@@ -94,8 +109,8 @@ export function describePlan(plan: PlanState): string[] {
 export function planTotals(plan: PlanState): { monthly: number; annual: number; pending: number } {
   const included = includedAddonIds(plan.selection, { sprint: plan.sprint });
   const paid = plan.addonIds.filter((id) => !included.includes(id));
-  const { known, pending } = totalFor(plan.selection, { sprint: plan.sprint, addonIds: paid });
-  return { monthly: known, annual: annualTotalFor(paid), pending };
+  const { known, pending } = totalFor(plan.selection, { sprint: plan.sprint, addonIds: paid, addonQty: plan.addonQty });
+  return { monthly: known, annual: annualTotalFor(paid, plan.addonQty), pending };
 }
 
 function list(lines: string[]): string {

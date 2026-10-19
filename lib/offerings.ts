@@ -25,6 +25,9 @@ export type Layer = {
   tiers: Tier[];
 };
 
+/** Monthly usage covered by each of App hosting's included services. */
+export const INCLUDED_USAGE_LABEL = "$10/mo";
+
 export const layers: Layer[] = [
   {
     id: "build",
@@ -144,12 +147,13 @@ export const layers: Layer[] = [
       {
         id: "infra-app",
         name: "App · Integrated Hosting",
-        tagline: "Includes servers, data compute and email processing (sends)",
+        tagline: "Includes Vercel hosting, Resend email sending and a Neon database",
         price: 75,
         features: [
           "Everything in eCommerce",
-          "Servers + data compute",
-          "Email processing (sends)",
+          "Vercel Pro hosting + compute",
+          "Email Sending · Resend and App Database · Neon included",
+          `Up to ${INCLUDED_USAGE_LABEL} each of compute, email and database usage, overages billed`,
           "Custom app + APIs",
           "Integrations, auth and background jobs",
         ],
@@ -180,16 +184,19 @@ export type Addon = {
   billing: "monthly" | "annual";
   /** What one unit of the price buys, e.g. "account". */
   unit?: string;
-  /** When the add-on comes free with the plan. See `includedAddonIds`. */
-  includedWith?: IncludedRule;
+  /** When the add-on comes free with the plan. Any matching rule includes it. See `includedAddonIds`. */
+  includedWith?: IncludedRule[];
+  /** Usage-billed add-ons: how much usage the included version covers. */
+  includedUsage?: string;
 };
 
 /**
  * - `hostedSupportedAbove`: plans with hosting and paid support whose monthly
  *   tiers total more than this amount.
  * - `activeBuild`: any paid Builder Availability tier, or the Build Sprint.
+ * - `tier`: plans on this tier, e.g. App hosting includes its database.
  */
-export type IncludedRule = { hostedSupportedAbove: number } | "activeBuild";
+export type IncludedRule = { hostedSupportedAbove: number } | { tier: string } | "activeBuild";
 
 /** Optional products that sit alongside any plan. */
 export const addons: Addon[] = [
@@ -222,7 +229,7 @@ export const addons: Addon[] = [
     tagline: "Malware scanning, and cleanup if your site is ever compromised",
     price: 100,
     billing: "annual",
-    includedWith: { hostedSupportedAbove: 100 },
+    includedWith: [{ hostedSupportedAbove: 100 }],
   },
   {
     id: "addon-email-sending",
@@ -230,7 +237,8 @@ export const addons: Addon[] = [
     tagline: "Transactional email from your site or app",
     price: 10,
     billing: "monthly",
-    includedWith: "activeBuild",
+    includedWith: [{ tier: "infra-app" }, "activeBuild"],
+    includedUsage: `Up to ${INCLUDED_USAGE_LABEL} of usage included, overages billed`,
   },
   {
     id: "addon-database",
@@ -238,7 +246,8 @@ export const addons: Addon[] = [
     tagline: "Managed Postgres database for your app",
     price: 10,
     billing: "monthly",
-    includedWith: "activeBuild",
+    includedWith: [{ tier: "infra-app" }, "activeBuild"],
+    includedUsage: `Up to ${INCLUDED_USAGE_LABEL} of usage included, overages billed`,
   },
 ];
 
@@ -283,7 +292,18 @@ export type PlanState = {
   selection: Partial<Selection>;
   sprint: boolean;
   addonIds: string[];
+  /** Units per add-on that has a `unit` (e.g. 4 mailboxes). Missing means 1. */
+  addonQty?: Record<string, number>;
 };
+
+export const MAX_ADDON_QTY = 100;
+
+/** How many units of an add-on are billed. Only per-unit add-ons go above 1. */
+export function addonQuantity(addon: Addon, addonQty: Record<string, number> = {}): number {
+  if (!addon.unit) return 1;
+  const q = addonQty[addon.id];
+  return Number.isInteger(q) && q > 0 ? Math.min(q, MAX_ADDON_QTY) : 1;
+}
 
 /**
  * Totals the known monthly prices for a selection. `pending` counts the
@@ -293,12 +313,18 @@ export type PlanState = {
  */
 export function totalFor(
   selection: Partial<Selection>,
-  { sprint = false, addonIds = [] }: { sprint?: boolean; addonIds?: string[] } = {},
+  {
+    sprint = false,
+    addonIds = [],
+    addonQty = {},
+  }: { sprint?: boolean; addonIds?: string[]; addonQty?: Record<string, number> } = {},
 ): { known: number; pending: number } {
   let known = sprint ? buildSprint.price : 0;
   let pending = 0;
   for (const addon of addons) {
-    if (addon.billing === "monthly" && addonIds.includes(addon.id)) known += addon.price;
+    if (addon.billing === "monthly" && addonIds.includes(addon.id)) {
+      known += addon.price * addonQuantity(addon, addonQty);
+    }
   }
   for (const layer of layers) {
     if (sprint && layer.id === "build") continue;
@@ -323,16 +349,23 @@ export function premiumRank(layer: Layer, tierId: string): 0 | 1 | 2 | 3 {
 }
 
 /** Totals the chosen add-ons that bill annually. */
-export function annualTotalFor(addonIds: string[]): number {
+export function annualTotalFor(addonIds: string[], addonQty: Record<string, number> = {}): number {
   return addons
     .filter((a) => a.billing === "annual" && addonIds.includes(a.id))
-    .reduce((sum, a) => sum + a.price, 0);
+    .reduce((sum, a) => sum + a.price * addonQuantity(a, addonQty), 0);
 }
 
 /** Short description of when an add-on is free, for display. */
-export function includedNote(rule: IncludedRule): string {
-  if (rule === "activeBuild") return "Free with any active build plan";
-  return `Free with plans over ${money(rule.hostedSupportedAbove)}/mo that include hosting and support`;
+export function includedNote(rules: IncludedRule[]): string {
+  const parts = rules.map((rule) => {
+    if (rule === "activeBuild") return "any active build plan";
+    if ("tier" in rule) {
+      const tier = layers.flatMap((l) => l.tiers).find((t) => t.id === rule.tier);
+      return tier?.name ?? rule.tier;
+    }
+    return `plans over ${money(rule.hostedSupportedAbove)}/mo that include hosting and support`;
+  });
+  return `Free with ${parts.join(" or ")}`;
 }
 
 /** Add-ons the plan gets for free, per each add-on's `includedWith` rule. */
@@ -346,10 +379,12 @@ export function includedAddonIds(
   const hostedSupported = !!selection.infra && tierPrice("support") > 0;
   const { known } = totalFor(selection, { sprint });
   return addons
-    .filter(({ includedWith: rule }) => {
-      if (!rule) return false;
-      if (rule === "activeBuild") return activeBuild;
-      return hostedSupported && known > rule.hostedSupportedAbove;
-    })
+    .filter(({ includedWith: rules = [] }) =>
+      rules.some((rule) => {
+        if (rule === "activeBuild") return activeBuild;
+        if ("tier" in rule) return Object.values(selection).includes(rule.tier);
+        return hostedSupported && known > rule.hostedSupportedAbove;
+      }),
+    )
     .map((a) => a.id);
 }

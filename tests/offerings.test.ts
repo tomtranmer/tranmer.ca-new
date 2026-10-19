@@ -64,7 +64,7 @@ describe('offerings', () => {
     // $25 + $50 + $100 = $175 with paid support
     expect(includedAddonIds({ build: 'build-starter', support: 'support-minimal', infra: 'infra-billboard' })).toContain('addon-malware')
     // $75 + $50 = $125
-    expect(includedAddonIds({ build: 'build-none', support: 'support-minimal', infra: 'infra-app' })).toEqual(['addon-malware'])
+    expect(includedAddonIds({ build: 'build-none', support: 'support-minimal', infra: 'infra-app' })).toContain('addon-malware')
     // $25 + $50 = $75: not above $100
     expect(includedAddonIds({ build: 'build-none', support: 'support-minimal', infra: 'infra-billboard' })).toEqual([])
     // Over $100 but self-managed (no support)
@@ -82,9 +82,15 @@ describe('offerings', () => {
     expect(includedAddonIds({ ...plan, build: 'build-none' }, { sprint: true })).toEqual(['addon-email-sending', 'addon-database'])
   })
 
+  it('includes Resend and Neon with App hosting, even without a build plan', () => {
+    expect(includedAddonIds({ infra: 'infra-app', support: 'support-none', build: 'build-none' })).toEqual(['addon-email-sending', 'addon-database'])
+    expect(includedAddonIds({ infra: 'infra-ecommerce', support: 'support-none', build: 'build-none' })).toEqual([])
+  })
+
   it('describes when add-ons are free', () => {
-    expect(includedNote('activeBuild')).toBe('Free with any active build plan')
-    expect(includedNote({ hostedSupportedAbove: 100 })).toBe('Free with plans over $100/mo that include hosting and support')
+    expect(includedNote(['activeBuild'])).toBe('Free with any active build plan')
+    expect(includedNote([{ hostedSupportedAbove: 100 }])).toBe('Free with plans over $100/mo that include hosting and support')
+    expect(includedNote([{ tier: 'infra-app' }, 'activeBuild'])).toBe('Free with App · Integrated Hosting or any active build plan')
   })
 
   it('charges Malware Assurance at $100/yr otherwise', () => {

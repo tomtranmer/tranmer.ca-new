@@ -14,7 +14,7 @@ import {
   planFromExpenses,
   type SbExpense,
 } from '../lib/sbTracker'
-import { parseChangeRequest, renderCancellationEmail, renderStaffEmail } from '../lib/changeRequest'
+import { parseChangeRequest, planTotals, renderCancellationEmail, renderStaffEmail } from '../lib/changeRequest'
 
 beforeAll(() => {
   process.env.CLIENT_SESSION_SECRET = 'test-secret-that-is-at-least-32-characters-long'
@@ -162,7 +162,7 @@ describe('planFromExpenses', () => {
   it('totals what the client is billed, skipping unpriced items', () => {
     const plan = planFromExpenses([
       { id: '1', name: 'Hosting', offeringId: 'infra-billboard', amountCents: 2500, interval: 'month', quantity: 1 },
-      { id: '2', name: 'Mail', offeringId: 'addon-email-imap', amountCents: 500, interval: 'month', quantity: 3 },
+      { id: '2', name: 'Mail', offeringId: 'addon-email-imap', amountCents: 1500, interval: 'month', quantity: 3 },
       { id: '3', name: 'Domain', offeringId: 'addon-domain', amountCents: 3000, interval: 'year', quantity: 1 },
       { id: '4', name: 'Vercel', offeringId: null, amountCents: null, interval: 'month', quantity: 1 },
     ])
@@ -170,6 +170,62 @@ describe('planFromExpenses', () => {
     expect(plan.annualCad).toBe(30)
     expect(plan.items).toHaveLength(4)
     expect(formatExpensePrice(plan.items[1])).toBe('3 × $5/mo')
+  })
+})
+
+describe('planFromExpenses matching fallbacks', () => {
+  const item = (id: string, name: string, offeringId: string | null, amountCents: number | null, quantity = 1, interval: 'month' | 'year' = 'month'): SbExpense => ({
+    id, name, offeringId, amountCents, interval, quantity,
+  })
+
+  // Paris Tennis Club: hosting has no offering_id, so nothing set Level 1 and
+  // the builder locked support and build.
+  const paris = [
+    item('1', 'App Database', 'addon-database', 1000),
+    item('2', 'Domain', 'addon-domain', 3000, 1, 'year'),
+    // SB Tracker sends the line total: 4 mailboxes at $5.
+    item('3', 'Mailboxes', 'addon-email-imap', 2000, 4),
+    item('4', 'Resend', 'addon-email-sending', 1000),
+    item('5', 'Vercel Pro Hosting', null, null),
+  ]
+
+  it('infers app infrastructure from app add-ons and absorbs the hosting item', () => {
+    const plan = planFromExpenses(paris)
+    expect(plan.selection).toEqual({ infra: 'infra-app' })
+    expect(plan.inferred).toEqual(['infra'])
+    expect(plan.other).toEqual([])
+    expect(plan.addonQty).toEqual({ 'addon-email-imap': 4 })
+  })
+
+  it('shows Neon and Resend as included on App hosting and leaves them out of the total', () => {
+    const plan = planFromExpenses(paris)
+    const price = (name: string) => formatExpensePrice(plan.items.find((e) => e.name === name)!)
+    expect(price('App Database')).toBe('Included')
+    expect(price('Resend')).toBe('Included')
+    expect(price('Mailboxes')).toBe('4 × $5/mo')
+    expect(plan.monthlyCad).toBe(20)
+    expect(plan.annualCad).toBe(30)
+  })
+
+  it('falls back to billboard for a lone hosting item, and leaves unknown plans alone', () => {
+    expect(planFromExpenses([item('1', 'Vercel Pro Hosting', null, null)]).selection).toEqual({ infra: 'infra-billboard' })
+    const plan = planFromExpenses([item('1', 'Consulting', null, 5000)])
+    expect(plan.selection).toEqual({})
+    expect(plan.inferred).toEqual([])
+    expect(plan.other).toHaveLength(1)
+  })
+
+  it('never overrides an infra tier set by offering_id', () => {
+    const plan = planFromExpenses([item('1', 'Hosting', 'infra-ecommerce', 5000), ...paris])
+    expect(plan.selection.infra).toBe('infra-ecommerce')
+    expect(plan.inferred).toEqual([])
+    expect(plan.other.map((e) => e.name)).toEqual(['Vercel Pro Hosting'])
+  })
+
+  it('matches an exact offering name when offering_id is missing', () => {
+    const plan = planFromExpenses([item('1', 'Domain', null, 3000, 1, 'year'), item('2', 'Email · Gmail', null, 1250, 2)])
+    expect(plan.addonIds).toEqual(['addon-domain', 'addon-email-gmail'])
+    expect(plan.addonQty).toEqual({ 'addon-email-gmail': 2 })
   })
 })
 
@@ -187,6 +243,13 @@ describe('parseChangeRequest', () => {
         newEmail: 'new@example.com',
       },
     })
+  })
+
+  it('keeps per-unit add-on quantities and rejects bad ones', () => {
+    const ok = parseChangeRequest({ addonIds: ['addon-email-imap', 'addon-domain'], addonQty: { 'addon-email-imap': 4, 'addon-domain': 3 } }, 'a@b.ca')
+    expect(ok.ok && ok.request.plan.addonQty).toEqual({ 'addon-email-imap': 4 })
+    expect(ok.ok && planTotals(ok.request.plan).monthly).toBe(20)
+    expect(parseChangeRequest({ addonIds: ['addon-email-imap'], addonQty: { 'addon-email-imap': 0 } }, 'a@b.ca').ok).toBe(false)
   })
 
   it('rejects unknown tiers and add-ons', () => {

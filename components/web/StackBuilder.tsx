@@ -2,6 +2,7 @@
 
 import { useState } from "react";
 import {
+  addonQuantity,
   addons,
   annualTotalFor,
   buildSprint,
@@ -10,6 +11,7 @@ import {
   includedAddonIds,
   includedNote,
   layersBottomUp,
+  MAX_ADDON_QTY,
   money,
   premiumRank,
   totalFor,
@@ -57,19 +59,26 @@ export function StackBuilder({ initial, onPlanChange }: StackBuilderProps = {}) 
   const [selection, setSelection] = useState<Partial<Selection>>(initial?.selection ?? {});
   const [sprint, setSprint] = useState(initial?.sprint ?? false);
   const [addonIds, setAddonIds] = useState<string[]>(initial?.addonIds ?? []);
+  const [addonQty, setAddonQty] = useState<Record<string, number>>(initial?.addonQty ?? {});
   const update = (patch: Partial<PlanState>) => {
     if (patch.selection) setSelection(patch.selection);
     if (patch.sprint !== undefined) setSprint(patch.sprint);
     if (patch.addonIds) setAddonIds(patch.addonIds);
-    onPlanChange?.({ selection, sprint, addonIds, ...patch });
+    if (patch.addonQty) setAddonQty(patch.addonQty);
+    onPlanChange?.({ selection, sprint, addonIds, addonQty, ...patch });
   };
   const included = includedAddonIds(selection, { sprint });
   const paidAddonIds = addonIds.filter((id) => !included.includes(id));
-  const { known, pending } = totalFor(selection, { sprint, addonIds: paidAddonIds });
-  const annual = annualTotalFor(paidAddonIds);
+  const { known, pending } = totalFor(selection, { sprint, addonIds: paidAddonIds, addonQty });
+  const annual = annualTotalFor(paidAddonIds, addonQty);
   const chosenAddons = addons.filter((a) => addonIds.includes(a.id) || included.includes(a.id));
-  const addonPrice = (a: (typeof addons)[number]) =>
-    included.includes(a.id) ? "Included" : formatAddonPrice(a);
+  const addonPrice = (a: (typeof addons)[number]) => {
+    if (included.includes(a.id)) return a.includedUsage ? "Included*" : "Included";
+    const qty = addonQuantity(a, addonQty);
+    return qty > 1 ? `${qty} × ${formatAddonPrice(a)}` : formatAddonPrice(a);
+  };
+  const setQty = (id: string, qty: number) =>
+    update({ addonQty: { ...addonQty, [id]: Math.min(Math.max(1, qty), MAX_ADDON_QTY) } });
   const toggleAddon = (id: string, on: boolean) =>
     update({ addonIds: on ? [...addonIds, id] : addonIds.filter((x) => x !== id) });
 
@@ -219,14 +228,33 @@ export function StackBuilder({ initial, onPlanChange }: StackBuilderProps = {}) 
                     {free ? (
                       <span className="mt-2 block font-bold">
                         <s className="font-normal text-foreground/40">{formatAddonPrice(addon)}</s>{" "}
-                        <span className="text-green-700 dark:text-green-400">Included with your plan</span>
+                        <span className="text-green-700 dark:text-green-400">
+                          Included with your plan{addon.includedUsage ? "*" : ""}
+                        </span>
                       </span>
                     ) : (
                       <span className="mt-2 block font-bold">{formatAddonPrice(addon)}</span>
                     )}
+                    {free && addon.includedUsage && (
+                      <span className="mt-1 block text-xs text-foreground/50">* {addon.includedUsage}</span>
+                    )}
                     {addon.includedWith && !free && (
                       <span className="mt-1 block text-xs text-foreground/50">
                         {includedNote(addon.includedWith)}
+                      </span>
+                    )}
+                    {addon.unit && checked && !free && (
+                      <span className="mt-2 flex items-center gap-2 text-sm">
+                        <input
+                          type="number"
+                          min={1}
+                          max={MAX_ADDON_QTY}
+                          value={addonQuantity(addon, addonQty)}
+                          onChange={(e) => setQty(addon.id, Math.floor(Number(e.target.value)) || 1)}
+                          aria-label={`Number of ${addon.unit}s`}
+                          className="w-16 rounded-lg border border-foreground/20 bg-background px-2 py-1"
+                        />
+                        <span className="text-foreground/60">{addon.unit}s</span>
                       </span>
                     )}
                   </span>
@@ -284,6 +312,9 @@ export function StackBuilder({ initial, onPlanChange }: StackBuilderProps = {}) 
             <p className="text-xs text-foreground/50">
               + {pending} item{pending > 1 ? "s" : ""} priced on request
             </p>
+          )}
+          {chosenAddons.some((a) => a.includedUsage && included.includes(a.id)) && (
+            <p className="mt-1 text-xs text-foreground/50">* Usage included up to a monthly allowance; overages billed.</p>
           )}
           {sprint && <p className="mt-1 text-xs text-foreground/50">Sprint pricing applies to the month it&apos;s booked.</p>}
         </div>

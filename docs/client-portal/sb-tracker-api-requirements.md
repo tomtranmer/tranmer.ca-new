@@ -70,6 +70,8 @@ Returns the client's **active recurring** Client Expenses, which are their plan 
 ```
 
 - `interval` is `month` or `year`.
+- `amount_cents` is the line total for all `quantity` units per `interval` (4 IMAP mailboxes at
+  $5 → `quantity: 4`, `amount_cents: 2000`).
 - `offering_id` is a new optional field on a Client Expense, set from SB Tracker's admin UI. Valid
   values are the IDs in tranmer.ca's `lib/offerings.ts`:
   - Infrastructure: `infra-billboard`, `infra-ecommerce`, `infra-app`
@@ -80,6 +82,12 @@ Returns the client's **active recurring** Client Expenses, which are their plan 
     `addon-email-sending`, `addon-database`
 - `amount_cents` may be `null` for unpriced items (usage-billed hosting such as Vercel or Azure,
   plugins). tranmer.ca shows these as "Varies".
+- When `offering_id` is missing, tranmer.ca also matches an item whose name is exactly an
+  offering's name. If nothing maps to an Infrastructure tier, it infers one: App hosting when the
+  plan has App Database or Email Sending, otherwise Billboard for a hosting-like item (hosting,
+  vercel, netlify, server, vps). Setting `offering_id` is still the reliable way.
+- Add-ons the plan includes (Neon and Resend on App hosting or with an active build) show as
+  "Included" and aren't counted in the total, whatever `amount_cents` says.
 - Items with no `offering_id` are still returned. tranmer.ca lists them as "Other services" so the
   client sees everything they pay for.
 - Ended or cancelled expenses are left out.

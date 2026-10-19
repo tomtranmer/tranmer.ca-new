@@ -5,7 +5,7 @@
  * client component: the key must stay on the server. What this file expects
  * from SB Tracker is written up in docs/client-portal/sb-tracker-api-requirements.md.
  */
-import { addons, buildSprint, layers, money, type Selection } from '@/lib/offerings';
+import { addons, buildSprint, includedAddonIds, layers, money, type LayerId, type Selection } from '@/lib/offerings';
 
 export type SbClientStatus = 'active' | 'past_due' | 'canceled';
 
@@ -26,16 +26,25 @@ export type SbExpense = {
   id: string;
   name: string;
   offeringId: string | null;
-  /** Null for unpriced items such as usage-billed hosting or plugins. */
+  /**
+   * What the line costs for all `quantity` units per `interval` (4 mailboxes at
+   * $5 is 2000). Null for unpriced items such as usage-billed hosting or plugins.
+   */
   amountCents: number | null;
   interval: 'month' | 'year';
   quantity: number;
+  /** Set by `planFromExpenses` when the plan includes this add-on for free. */
+  included?: boolean;
 };
 
 export type CurrentPlan = {
   selection: Partial<Selection>;
   sprint: boolean;
   addonIds: string[];
+  /** Units billed for per-unit add-ons, e.g. { 'addon-email-imap': 4 }. */
+  addonQty: Record<string, number>;
+  /** Layers whose tier was inferred rather than set by an `offering_id`. */
+  inferred: LayerId[];
   /** Expenses that don't map to an offering, shown as "Other services". */
   other: SbExpense[];
   /** Every item with the price SB Tracker bills, for display. */
@@ -194,16 +203,18 @@ export async function getClientExpenses(id: string): Promise<SbExpense[] | null>
   });
 }
 
-/** "$12.50/mo", or "Varies" for an unpriced item. */
+/** "$12.50/mo", "4 × $5/mo" (per-unit price), "Included", or "Varies" for an unpriced item. */
 export function formatExpensePrice(expense: SbExpense): string {
+  if (expense.included) return 'Included';
   if (expense.amountCents === null) return 'Varies';
   const qty = expense.quantity > 1 ? `${expense.quantity} × ` : '';
-  return `${qty}${money(expense.amountCents / 100)}/${expense.interval === 'year' ? 'yr' : 'mo'}`;
+  const each = expense.amountCents / 100 / Math.max(1, expense.quantity);
+  return `${qty}${money(each)}/${expense.interval === 'year' ? 'yr' : 'mo'}`;
 }
 
 /** Display name: the offering's name when the item maps to one. */
 export function expenseLabel(expense: SbExpense): string {
-  const id = expense.offeringId;
+  const id = offeringIdFor(expense);
   if (!id) return expense.name;
   if (id === buildSprint.id) return buildSprint.name;
   for (const layer of layers) {
@@ -213,30 +224,80 @@ export function expenseLabel(expense: SbExpense): string {
   return addons.find((a) => a.id === id)?.name ?? expense.name;
 }
 
+/** Lowercased, with punctuation collapsed, for comparing names. */
+const normalise = (s: string) => s.toLowerCase().replace(/[^a-z0-9]+/g, ' ').trim();
+
+/**
+ * The offering an expense maps to. `offering_id` wins; without one, an expense
+ * whose name is exactly an offering's name (e.g. "Domain") still matches.
+ */
+export function offeringIdFor(expense: SbExpense): string | null {
+  if (expense.offeringId) return expense.offeringId;
+  const name = normalise(expense.name);
+  if (!name) return null;
+  if (normalise(buildSprint.name) === name) return buildSprint.id;
+  for (const layer of layers) {
+    const tier = layer.tiers.find((t) => normalise(t.name) === name || normalise(`${layer.name} ${t.name}`) === name);
+    if (tier) return tier.id;
+  }
+  return addons.find((a) => normalise(a.name) === name)?.id ?? null;
+}
+
+/** Unmapped items that look like hosting, e.g. "Vercel Pro Hosting". */
+const HOSTING_NAME = /\b(hosting|vercel|netlify|server|vps)\b/i;
+/** Add-ons that only make sense on the app infrastructure tier. */
+const APP_ADDONS = ['addon-database', 'addon-email-sending'];
+
 /** Map Client Expenses onto the offerings grid so the builder can start from them. */
 export function planFromExpenses(expenses: SbExpense[]): CurrentPlan {
   const plan: CurrentPlan = {
     selection: {},
     sprint: false,
     addonIds: [],
+    addonQty: {},
+    inferred: [],
     other: [],
     items: expenses,
     monthlyCad: 0,
     annualCad: 0,
   };
   for (const expense of expenses) {
-    if (expense.amountCents !== null) {
-      const amount = (expense.amountCents * expense.quantity) / 100;
-      if (expense.interval === 'year') plan.annualCad += amount;
-      else plan.monthlyCad += amount;
-    }
-    const id = expense.offeringId;
+    const id = offeringIdFor(expense);
     const layer = id ? layers.find((l) => l.tiers.some((t) => t.id === id)) : undefined;
+    const addon = id ? addons.find((a) => a.id === id) : undefined;
     if (layer && id) plan.selection[layer.id] = id;
     else if (id === buildSprint.id) plan.sprint = true;
-    else if (id && addons.some((a) => a.id === id)) {
-      if (!plan.addonIds.includes(id)) plan.addonIds.push(id);
+    else if (addon) {
+      if (!plan.addonIds.includes(addon.id)) plan.addonIds.push(addon.id);
+      if (addon.unit) plan.addonQty[addon.id] = (plan.addonQty[addon.id] ?? 0) + expense.quantity;
     } else plan.other.push(expense);
+  }
+
+  // Every plan sits on infrastructure, and the builder keeps the levels above
+  // it locked until it has one. When nothing maps to an infra tier, infer it
+  // from a hosting-like item or the add-ons, so the client can still adjust
+  // support and build time.
+  if (!plan.selection.infra) {
+    const hosting = plan.other.filter((e) => HOSTING_NAME.test(e.name));
+    const appAddons = plan.addonIds.some((id) => APP_ADDONS.includes(id));
+    if (hosting.length || appAddons) {
+      plan.selection.infra = appAddons ? 'infra-app' : 'infra-billboard';
+      plan.inferred.push('infra');
+      plan.other = plan.other.filter((e) => !hosting.includes(e));
+    }
+  }
+
+  // Add-ons the plan includes (e.g. Neon and Resend on App hosting) aren't
+  // charged, whatever SB Tracker prices them at.
+  const included = includedAddonIds(plan.selection, { sprint: plan.sprint });
+  plan.items = expenses.map((expense) => {
+    const id = offeringIdFor(expense);
+    return id && included.includes(id) ? { ...expense, included: true } : expense;
+  });
+  for (const item of plan.items) {
+    if (item.included || item.amountCents === null) continue;
+    if (item.interval === 'year') plan.annualCad += item.amountCents / 100;
+    else plan.monthlyCad += item.amountCents / 100;
   }
   return plan;
 }
