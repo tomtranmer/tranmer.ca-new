@@ -3,7 +3,7 @@
 import { useRouter } from "next/navigation";
 import { useEffect, useState } from "react";
 import { StackBuilder } from "@/components/web/StackBuilder";
-import { freeTierId, getLayer, money, type PlanState } from "@/lib/offerings";
+import { freeTierId, getLayer, money, MONTHLY_BILLING_MIN, planTotals, type PlanState } from "@/lib/offerings";
 import {
   expenseLabel,
   formatExpensePrice,
@@ -57,6 +57,8 @@ export function AccountView({
   const [notes, setNotes] = useState("");
   const [changeEmail, setChangeEmail] = useState(false);
   const [newEmail, setNewEmail] = useState("");
+  const [monthlyBilling, setMonthlyBilling] = useState(false);
+  const canBillMonthly = planTotals(plan).monthly > MONTHLY_BILLING_MIN;
   const [status, setStatus] = useState<Status>("idle");
   const [errorMsg, setErrorMsg] = useState("");
 
@@ -74,7 +76,12 @@ export function AccountView({
       const res = await fetch("/api/client/change-request", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ ...plan, notes, newEmail: changeEmail ? newEmail : "" }),
+        body: JSON.stringify({
+          ...plan,
+          notes,
+          newEmail: changeEmail ? newEmail : "",
+          monthlyBilling: canBillMonthly && monthlyBilling,
+        }),
       });
       if (res.ok) {
         setStatus("success");
@@ -216,6 +223,18 @@ export function AccountView({
                 disabled={status === "submitting"}
               />
             </label>
+
+            {canBillMonthly && (
+              <label className="flex items-center gap-2 text-sm font-medium">
+                <input
+                  type="checkbox"
+                  checked={monthlyBilling}
+                  onChange={(e) => setMonthlyBilling(e.target.checked)}
+                  className="h-4 w-4 accent-blue-500"
+                />
+                Request change to monthly billing
+              </label>
+            )}
 
             <label className="flex items-center gap-2 text-sm font-medium">
               <input

@@ -7,15 +7,15 @@
 import {
   addonQuantity,
   addons,
-  annualTotalFor,
   buildSprint,
   includedAddonIds,
   layersBottomUp,
   money,
   formatAddonPrice,
   formatPrice,
-  totalFor,
+  planTotals,
   MAX_ADDON_QTY,
+  MONTHLY_BILLING_MIN,
   type PlanState,
 } from '@/lib/offerings';
 import { escapeHtml, isValidEmail, sanitizeText } from '@/lib/security';
@@ -25,10 +25,14 @@ export const CHANGE_REQUEST_TO = 'help@tranmer.ca';
 export const CHANGE_REQUEST_CC = 'help@helpdesk.tranmer.ca';
 export const MAX_NOTES_LENGTH = 2000;
 
+export { planTotals };
+
 export type ChangeRequest = {
   plan: PlanState;
   notes: string;
   newEmail: string | null;
+  /** The client asked to move to monthly billing. */
+  monthlyBilling: boolean;
 };
 
 export function parseChangeRequest(
@@ -81,11 +85,16 @@ export function parseChangeRequest(
     }
   }
 
+  const monthlyBilling = b.monthlyBilling === true;
+  if (monthlyBilling && planTotals(plan).monthly <= MONTHLY_BILLING_MIN) {
+    return { ok: false, error: `Monthly billing is available on plans over ${money(MONTHLY_BILLING_MIN)}/mo` };
+  }
+
   const hasPlan = Object.keys(plan.selection).length > 0 || plan.sprint || plan.addonIds.length > 0;
-  if (!hasPlan && !notes && !newEmail) {
+  if (!hasPlan && !notes && !newEmail && !monthlyBilling) {
     return { ok: false, error: 'Choose a plan change, add a note or request an email change' };
   }
-  return { ok: true, request: { plan, notes, newEmail } };
+  return { ok: true, request: { plan, notes, newEmail, monthlyBilling } };
 }
 
 /** Plain lines describing a plan, e.g. "Infrastructure: E-commerce ($75)". */
@@ -104,13 +113,6 @@ export function describePlan(plan: PlanState): string[] {
     }
   }
   return lines;
-}
-
-export function planTotals(plan: PlanState): { monthly: number; annual: number; pending: number } {
-  const included = includedAddonIds(plan.selection, { sprint: plan.sprint });
-  const paid = plan.addonIds.filter((id) => !included.includes(id));
-  const { known, pending } = totalFor(plan.selection, { sprint: plan.sprint, addonIds: paid, addonQty: plan.addonQty });
-  return { monthly: known, annual: annualTotalFor(paid, plan.addonQty), pending };
 }
 
 function list(lines: string[]): string {
@@ -176,6 +178,15 @@ export function renderStaffEmail({
 
   const sections = clientSections(sessionEmail, client, current);
   sections.push(['Requested plan', [...describePlan(request.plan), `Estimated total: ${totalLine}`]]);
+  if (request.monthlyBilling) {
+    sections.push([
+      'Monthly billing requested',
+      [
+        `Move the client to monthly billing (${money(totals.monthly)}/mo before tax).`,
+        'Update their invoicing in FreshBooks and the renewal in SB Tracker.',
+      ],
+    ]);
+  }
   if (request.newEmail) {
     sections.push([
       'Email change requested',
@@ -235,6 +246,7 @@ export function renderClientConfirmation(request: ChangeRequest): { subject: str
 <p>Thanks, we've received your request and will be in touch shortly to confirm the details.</p>
 <h3>What you asked for</h3>
 ${list(lines)}
+${request.monthlyBilling ? '<p>You also asked to switch to monthly billing. We\'ll confirm the change and your next invoice date with you.</p>' : ''}
 ${request.newEmail ? `<p>You also asked to change your email address to <strong>${escapeHtml(request.newEmail)}</strong>. We'll confirm with you before changing it.</p>` : ''}
 ${request.notes ? `<h3>Your notes</h3><p>${escapeHtml(request.notes)}</p>` : ''}
 <p>If you didn't make this request, reply to this email right away.</p>

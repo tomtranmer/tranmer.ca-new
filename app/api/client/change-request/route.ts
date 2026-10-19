@@ -54,7 +54,9 @@ export async function POST(request: NextRequest) {
       [
         session.clientId,
         session.email,
-        JSON.stringify(changeRequest.plan),
+        JSON.stringify(
+          changeRequest.monthlyBilling ? { ...changeRequest.plan, monthlyBilling: true } : changeRequest.plan
+        ),
         changeRequest.notes || null,
         changeRequest.newEmail,
       ]

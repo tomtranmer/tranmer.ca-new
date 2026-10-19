@@ -16,7 +16,7 @@ import {
   type SbExpense,
 } from '../lib/sbTracker'
 import { renderLoginCodeEmail } from '../lib/loginCodeEmail'
-import { parseChangeRequest, planTotals, renderCancellationEmail, renderStaffEmail } from '../lib/changeRequest'
+import { parseChangeRequest, planTotals, renderCancellationEmail, renderStaffEmail, type ChangeRequest } from '../lib/changeRequest'
 
 beforeAll(() => {
   process.env.CLIENT_SESSION_SECRET = 'test-secret-that-is-at-least-32-characters-long'
@@ -248,7 +248,7 @@ describe('planFromExpenses matching fallbacks', () => {
     expect(plan.selection).toEqual({ infra: 'infra-app' })
     expect(plan.inferred).toEqual(['infra'])
     expect(plan.other).toEqual([])
-    expect(plan.addonQty).toEqual({ 'addon-email-imap': 4 })
+    expect(plan.addonQty).toEqual({ 'addon-domain': 1, 'addon-email-imap': 4 })
   })
 
   it('shows Neon and Resend as included on App hosting and leaves them out of the total', () => {
@@ -279,7 +279,7 @@ describe('planFromExpenses matching fallbacks', () => {
   it('matches an exact offering name when offering_id is missing', () => {
     const plan = planFromExpenses([item('1', 'Domain', null, 3000, 1, 'year'), item('2', 'Email · Gmail', null, 1250, 2)])
     expect(plan.addonIds).toEqual(['addon-domain', 'addon-email-gmail'])
-    expect(plan.addonQty).toEqual({ 'addon-email-gmail': 2 })
+    expect(plan.addonQty).toEqual({ 'addon-domain': 1, 'addon-email-gmail': 2 })
   })
 })
 
@@ -295,15 +295,25 @@ describe('parseChangeRequest', () => {
         plan: { selection: { infra: 'infra-app' }, sprint: false, addonIds: ['addon-domain'] },
         notes: 'hi',
         newEmail: 'new@example.com',
+        monthlyBilling: false,
       },
     })
   })
 
   it('keeps per-unit add-on quantities and rejects bad ones', () => {
     const ok = parseChangeRequest({ addonIds: ['addon-email-imap', 'addon-domain'], addonQty: { 'addon-email-imap': 4, 'addon-domain': 3 } }, 'a@b.ca')
-    expect(ok.ok && ok.request.plan.addonQty).toEqual({ 'addon-email-imap': 4 })
-    expect(ok.ok && planTotals(ok.request.plan).monthly).toBe(20)
+    expect(ok.ok && ok.request.plan.addonQty).toEqual({ 'addon-email-imap': 4, 'addon-domain': 3 })
+    expect(ok.ok && planTotals(ok.request.plan)).toMatchObject({ monthly: 20, annual: 90 })
     expect(parseChangeRequest({ addonIds: ['addon-email-imap'], addonQty: { 'addon-email-imap': 0 } }, 'a@b.ca').ok).toBe(false)
+  })
+
+  it('allows monthly billing only above the threshold', () => {
+    const small = { addonIds: ['addon-email-imap'], addonQty: { 'addon-email-imap': 4 }, monthlyBilling: true }
+    expect(parseChangeRequest(small, 'a@b.ca').ok).toBe(false)
+    const big = parseChangeRequest({ ...small, selection: { support: 'support-minimal' } }, 'a@b.ca')
+    expect(big.ok && big.request.monthlyBilling).toBe(true)
+    const { text } = renderStaffEmail({ sessionEmail: 'a@b.ca', client: null, current: null, request: (big as { ok: true; request: ChangeRequest }).request })
+    expect(text).toContain('Monthly billing requested')
   })
 
   it('rejects unknown tiers and add-ons', () => {
@@ -328,6 +338,7 @@ describe('renderStaffEmail', () => {
         plan: { selection: {}, sprint: false, addonIds: [] },
         notes: '<script>alert(1)</script>',
         newEmail: 'new@example.com',
+        monthlyBilling: false,
       },
     })
     expect(html).not.toContain('<script>')

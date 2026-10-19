@@ -206,6 +206,7 @@ export const addons: Addon[] = [
     tagline: "Register and renew your domain name",
     price: 30,
     billing: "annual",
+    unit: "domain",
   },
   {
     id: "addon-email-imap",
@@ -388,3 +389,14 @@ export function includedAddonIds(
     )
     .map((a) => a.id);
 }
+
+/** What a plan costs before tax, leaving out add-ons the plan includes. */
+export function planTotals(plan: PlanState): { monthly: number; annual: number; pending: number } {
+  const included = includedAddonIds(plan.selection, { sprint: plan.sprint });
+  const paid = plan.addonIds.filter((id) => !included.includes(id));
+  const { known, pending } = totalFor(plan.selection, { sprint: plan.sprint, addonIds: paid, addonQty: plan.addonQty });
+  return { monthly: known, annual: annualTotalFor(paid, plan.addonQty), pending };
+}
+
+/** Clients can ask to be billed monthly once a plan's monthly pre-tax total is above this. */
+export const MONTHLY_BILLING_MIN = 42;
