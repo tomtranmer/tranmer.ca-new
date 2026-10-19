@@ -6,8 +6,10 @@ import { getClientSession } from "@/lib/clientSession";
 import {
   getClient,
   getClientExpenses,
+  getLatestInvoice,
   planFromExpenses,
   type CurrentPlan,
+  type LatestInvoice,
   type SbClient,
 } from "@/lib/sbTracker";
 
@@ -32,6 +34,15 @@ export default async function AccountPage() {
     console.error("SB Tracker lookup failed:", error instanceof Error ? error.message : "Unknown error");
   }
 
+  // Optional extra: if it fails the page still loads, just without the invoice link.
+  let latestInvoice: LatestInvoice | null = null;
+  if (client?.freshbooksClientId) {
+    latestInvoice = await getLatestInvoice(session.clientId).catch((error) => {
+      console.error("Latest invoice lookup failed:", error instanceof Error ? error.message : "Unknown error");
+      return null;
+    });
+  }
+
   return (
     <div className="min-h-screen bg-background text-foreground">
       <ThemeToggle />
@@ -43,6 +54,8 @@ export default async function AccountPage() {
               name: client.name,
               status: client.status,
               renewalDate: client.renewalDate,
+              portalUrl: client.portalUrl,
+              latestInvoice,
             }
           }
           current={current}

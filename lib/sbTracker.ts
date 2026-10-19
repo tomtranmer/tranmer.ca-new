@@ -20,6 +20,8 @@ export type SbClient = {
   /** TWS's own estimated monthly cost for this client. Staff only: never show it to the client. */
   estimatedCostCad: number | null;
   freshbooksClientId: string | null;
+  /** The client's own SB Tracker portal page (invoices, payments). Secret link: show only to that client. */
+  portalUrl: string | null;
 };
 
 export type SbExpense = {
@@ -93,6 +95,16 @@ const cents = (v: unknown): number | null => {
   return n === null ? null : n / 100;
 };
 /** "2026-11-01T00:00:00.000Z" → "2026-11-01"; other strings pass through. */
+/** Only https URLs, so a bad value can't become a javascript: link. */
+const httpsUrl = (v: unknown): string | null => {
+  const s = str(v);
+  if (!s) return null;
+  try {
+    return new URL(s).protocol === 'https:' ? s : null;
+  } catch {
+    return null;
+  }
+};
 const day = (v: unknown): string | null => {
   const s = str(v);
   return s && /^\d{4}-\d{2}-\d{2}T/.test(s) ? s.slice(0, 10) : s;
@@ -118,6 +130,7 @@ export function parseClient(raw: unknown): SbClient | null {
     renewalDate: day(r.renewsAt ?? r.renewal_date),
     estimatedCostCad: cents(r.estimatedMonthlyExpenses),
     freshbooksClientId: str(r.freshbooks_client_id ?? r.freshbooksClientId),
+    portalUrl: httpsUrl(r.portalUrl ?? r.portal_url),
   };
 }
 
@@ -201,6 +214,29 @@ export async function getClientExpenses(id: string): Promise<SbExpense[] | null>
       },
     ];
   });
+}
+
+export type LatestInvoice = {
+  number: string | null;
+  /** FreshBooks share link: opens the invoice without a FreshBooks login. Secret, like portalUrl. */
+  url: string;
+  issuedDate: string | null;
+};
+
+/** The client's most recent FreshBooks invoice (R5). Null when there isn't one or the endpoint isn't there yet. */
+export async function getLatestInvoice(id: string): Promise<LatestInvoice | null> {
+  const res = await sbFetch(`/api/clients/${encodeURIComponent(id)}/latest-invoice`);
+  if (res.status === 404) return null;
+  const body = await res.json();
+  const r = ((body as Record<string, unknown>)?.invoice ?? body) as Record<string, unknown> | null;
+  const url = httpsUrl(r?.url ?? r?.share_link ?? r?.shareLink);
+  if (!r || !url) return null;
+  const number = r.invoice_number ?? r.invoiceNumber;
+  return {
+    number: typeof number === 'number' ? String(number) : str(number),
+    url,
+    issuedDate: day(r.issued_at ?? r.issuedAt ?? r.create_date),
+  };
 }
 
 /** "$12.50/mo", "4 × $5/mo" (per-unit price), "Included", or "Varies" for an unpriced item. */

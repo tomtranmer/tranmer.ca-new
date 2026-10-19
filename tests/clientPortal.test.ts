@@ -10,6 +10,7 @@ import {
   findClientsByEmail,
   formatExpensePrice,
   getClientExpenses,
+  getLatestInvoice,
   parseClient,
   planFromExpenses,
   type SbExpense,
@@ -92,6 +93,16 @@ describe('SB Tracker client parsing', () => {
     expect(clientMatchesEmail(client!, 'someone@acme.test')).toBe(false)
   })
 
+  it('keeps only https portal links', () => {
+    const base = { id: 1, email: 'a@b.test' }
+    expect(parseClient({ ...base, portalUrl: 'https://sb-tracker.tranmer.ca/portal/abc' })?.portalUrl).toBe(
+      'https://sb-tracker.tranmer.ca/portal/abc',
+    )
+    expect(parseClient({ ...base, portalUrl: 'javascript:alert(1)' })?.portalUrl).toBeNull()
+    expect(parseClient({ ...base, portalUrl: 'undefined/portal/abc' })?.portalUrl).toBeNull()
+    expect(parseClient(base)?.portalUrl).toBeNull()
+  })
+
   it('rejects rows without an id or email', () => {
     expect(parseClient({ name: 'x' })).toBeNull()
     expect(parseClient(null)).toBeNull()
@@ -151,6 +162,34 @@ describe('getClientExpenses', () => {
       ['Vercel', 'Varies'],
       ['Domain', '$30/yr'],
     ])
+  })
+})
+
+describe('getLatestInvoice', () => {
+  afterEach(() => {
+    vi.unstubAllGlobals()
+    delete process.env.SB_TRACKER_API_URL
+    delete process.env.SB_TRACKER_API_KEY
+  })
+
+  const stub = (res: Response) => {
+    process.env.SB_TRACKER_API_URL = 'https://sb.test'
+    process.env.SB_TRACKER_API_KEY = 'key'
+    vi.stubGlobal('fetch', vi.fn(async () => res))
+  }
+
+  it('parses the share link, number and date', async () => {
+    stub(Response.json({ invoice_number: 1042, url: 'https://my.freshbooks.com/#/link/abc', issued_at: '2026-10-01T00:00:00.000Z' }))
+    expect(await getLatestInvoice('7')).toEqual({
+      number: '1042', url: 'https://my.freshbooks.com/#/link/abc', issuedDate: '2026-10-01',
+    })
+  })
+
+  it('returns null on 404 or a non-https link', async () => {
+    stub(new Response(null, { status: 404 }))
+    expect(await getLatestInvoice('7')).toBeNull()
+    stub(Response.json({ invoice_number: '1', url: 'javascript:alert(1)' }))
+    expect(await getLatestInvoice('7')).toBeNull()
   })
 })
 
@@ -305,6 +344,7 @@ describe('renderCancellationEmail', () => {
       client: {
         id: '7', name: 'Acme', email: 'a@example.com', contactEmails: [], status: 'active',
         mrrCad: 25, renewalDate: '2026-11-01', estimatedCostCad: 7.09, freshbooksClientId: 'fb1',
+        portalUrl: null,
       },
       current: planFromExpenses([
         { id: '1', name: 'Hosting', offeringId: 'infra-billboard', amountCents: 2500, interval: 'month', quantity: 1 },

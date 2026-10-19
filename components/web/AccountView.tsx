@@ -4,12 +4,20 @@ import { useRouter } from "next/navigation";
 import { useEffect, useState } from "react";
 import { StackBuilder } from "@/components/web/StackBuilder";
 import { freeTierId, getLayer, money, type PlanState } from "@/lib/offerings";
-import { expenseLabel, formatExpensePrice, type CurrentPlan, type SbClientStatus } from "@/lib/sbTracker";
+import {
+  expenseLabel,
+  formatExpensePrice,
+  type CurrentPlan,
+  type LatestInvoice,
+  type SbClientStatus,
+} from "@/lib/sbTracker";
 
 type ClientSummary = {
   name: string;
   status: SbClientStatus;
   renewalDate: string | null;
+  portalUrl: string | null;
+  latestInvoice: LatestInvoice | null;
 };
 
 type Status = "idle" | "submitting" | "success" | "error";
@@ -97,6 +105,19 @@ export function AccountView({
           </p>
           <h1 className="mt-2 text-3xl font-bold tracking-tight sm:text-4xl">{client?.name ?? "Welcome back"}</h1>
           <p className="mt-1 text-sm text-foreground/60">Logged in as {email}</p>
+          {(client?.portalUrl || client?.latestInvoice) && (
+            <div className="mt-4 flex flex-wrap gap-2">
+              {client.portalUrl && (
+                <ExternalLink href={client.portalUrl}>View in SB Tracker</ExternalLink>
+              )}
+              {client.latestInvoice && (
+                <ExternalLink href={client.latestInvoice.url}>
+                  Open most recent invoice
+                  {client.latestInvoice.number && ` #${client.latestInvoice.number}`} (FreshBooks)
+                </ExternalLink>
+              )}
+            </div>
+          )}
         </div>
         <button
           type="button"
@@ -381,6 +402,22 @@ function CancelSection() {
         </div>
       )}
     </section>
+  );
+}
+
+function ExternalLink({ href, children }: { href: string; children: React.ReactNode }) {
+  return (
+    <a
+      href={href}
+      target="_blank"
+      rel="noopener noreferrer"
+      referrerPolicy="no-referrer"
+      className="inline-flex items-center gap-1 rounded-full border border-blue-600/30 px-4 py-1.5 text-sm font-medium text-blue-600 hover:bg-blue-600/10 dark:border-blue-400/30 dark:text-blue-400"
+    >
+      {children}
+      <span aria-hidden="true">↗</span>
+      <span className="sr-only">(opens in a new tab)</span>
+    </a>
   );
 }
 

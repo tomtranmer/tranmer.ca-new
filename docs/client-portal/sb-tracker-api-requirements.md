@@ -22,8 +22,10 @@ shown to staff only, never to the client). What the client pays comes from R2's 
 
 Clients with status `canceled` can't log in. `active` and `past_due` can.
 
-`portal_token` is ignored and never sent to the browser. If nothing else uses it with the API key,
-consider leaving it out of API-key responses.
+`portalUrl` (the client's `/portal/<token>` page) is shown as a "View in SB Tracker" link on the
+account page, only to the logged-in client it belongs to, and only if it's an https URL. Make sure
+`NEXT_PUBLIC_APP_URL` is set in SB Tracker, or the URL comes back as `undefined/portal/...` and the
+link is hidden. The "Open most recent invoice (FreshBooks)" link comes from R5.
 
 ## R1. Look up a client by email (required)
 
@@ -125,6 +127,26 @@ POST /api/clients/:id/payment-method-session   { "return_url": "https://tranmer.
   read-only key shouldn't be able to call it.
 - tranmer.ca shows the "Update payment card" button only when this endpoint exists. For now it
   shows "Coming soon".
+
+## R5. Most recent FreshBooks invoice (for the account page link)
+
+```
+GET /api/clients/:id/latest-invoice
+→ { "invoice_number": "1042", "url": "https://my.freshbooks.com/#/link/...", "issued_at": "2026-10-01" }
+```
+
+- For clients with a `freshbooks_client_id`: the newest non-draft invoice for that FreshBooks
+  client (`GET /accounting/account/{accountId}/invoices/invoices?search[customerid]=<id>`, newest
+  first, `per_page=1`).
+- `url` is the invoice's FreshBooks share link
+  (`GET .../invoices/invoices/{invoiceId}/share_link?share_method=share_link`), which opens the
+  invoice without a FreshBooks login. Cache it; it doesn't change per invoice.
+- `404 NOT_FOUND` if the client doesn't exist, has no FreshBooks link, or has no invoices.
+- API key only. Needs the live FreshBooks OAuth connection described under R3.
+
+The link is shown only to the logged-in client it belongs to, and only if `url` is https. Until
+this ships, tranmer.ca gets a 404 and hides the link. If the call fails, the rest of the account
+page still loads.
 
 ## Out of scope for SB Tracker
 
