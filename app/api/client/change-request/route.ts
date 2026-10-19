@@ -16,6 +16,7 @@ import {
   renderClientConfirmation,
   renderStaffEmail,
 } from '@/lib/changeRequest';
+import { buildSprint, sprintNotBeforeLabel } from '@/lib/offerings';
 import { loadClientContext } from '@/lib/sbTracker';
 
 const LIMIT = { limit: 5, windowMs: 60 * 60 * 1000 };
@@ -46,6 +47,14 @@ export async function POST(request: NextRequest) {
 
     // The current plan comes from SB Tracker, never from the browser.
     const { client, current } = await loadClientContext(session.clientId);
+    // Sold out means no new sprints; a client already on one can keep it.
+    if (changeRequest.plan.sprint && buildSprint.soldOut && !current?.sprint) {
+      const notBefore = sprintNotBeforeLabel();
+      return NextResponse.json(
+        { error: `The ${buildSprint.name} is sold out${notBefore ? ` (${notBefore.toLowerCase()})` : ''}.` },
+        { status: 400 }
+      );
+    }
 
     await initializeDatabase();
     const saved = await query(

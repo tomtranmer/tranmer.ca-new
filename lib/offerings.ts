@@ -173,7 +173,19 @@ export const buildSprint = {
   price: 2500,
   description:
     "When a project needs a push, upgrade to a month of full-time development. It replaces your build plan for that month.",
+  /** While true, new clients can't choose the sprint. Clients already on one can keep it. */
+  soldOut: true,
+  /** Earliest start shown while sold out (YYYY-MM-DD), or null for no date. */
+  notBefore: "2027-01-01" as string | null,
 };
+
+/** "Not before January 2027", or null when the sprint has no start date. */
+export function sprintNotBeforeLabel(): string | null {
+  if (!buildSprint.notBefore) return null;
+  const date = new Date(`${buildSprint.notBefore}T00:00:00Z`);
+  if (Number.isNaN(date.getTime())) return null;
+  return `Not before ${date.toLocaleDateString("en-CA", { month: "long", year: "numeric", timeZone: "UTC" })}`;
+}
 
 export type Addon = {
   id: string;

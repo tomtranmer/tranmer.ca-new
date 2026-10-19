@@ -17,6 +17,7 @@ import {
 } from '../lib/sbTracker'
 import { renderLoginCodeEmail } from '../lib/loginCodeEmail'
 import { parseChangeRequest, planTotals, renderCancellationEmail, renderStaffEmail, type ChangeRequest } from '../lib/changeRequest'
+import { sprintNotBeforeLabel } from '../lib/offerings'
 
 beforeAll(() => {
   process.env.CLIENT_SESSION_SECRET = 'test-secret-that-is-at-least-32-characters-long'
@@ -305,6 +306,10 @@ describe('parseChangeRequest', () => {
     expect(ok.ok && ok.request.plan.addonQty).toEqual({ 'addon-email-imap': 4, 'addon-domain': 3 })
     expect(ok.ok && planTotals(ok.request.plan)).toMatchObject({ monthly: 20, annual: 90 })
     expect(parseChangeRequest({ addonIds: ['addon-email-imap'], addonQty: { 'addon-email-imap': 0 } }, 'a@b.ca').ok).toBe(false)
+  })
+
+  it('labels the sprint start date', () => {
+    expect(sprintNotBeforeLabel()).toBe('Not before January 2027')
   })
 
   it('allows monthly billing only above the threshold', () => {

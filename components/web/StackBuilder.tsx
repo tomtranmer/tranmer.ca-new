@@ -6,6 +6,7 @@ import {
   addons,
   annualTotalFor,
   buildSprint,
+  sprintNotBeforeLabel,
   formatAddonPrice,
   formatPrice,
   includedAddonIds,
@@ -92,6 +93,8 @@ export function StackBuilder({ initial, onPlanChange }: StackBuilderProps = {}) 
   // Each level unlocks only once every level below it has a selection.
   const isUnlocked = (index: number) =>
     layersBottomUp.slice(0, index).every((l) => selection[l.id]);
+  // A client already on a sprint can still change it while it's sold out.
+  const sprintSoldOut = buildSprint.soldOut && !initial?.sprint;
   const sprintUnlocked = layersBottomUp
     .filter((l) => l.id !== "build")
     .every((l) => selection[l.id]);
@@ -175,9 +178,11 @@ export function StackBuilder({ initial, onPlanChange }: StackBuilderProps = {}) 
         })}
 
         <label
-          className={`relative block cursor-pointer overflow-hidden rounded-2xl border-2 border-amber-400 bg-gradient-to-r from-zinc-950 via-violet-950 to-zinc-950 p-5 text-white shadow-2xl shadow-amber-500/20 transition hover:-translate-y-0.5 ${
-            sprint ? "ring-2 ring-amber-400 ring-offset-2 ring-offset-background" : ""
-          } ${sprintUnlocked ? "" : "pointer-events-none opacity-40"}`}
+          className={`relative block overflow-hidden rounded-2xl border-2 border-amber-400 bg-gradient-to-r from-zinc-950 via-violet-950 to-zinc-950 p-5 text-white shadow-2xl shadow-amber-500/20 transition ${
+            sprintSoldOut ? "cursor-not-allowed opacity-60" : "cursor-pointer hover:-translate-y-0.5"
+          } ${sprint ? "ring-2 ring-amber-400 ring-offset-2 ring-offset-background" : ""} ${
+            sprintUnlocked ? "" : "pointer-events-none opacity-40"
+          }`}
         >
           <span
             aria-hidden
@@ -187,13 +192,21 @@ export function StackBuilder({ initial, onPlanChange }: StackBuilderProps = {}) 
             <input
               type="checkbox"
               checked={sprint}
-              disabled={!sprintUnlocked}
+              disabled={!sprintUnlocked || sprintSoldOut}
               onChange={(e) => update({ sprint: e.target.checked })}
               className="mt-1 h-4 w-4 accent-amber-400"
             />
             <span>
-              <span className="mb-1 block text-[10px] font-bold uppercase tracking-wider text-amber-300">
+              <span className="mb-1 flex flex-wrap items-center gap-2 text-[10px] font-bold uppercase tracking-wider text-amber-300">
                 Monthly upgrade
+                {buildSprint.soldOut && (
+                  <span className="rounded-full bg-amber-400 px-2 py-0.5 text-zinc-950">Sold out</span>
+                )}
+                {buildSprint.soldOut && sprintNotBeforeLabel() && (
+                  <span className="font-semibold normal-case tracking-normal text-white/70">
+                    {sprintNotBeforeLabel()}
+                  </span>
+                )}
               </span>
               <span className="block text-lg font-semibold">
                 {buildSprint.name} · {money(buildSprint.price)}
