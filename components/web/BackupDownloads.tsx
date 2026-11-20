@@ -61,7 +61,7 @@ export function BackupDownloads({ state }: { state: BackupState }) {
 
       {state.kind === "list" && state.items.length === 0 && (
         <p className="mt-4 text-sm text-foreground/70">
-          Your annual backup isn&apos;t ready to download yet. We&apos;ll email you when it is.
+          Your upload should be ready shortly, please check back soon.
         </p>
       )}
 
