@@ -267,6 +267,10 @@ async function main() {
   if (!process.env.DATABASE_URL) fail('DATABASE_URL is not set');
 
   const [{ del, put }, { default: pg }] = await Promise.all([import('@vercel/blob'), import('pg')]);
+  // Pass the read-write token explicitly. Otherwise the SDK prefers OIDC when
+  // VERCEL_OIDC_TOKEN and BLOB_STORE_ID are set, and the OIDC token from
+  // `vercel env pull` is development-scoped, which the store refuses.
+  const blobToken = process.env.BLOB_READ_WRITE_TOKEN;
   const pool = new pg.Pool({
     connectionString: process.env.DATABASE_URL,
     ssl: /localhost|127\.0\.0\.1/.test(process.env.DATABASE_URL) ? false : { rejectUnauthorized: true },
@@ -297,6 +301,7 @@ async function main() {
         let lastPct = -1;
         await put(pathname, createReadStream(job.path), {
           access: 'private',
+          token: blobToken,
           multipart: true,
           addRandomSuffix: false,
           contentType: 'application/octet-stream',
@@ -333,7 +338,7 @@ async function main() {
           [clientId, keep]
         );
         for (const row of old) {
-          await del(row.pathname);
+          await del(row.pathname, { token: blobToken });
           await pool.query(`UPDATE client_backups SET deleted_at = NOW() WHERE id = $1`, [row.id]);
           console.log(`Removed older backup #${row.id} for client ${clientId} from Blob (still on offline storage).`);
         }
