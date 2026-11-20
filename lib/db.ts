@@ -121,6 +121,22 @@ async function createSchema(): Promise<void> {
       ON client_login_codes(email, created_at DESC);
     `);
 
+    // "We couldn't find your account" notices, so each address gets at most
+    // one a day (see app/api/client/login/request).
+    await query(`
+      CREATE TABLE IF NOT EXISTS client_login_notices (
+        id SERIAL PRIMARY KEY,
+        email VARCHAR(255) NOT NULL,
+        kind VARCHAR(30) NOT NULL,
+        created_at TIMESTAMPTZ DEFAULT CURRENT_TIMESTAMP
+      );
+    `);
+
+    await query(`
+      CREATE INDEX IF NOT EXISTS idx_client_login_notices_email
+      ON client_login_notices(email, created_at DESC);
+    `);
+
     await query(`
       CREATE TABLE IF NOT EXISTS client_change_requests (
         id SERIAL PRIMARY KEY,
