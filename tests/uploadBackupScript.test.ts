@@ -1,5 +1,4 @@
 import { describe, expect, it } from 'vitest'
-// @ts-expect-error -- plain ESM script without type declarations
 import { blobPathname, blockedClientIds, jobsFromManifest, parseCsv } from '../scripts/upload-backup.mjs'
 
 describe('parseCsv', () => {

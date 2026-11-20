@@ -77,6 +77,7 @@ export function parseCsv(text) {
 export const CLIENT_ID_PATTERN = /^[A-Za-z0-9_-]{1,100}$/;
 export const DATE_PATTERN = /^\d{4}-\d{2}-\d{2}$/;
 
+/** @param {Record<string, string | undefined>} [env] */
 export function blockedClientIds(env = process.env) {
   return (env.BACKUP_DOWNLOAD_BLOCKED_CLIENT_IDS ?? '')
     .split(',')
@@ -91,6 +92,8 @@ function expandHome(p) {
 /**
  * Turn manifest rows into upload jobs. Returns { jobs, skipped, errors };
  * errors are reported before anything uploads.
+ * @param {string} text
+ * @param {{ manifestDir: string, today: string, blocked?: string[] }} options
  */
 export function jobsFromManifest(text, { manifestDir, today, blocked = [] }) {
   const rows = parseCsv(text);
