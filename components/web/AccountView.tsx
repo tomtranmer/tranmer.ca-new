@@ -2,6 +2,7 @@
 
 import { useRouter } from "next/navigation";
 import { useEffect, useState } from "react";
+import { BackupDownloads, type BackupState } from "@/components/web/BackupDownloads";
 import { StackBuilder } from "@/components/web/StackBuilder";
 import { freeTierId, getLayer, money, MONTHLY_BILLING_MIN, planTotals, type PlanState } from "@/lib/offerings";
 import {
@@ -33,11 +34,13 @@ export function AccountView({
   client,
   current,
   loadError,
+  backups,
 }: {
   email: string;
   client: ClientSummary | null;
   current: CurrentPlan | null;
   loadError: boolean;
+  backups: BackupState;
 }) {
   const router = useRouter();
   const [plan, setPlan] = useState<PlanState>({
@@ -175,6 +178,8 @@ export function AccountView({
           </dl>
         )}
       </section>
+
+      <BackupDownloads state={backups} />
 
       {status === "success" ? (
         <section className="rounded-2xl border border-green-300 bg-green-50 p-8 text-center dark:border-green-800 dark:bg-green-950/40">
