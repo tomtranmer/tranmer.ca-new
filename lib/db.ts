@@ -156,6 +156,39 @@ async function createSchema(): Promise<void> {
       );
     `);
 
+    // Client backups in the private Blob store (see lib/backups.ts and
+    // scripts/upload-backup.mjs). deleted_at marks a backup pruned from Blob.
+    await query(`
+      CREATE TABLE IF NOT EXISTS client_backups (
+        id SERIAL PRIMARY KEY,
+        client_id VARCHAR(100) NOT NULL,
+        pathname TEXT NOT NULL UNIQUE,
+        filename VARCHAR(255) NOT NULL,
+        label VARCHAR(255),
+        size_bytes BIGINT,
+        sha256 CHAR(64),
+        backup_date DATE,
+        deleted_at TIMESTAMPTZ,
+        created_at TIMESTAMPTZ DEFAULT CURRENT_TIMESTAMP
+      );
+    `);
+
+    await query(`
+      CREATE INDEX IF NOT EXISTS idx_client_backups_client
+      ON client_backups(client_id, backup_date DESC);
+    `);
+
+    await query(`
+      CREATE TABLE IF NOT EXISTS client_backup_downloads (
+        id SERIAL PRIMARY KEY,
+        backup_id INTEGER NOT NULL REFERENCES client_backups(id),
+        client_id VARCHAR(100) NOT NULL,
+        email VARCHAR(255) NOT NULL,
+        ip VARCHAR(64),
+        created_at TIMESTAMPTZ DEFAULT CURRENT_TIMESTAMP
+      );
+    `);
+
     console.log('Database initialized successfully');
   } catch (error) {
     // Only log safe error message, not the full error object which may contain connection strings

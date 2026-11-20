@@ -2,6 +2,8 @@ import type { Metadata } from "next";
 import { redirect } from "next/navigation";
 import { ThemeToggle } from "@/components/ThemeToggle";
 import { AccountView } from "@/components/web/AccountView";
+import type { BackupState } from "@/components/web/BackupDownloads";
+import { formatBytes, isBackupDownloadBlocked, listBackupsForClient } from "@/lib/backups";
 import { getClientSession } from "@/lib/clientSession";
 import {
   getClient,
@@ -43,6 +45,8 @@ export default async function AccountPage() {
     });
   }
 
+  const backups = await loadBackupState(session.clientId);
+
   return (
     <div className="min-h-screen bg-background text-foreground">
       <ThemeToggle />
@@ -60,8 +64,31 @@ export default async function AccountPage() {
           }
           current={current}
           loadError={loadError}
+          backups={backups}
         />
       </main>
     </div>
   );
+}
+
+async function loadBackupState(clientId: string): Promise<BackupState> {
+  if (isBackupDownloadBlocked(clientId)) return { kind: "blocked" };
+  try {
+    const rows = await listBackupsForClient(clientId);
+    return {
+      kind: "list",
+      items: rows.map((b) => ({
+        id: b.id,
+        label: b.label,
+        filename: b.filename,
+        sizeLabel: formatBytes(b.sizeBytes),
+        dateLabel: b.backupDate
+          ? new Date(`${b.backupDate}T12:00:00Z`).toLocaleDateString("en-CA", { dateStyle: "long", timeZone: "UTC" })
+          : null,
+      })),
+    };
+  } catch (error) {
+    console.error("Backup list failed:", error instanceof Error ? error.message : "Unknown error");
+    return { kind: "unavailable" };
+  }
 }
