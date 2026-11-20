@@ -17,15 +17,31 @@ Blob is only the copy clients download.
 
 ## Uploading a backup
 
+One file:
+
 ```bash
 npm run backup:upload -- --client <SB Tracker client id> --file ~/Backups/2026/example-com.zip \
   --label "2026 annual backup" --date 2026-11-20 --keep 2
 ```
 
+A batch, from a CSV manifest:
+
+```bash
+npm run backup:upload -- --manifest "~/Documents/Claude-Workspace/TWS Notes/backups-2026-manifest.csv" --keep 2 --dry-run
+npm run backup:upload -- --manifest "~/Documents/Claude-Workspace/TWS Notes/backups-2026-manifest.csv" --keep 2
+```
+
+- The manifest needs a header row with `client_id` and `file`; `label` and `date` are optional, other
+  columns (client_name, domains, notes) are ignored. Rows with an empty `file` are skipped, so you can fill
+  it in gradually. Relative paths are resolved from the manifest's folder.
+- Every row is checked before anything uploads: file exists, client id format, date format, blocked
+  clients, and the same file on two rows. One bad row stops the whole batch with a list of problems.
+- Re-running is safe. A file whose SHA-256 is already listed for that client is skipped, so after an
+  interruption, run the same command again.
 - `--dry-run` shows what would happen without uploading.
-- `--keep 2` removes all but the client's two newest backups from Blob afterwards. Their rows stay, marked
+- `--keep 2` removes all but each client's two newest backups from Blob afterwards. Their rows stay, marked
   `deleted_at`, and the offline copies are untouched.
-- The script records size and SHA-256 in `client_backups`, so a client's copy can be verified later.
+- Size and SHA-256 are recorded in `client_backups`, so a client's copy can be verified later.
 
 ## What happens on download
 
