@@ -139,6 +139,23 @@ async function createSchema(): Promise<void> {
       ADD COLUMN IF NOT EXISTS kind VARCHAR(20) NOT NULL DEFAULT 'change';
     `);
 
+    // "Get my 2027 review" requests from the newsletter. client_id is null
+    // when the email isn't on file in SB Tracker.
+    await query(`
+      CREATE TABLE IF NOT EXISTS client_review_requests (
+        id SERIAL PRIMARY KEY,
+        email VARCHAR(255) NOT NULL,
+        client_id VARCHAR(100),
+        name VARCHAR(100),
+        website VARCHAR(200),
+        topics JSONB NOT NULL DEFAULT '[]',
+        notes TEXT,
+        source VARCHAR(50),
+        emailed_at TIMESTAMPTZ,
+        created_at TIMESTAMPTZ DEFAULT CURRENT_TIMESTAMP
+      );
+    `);
+
     console.log('Database initialized successfully');
   } catch (error) {
     // Only log safe error message, not the full error object which may contain connection strings

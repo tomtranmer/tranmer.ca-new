@@ -119,13 +119,18 @@ function list(lines: string[]): string {
   return `<ul>${lines.map((l) => `<li>${escapeHtml(l)}</li>`).join('')}</ul>`;
 }
 
-type Section = [title: string, lines: string[]];
+export type Section = [title: string, lines: string[]];
 
 /** Who the client is and what SB Tracker says they have, for staff emails. */
-function clientSections(sessionEmail: string, client: SbClient | null, current: CurrentPlan | null): Section[] {
+export function clientSections(
+  sessionEmail: string,
+  client: SbClient | null,
+  current: CurrentPlan | null,
+  emailLabel = 'Logged in as',
+): Section[] {
   const clientLines = [
     `Name: ${client?.name ?? sessionEmail}`,
-    `Logged in as: ${sessionEmail}`,
+    `${emailLabel}: ${sessionEmail}`,
     `SB Tracker client ID: ${client?.id ?? 'unknown'}`,
     client?.freshbooksClientId ? `FreshBooks client ID: ${client.freshbooksClientId}` : null,
     client && !client.portalUrl
@@ -150,7 +155,7 @@ function clientSections(sessionEmail: string, client: SbClient | null, current: 
   ];
 }
 
-function renderSections(heading: string, sections: Section[]): { html: string; text: string } {
+export function renderSections(heading: string, sections: Section[]): { html: string; text: string } {
   const html = `<!DOCTYPE html><html><body style="font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;line-height:1.5;color:#1e293b">
 <h2>${escapeHtml(heading)}</h2>
 ${sections.map(([title, lines]) => `<h3>${escapeHtml(title)}</h3>${list(lines)}`).join('\n')}
