@@ -24,7 +24,8 @@
  *   run the same command again.
  *
  *   The same file may be listed for several clients (e.g. two businesses on
- *   one multisite). It is uploaded once and copied inside Blob for the others.
+ *   one multisite). It is uploaded once and copied inside Blob for the others;
+ *   files over 5 GiB (Blob's copy limit) are uploaded again for each client.
  *
  * Needs BLOB_READ_WRITE_TOKEN (the private store's token) and DATABASE_URL,
  * e.g. from `vercel env pull .env.local`. The npm script loads .env.local.
@@ -183,6 +184,13 @@ export async function verifyClients(ids, { baseUrl, apiKey, fetchImpl = fetch })
     names[id] = client?.name ?? null;
   }
   return { problems, names };
+}
+
+/** Vercel Blob can't copy objects larger than 5 GiB; bigger shared files are uploaded again. */
+export const MAX_COPY_BYTES = 5 * 1024 ** 3;
+
+export function canCopyInBlob(sizeBytes) {
+  return sizeBytes <= MAX_COPY_BYTES;
 }
 
 export function blobPathname(clientId, date, filename, random = randomBytes(6).toString('hex')) {
@@ -361,11 +369,14 @@ async function main() {
         const filename = basename(job.path);
         const pathname = blobPathname(job.clientId, job.date, filename);
 
-        // The same file already in Blob for another client: copy it there instead of uploading again.
-        const shared = await pool.query(
-          `SELECT pathname FROM client_backups WHERE sha256 = $1 AND deleted_at IS NULL ORDER BY id DESC LIMIT 1`,
-          [sha256]
-        );
+        // The same file already in Blob for another client: copy it there instead of
+        // uploading again, unless it's too big for Blob to copy.
+        const shared = canCopyInBlob(job.size)
+          ? await pool.query(
+              `SELECT pathname FROM client_backups WHERE sha256 = $1 AND deleted_at IS NULL ORDER BY id DESC LIMIT 1`,
+              [sha256]
+            )
+          : { rows: [] };
         if (shared.rows.length) {
           await copy(shared.rows[0].pathname, pathname, { access: 'private', token: blobToken, addRandomSuffix: false });
           const { rows } = await pool.query(

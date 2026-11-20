@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest'
-import { blobPathname, blockedClientIds, jobsFromManifest, parseCsv, verifyClients } from '../scripts/upload-backup.mjs'
+import { MAX_COPY_BYTES, blobPathname, blockedClientIds, canCopyInBlob, jobsFromManifest, parseCsv, verifyClients } from '../scripts/upload-backup.mjs'
 
 describe('parseCsv', () => {
   it('handles quotes, embedded commas, escaped quotes, CRLF and a BOM', () => {
@@ -104,5 +104,14 @@ describe('verifyClients', () => {
       baseUrl: 'https://sb.example', apiKey: 'k', fetchImpl: async () => { throw new Error('ECONNREFUSED') },
     })
     expect(problems).toEqual(["client 91: couldn't reach SB Tracker (ECONNREFUSED)"])
+  })
+})
+
+describe('canCopyInBlob', () => {
+  it('copies up to 5 GiB and re-uploads anything bigger', () => {
+    expect(MAX_COPY_BYTES).toBe(5368709120)
+    expect(canCopyInBlob(5368709120)).toBe(true)
+    expect(canCopyInBlob(5525265284)).toBe(false) // hewsonbros.ca.zip
+    expect(canCopyInBlob(134124604)).toBe(true)
   })
 })
