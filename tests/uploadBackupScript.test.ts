@@ -73,9 +73,10 @@ describe('helpers', () => {
 })
 
 describe('verifyClients', () => {
-  const fakeFetch = (table: Record<string, { status: number; body?: unknown }>) =>
-    async (url: URL) => {
-      const id = decodeURIComponent(String(url).split('/').pop()!)
+  const fakeFetch = (table: Record<string, { status: number; body?: unknown }>): typeof fetch =>
+    async (input: RequestInfo | URL) => {
+      const url = input instanceof Request ? input.url : String(input)
+      const id = decodeURIComponent(url.split('/').pop()!)
       const hit = table[id] ?? { status: 404 }
       return new Response(JSON.stringify(hit.body ?? {}), { status: hit.status })
     }
