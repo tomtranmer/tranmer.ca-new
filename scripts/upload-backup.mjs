@@ -16,9 +16,15 @@
  *   paths are resolved from the manifest's folder.
  *
  *   Every row is checked before anything uploads (file exists, client id
- *   format, blocked list, duplicate files). A batch is safe to re-run: a file
- *   whose SHA-256 is already listed for that client is skipped, so after an
- *   interruption just run the same command again.
+ *   format, blocked list, the same file twice for one client). When
+ *   SB_TRACKER_API_URL and SB_TRACKER_API_KEY are set, every client id is
+ *   also checked against SB Tracker: it must be an active TWS client the
+ *   portal can see. A batch is safe to re-run: a file whose SHA-256 is
+ *   already listed for that client is skipped, so after an interruption just
+ *   run the same command again.
+ *
+ *   The same file may be listed for several clients (e.g. two businesses on
+ *   one multisite). It is uploaded once and copied inside Blob for the others.
  *
  * Needs BLOB_READ_WRITE_TOKEN (the private store's token) and DATABASE_URL,
  * e.g. from `vercel env pull .env.local`. The npm script loads .env.local.
@@ -131,14 +137,52 @@ export function jobsFromManifest(text, { manifestDir, today, blocked = [] }) {
       return;
     }
     const path = resolve(manifestDir, expandHome(file));
-    if (seenFiles.has(path)) {
-      errors.push(`line ${line}: same file as line ${seenFiles.get(path)}`);
+    const key = `${clientId}\u0000${path}`;
+    if (seenFiles.has(key)) {
+      errors.push(`line ${line}: same file for the same client as line ${seenFiles.get(key)}`);
       return;
     }
-    seenFiles.set(path, line);
+    seenFiles.set(key, line);
     jobs.push({ line, clientId, who, path, date, label: get('label') || `${date.slice(0, 4)} annual backup` });
   });
   return { jobs, skipped, errors };
+}
+
+/**
+ * Check client ids against SB Tracker's admin API, which only returns clients
+ * of the main TWS account: the same ones the portal login can match. Returns
+ * problems per id; an unreachable API is reported, not ignored.
+ */
+export async function verifyClients(ids, { baseUrl, apiKey, fetchImpl = fetch }) {
+  const problems = [];
+  const names = {};
+  for (const id of [...new Set(ids)]) {
+    let res;
+    try {
+      res = await fetchImpl(new URL(`/api/clients/${encodeURIComponent(id)}`, baseUrl), {
+        headers: { Authorization: `Bearer ${apiKey}`, Accept: 'application/json' },
+      });
+    } catch (error) {
+      problems.push(`client ${id}: couldn't reach SB Tracker (${error instanceof Error ? error.message : error})`);
+      continue;
+    }
+    if (res.status === 404) {
+      problems.push(`client ${id}: not a TWS client in SB Tracker (wrong id, or it belongs to another SB Tracker account), so the portal can't show it`);
+      continue;
+    }
+    if (!res.ok) {
+      problems.push(`client ${id}: SB Tracker answered ${res.status}`);
+      continue;
+    }
+    const body = await res.json().catch(() => ({}));
+    const client = body?.client ?? body;
+    if (client?.status === 'canceled') {
+      problems.push(`client ${id} (${client.name ?? '?'}): archived in SB Tracker, so it can't log in`);
+      continue;
+    }
+    names[id] = client?.name ?? null;
+  }
+  return { problems, names };
 }
 
 export function blobPathname(clientId, date, filename, random = randomBytes(6).toString('hex')) {
@@ -257,6 +301,21 @@ async function main() {
     fail(`${missing.length} file(s) not found; nothing was uploaded`);
   }
 
+  // Check every client id is one the portal can actually see.
+  if (process.env.SB_TRACKER_API_URL && process.env.SB_TRACKER_API_KEY) {
+    const { problems } = await verifyClients(
+      jobs.map((j) => j.clientId),
+      { baseUrl: process.env.SB_TRACKER_API_URL, apiKey: process.env.SB_TRACKER_API_KEY }
+    );
+    if (problems.length) {
+      for (const p of problems) console.error(`error ${p}`);
+      fail(`${problems.length} client id problem(s); nothing was uploaded`);
+    }
+    console.log('All client ids checked against SB Tracker.');
+  } else {
+    console.warn('Warning: SB_TRACKER_API_URL / SB_TRACKER_API_KEY not set, so client ids were not checked against SB Tracker.');
+  }
+
   const total = jobs.reduce((n, j) => n + j.size, 0);
   console.log(`\n${jobs.length} backup(s), ${formatSize(total)} in total:`);
   for (const j of jobs) console.log(`  ${j.who} (${j.clientId}): ${basename(j.path)}, ${formatSize(j.size)}, "${j.label}", ${j.date}`);
@@ -269,7 +328,7 @@ async function main() {
   if (!process.env.BLOB_READ_WRITE_TOKEN) fail('BLOB_READ_WRITE_TOKEN is not set');
   if (!process.env.DATABASE_URL) fail('DATABASE_URL is not set');
 
-  const [{ del, put }, { default: pg }] = await Promise.all([import('@vercel/blob'), import('pg')]);
+  const [{ copy, del, put }, { default: pg }] = await Promise.all([import('@vercel/blob'), import('pg')]);
   // Pass the read-write token explicitly. Otherwise the SDK prefers OIDC when
   // VERCEL_OIDC_TOKEN and BLOB_STORE_ID are set, and the OIDC token from
   // `vercel env pull` is development-scoped, which the store refuses.
@@ -301,6 +360,25 @@ async function main() {
 
         const filename = basename(job.path);
         const pathname = blobPathname(job.clientId, job.date, filename);
+
+        // The same file already in Blob for another client: copy it there instead of uploading again.
+        const shared = await pool.query(
+          `SELECT pathname FROM client_backups WHERE sha256 = $1 AND deleted_at IS NULL ORDER BY id DESC LIMIT 1`,
+          [sha256]
+        );
+        if (shared.rows.length) {
+          await copy(shared.rows[0].pathname, pathname, { access: 'private', token: blobToken, addRandomSuffix: false });
+          const { rows } = await pool.query(
+            `INSERT INTO client_backups (client_id, pathname, filename, label, size_bytes, sha256, backup_date)
+             VALUES ($1, $2, $3, $4, $5, $6, $7) RETURNING id`,
+            [job.clientId, pathname, filename, job.label, job.size, sha256, job.date]
+          );
+          console.log(`copied from an existing upload (#${rows[0].id})`);
+          done.uploaded++;
+          touchedClients.add(job.clientId);
+          continue;
+        }
+
         let lastPct = -1;
         await put(pathname, createReadStream(job.path), {
           access: 'private',

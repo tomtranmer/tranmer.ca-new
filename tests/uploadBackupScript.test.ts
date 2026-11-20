@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest'
-import { blobPathname, blockedClientIds, jobsFromManifest, parseCsv } from '../scripts/upload-backup.mjs'
+import { blobPathname, blockedClientIds, jobsFromManifest, parseCsv, verifyClients } from '../scripts/upload-backup.mjs'
 
 describe('parseCsv', () => {
   it('handles quotes, embedded commas, escaped quotes, CRLF and a BOM', () => {
@@ -39,15 +39,17 @@ describe('jobsFromManifest', () => {
       '91,GCM,gcm.zip,20261115',
       '92,Hewson,shared.zip,',
       '79,Hewson Acoustics,shared.zip,',
+      '92,Hewson again,shared.zip,',
     ].join('\n')
     const { errors, jobs } = jobsFromManifest(csv, opts)
     expect(errors).toEqual([
       'line 2: TGH HIV Clinic (73) is in BACKUP_DOWNLOAD_BLOCKED_CLIENT_IDS',
       'line 3: invalid client_id "abc def"',
       'line 4: date must be YYYY-MM-DD, got "20261115"',
-      'line 6: same file as line 5',
+      'line 7: same file for the same client as line 5',
     ])
-    expect(jobs).toHaveLength(1)
+    // One shared file for two different clients is fine.
+    expect(jobs.map((j: { clientId: string }) => j.clientId)).toEqual(['92', '79'])
   })
 
   it('needs client_id and file columns', () => {
@@ -67,5 +69,40 @@ describe('helpers', () => {
   it('reads the blocked list', () => {
     expect(blockedClientIds({ BACKUP_DOWNLOAD_BLOCKED_CLIENT_IDS: ' 73, 80 ,' })).toEqual(['73', '80'])
     expect(blockedClientIds({})).toEqual([])
+  })
+})
+
+describe('verifyClients', () => {
+  const fakeFetch = (table: Record<string, { status: number; body?: unknown }>): typeof fetch =>
+    async (input: RequestInfo | URL) => {
+      const url = input instanceof Request ? input.url : String(input)
+      const id = decodeURIComponent(url.split('/').pop()!)
+      const hit = table[id] ?? { status: 404 }
+      return new Response(JSON.stringify(hit.body ?? {}), { status: hit.status })
+    }
+
+  it('accepts active TWS clients and explains the rest', async () => {
+    const fetchImpl = fakeFetch({
+      '91': { status: 200, body: { id: '91', name: 'Great Canadian Meat Co.', status: 'active' } },
+      '87': { status: 200, body: { client: { id: '87', name: 'TEMP TEST', status: 'past_due' } } },
+      '5': { status: 200, body: { id: '5', name: 'Old Client', status: 'canceled' } },
+      '9': { status: 500 },
+    })
+    const { problems, names } = await verifyClients(['91', '87', '20', '5', '9', '91'], {
+      baseUrl: 'https://sb.example', apiKey: 'k', fetchImpl,
+    })
+    expect(names).toEqual({ '91': 'Great Canadian Meat Co.', '87': 'TEMP TEST' })
+    expect(problems).toEqual([
+      "client 20: not a TWS client in SB Tracker (wrong id, or it belongs to another SB Tracker account), so the portal can't show it",
+      "client 5 (Old Client): archived in SB Tracker, so it can't log in",
+      'client 9: SB Tracker answered 500',
+    ])
+  })
+
+  it('reports an unreachable SB Tracker instead of skipping the check', async () => {
+    const { problems } = await verifyClients(['91'], {
+      baseUrl: 'https://sb.example', apiKey: 'k', fetchImpl: async () => { throw new Error('ECONNREFUSED') },
+    })
+    expect(problems).toEqual(["client 91: couldn't reach SB Tracker (ECONNREFUSED)"])
   })
 })
