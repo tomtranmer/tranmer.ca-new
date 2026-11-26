@@ -1,5 +1,11 @@
-
+import type { Metadata } from 'next';
 import Image from 'next/image';
+
+export const metadata: Metadata = {
+  title: 'Apps Are the New Spreadsheet | tranmer.ca',
+  alternates: { canonical: '/blog' },
+};
+
 export default function BlogPage() {
   return (
     <main className="min-h-screen flex items-center justify-center bg-gradient-to-br from-gray-50 to-gray-100 py-12 px-4 sm:px-6 lg:px-8">

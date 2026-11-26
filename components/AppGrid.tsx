@@ -69,12 +69,6 @@ export function AppGrid({ onModalChange }: AppGridProps) {
       emoji: "⚙️",
       gradient: "bg-gradient-to-br from-gray-600 to-gray-700"
     },
-    // {
-    //   href: "/lock-in",
-    //   label: "Lock-In",
-    //   emoji: "🔒",
-    //   gradient: "bg-gradient-to-br from-red-500 to-orange-600"    
-    // },
     {
       href: '/referral',
       label: 'Refer & Earn',

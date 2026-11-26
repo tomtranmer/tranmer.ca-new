@@ -37,9 +37,7 @@ export const metadata: Metadata = {
     telephone: false,
   },
   metadataBase: new URL("https://tranmer.ca"),
-  alternates: {
-    canonical: "/",
-  },
+  // No site-wide canonical: each page sets its own, or every page would point at "/".
   openGraph: {
     title: "tranmer.ca | Digital Portfolio",
     description: "The digital portfolio and project hub for Tom Tranmer.",
