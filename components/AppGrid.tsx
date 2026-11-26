@@ -86,7 +86,7 @@ export function AppGrid({ onModalChange }: AppGridProps) {
       emoji: "🃏",
       gradient: "bg-gradient-to-br from-rose-500 to-red-500",
       openInNewWindow: true,
-      // iconSrc: "/icons/pwa/icon-192.svg"
+      // iconSrc: "/icons/pwa/icon-192.png"
     },
     // {
     //   href: "https://booking.tranmer.ca",

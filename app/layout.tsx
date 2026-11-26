@@ -16,8 +16,6 @@ const geistMono = Geist_Mono({
 export const viewport: Viewport = {
   width: "device-width",
   initialScale: 1,
-  maximumScale: 1,
-  userScalable: false,
   themeColor: [
     { media: "(prefers-color-scheme: light)", color: "#3b82f6" },
     { media: "(prefers-color-scheme: dark)", color: "#1e40af" }
@@ -25,9 +23,11 @@ export const viewport: Viewport = {
 };
 
 export const metadata: Metadata = {
-  title: "tranmer.ca | Digital Portfolio",
-  description: "The digital portfolio and project hub for Tom Tranmer.",
-  keywords: ["portfolio", "web development", "projects", "tom tranmer"],
+  // Default for pages without their own title or description.
+  title: "Tom Tranmer | Tranmer Web Services",
+  description:
+    "Tom Tranmer builds and looks after websites, online stores and apps for small businesses through Tranmer Web Services.",
+  keywords: ["Tranmer Web Services", "web development", "website hosting", "small business apps", "Tom Tranmer"],
   authors: [{ name: "Tom Tranmer" }],
   creator: "Tom Tranmer",
   publisher: "Tom Tranmer",
@@ -38,18 +38,16 @@ export const metadata: Metadata = {
   },
   metadataBase: new URL("https://tranmer.ca"),
   // No site-wide canonical: each page sets its own, or every page would point at "/".
+  // No title, description or url here: pages inherit this object whole, so set
+  // values would label every shared link as the homepage. Sharing previews fall
+  // back to each page's own <title> and description. Image: app/opengraph-image.png.
   openGraph: {
-    title: "tranmer.ca | Digital Portfolio",
-    description: "The digital portfolio and project hub for Tom Tranmer.",
-    url: "https://tranmer.ca",
     siteName: "tranmer.ca",
     locale: "en_US",
     type: "website",
   },
   twitter: {
     card: "summary_large_image",
-    title: "tranmer.ca | Digital Portfolio",
-    description: "The digital portfolio and project hub for Tom Tranmer.",
   },
   manifest: "/manifest.json",
   appleWebApp: {
@@ -58,10 +56,6 @@ export const metadata: Metadata = {
     title: "tranmer.ca",
   },
   other: {
-    "mobile-web-app-capable": "yes",
-    "apple-mobile-web-app-capable": "yes",
-    "apple-mobile-web-app-status-bar-style": "default",
-    "apple-mobile-web-app-title": "tranmer.ca",
     "application-name": "tranmer.ca",
     "msapplication-TileColor": "#3b82f6",
     "msapplication-config": "none",
@@ -78,15 +72,6 @@ export default function RootLayout({
   return (
     <html lang="en" suppressHydrationWarning>
       <head>
-        <link rel="manifest" href="/manifest.json" />
-        <link rel="apple-touch-icon" href="/icons/pwa/apple-touch-icon.png" />
-        <link rel="icon" type="image/svg+xml" href="/icons/pwa/icon-192.svg" />
-        <link rel="icon" type="image/png" href="/icons/pwa/icon-192-maskable.png" />
-        <link rel="icon" type="image/x-icon" href="/icons/pwa/favicon.ico" />
-        <meta name="apple-mobile-web-app-capable" content="yes" />
-        <meta name="apple-mobile-web-app-status-bar-style" content="default" />
-        <meta name="apple-mobile-web-app-title" content="tranmer.ca" />
-        <meta name="mobile-web-app-capable" content="yes" />
         {process.env.NEXT_PUBLIC_GA_ID && (
           <GoogleAnalytics gaId={process.env.NEXT_PUBLIC_GA_ID} />
         )}

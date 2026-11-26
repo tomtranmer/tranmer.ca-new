@@ -1,17 +1,13 @@
-const CACHE_NAME = 'tranmer-ca-v2';
+// Bump the version whenever cached files change, so old copies are dropped.
+const CACHE_NAME = 'tranmer-ca-v3';
 const urlsToCache = [
   '/',
   '/manifest.json',
   '/favicon.ico',
-  '/icons/pwa/icon-192.svg',
-  '/icons/pwa/icon-512.svg',
-  '/icons/pwa/icon-192-maskable.svg',
-  '/icons/pwa/icon-512-maskable.svg',
+  '/icons/pwa/icon-192.png',
+  '/icons/pwa/icon-512.png',
   '/icons/pwa/icon-192-maskable.png',
   '/icons/pwa/icon-512-maskable.png',
-  '/icons/pwa/apple-touch-icon.svg',
-  '/icons/pwa/apple-touch-icon.png',
-  '/icons/pwa/favicon.ico',
 ];
 
 // Install event
