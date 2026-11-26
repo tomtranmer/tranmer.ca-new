@@ -9,9 +9,10 @@ const nextConfig: NextConfig = {
   },
   async redirects() {
     return [
-      // Retired campaign pages (Appstravaganza 2025, Lock In for 2026) now point at the plans page.
+      // Retired campaign pages (Appstravaganza 2025, Lock In for 2026, 1Q survey) now point at the plans page.
       { source: '/app', destination: '/web', permanent: true },
       { source: '/lock-in', destination: '/web', permanent: true },
+      { source: '/poll', destination: '/web', permanent: true },
     ];
   },
   async headers() {
