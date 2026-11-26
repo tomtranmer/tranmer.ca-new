@@ -9,6 +9,7 @@
     "lint": "eslint .",
     "test": "vitest run",
     "test:watch": "vitest",
+    "icons": "node scripts/generate-icons.mjs",
     "backup:upload": "node --env-file-if-exists=.env.local scripts/upload-backup.mjs"
   },
   "dependencies": {

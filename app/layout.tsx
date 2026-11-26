@@ -72,9 +72,6 @@ export default function RootLayout({
   return (
     <html lang="en" suppressHydrationWarning>
       <head>
-        <link rel="apple-touch-icon" href="/icons/pwa/apple-touch-icon.png" />
-        <link rel="icon" type="image/svg+xml" href="/icons/pwa/icon-192.svg" />
-        <link rel="icon" type="image/png" href="/icons/pwa/icon-192-maskable.png" />
         {process.env.NEXT_PUBLIC_GA_ID && (
           <GoogleAnalytics gaId={process.env.NEXT_PUBLIC_GA_ID} />
         )}
